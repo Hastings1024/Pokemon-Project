@@ -127,34 +127,6 @@ table.moves td{padding:6px 8px;border-bottom:1px solid #1C2637}
 /* detail overlay */
 .overlay{position:fixed;inset:0;background:rgba(8,12,20,.7);z-index:60;display:flex;align-items:flex-start;justify-content:center;padding:60px 16px;overflow-y:auto}
 .detail{background:var(--panel);border:1px solid var(--line);border-radius:10px;max-width:560px;width:100%;padding:26px}
-.detail-wide{max-width:1080px}
-.detail-cols{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.85fr);gap:0 28px;align-items:start}
-.dd-right{border-left:1px solid var(--line);padding-left:26px;min-width:0;position:sticky;top:0}
-.dd-sec{margin-bottom:20px}
-.dd-h{font-family:var(--disp);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 7px}
-.dd-hn{letter-spacing:.04em;text-transform:none;color:var(--muted);font-family:var(--body);font-size:10.5px;font-weight:400}
-.dd-note{font-size:12px;color:var(--muted);line-height:1.55}
-.usage-line{font-family:var(--disp);font-size:12px;color:var(--gold);margin-top:3px;font-weight:700}
-.usage-meta{color:var(--muted);font-family:var(--body);font-weight:400;font-size:10.5px}
-.cell-usage{width:52px}
-.usage-chip{font-family:var(--disp);font-weight:700;font-size:12px;color:var(--gold)}
-.usage-none{color:var(--muted);opacity:.45}
-.ladder-stat{display:flex;align-items:baseline;gap:10px}
-.ladder-rank{font-family:var(--disp);font-weight:800;font-size:24px;color:var(--gold)}
-.ladder-pct{font-family:var(--disp);font-weight:700;font-size:17px;color:var(--ink)}
-.ladder-lbl{font-size:11px;color:var(--muted)}
-.tm-row{display:flex;align-items:center;gap:9px;padding:5px 6px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:6px}
-.tm-row:hover{background:var(--panel2)}
-.tm-row img{width:34px;height:34px;image-rendering:pixelated;flex:none}
-.tm-rank{font-family:var(--disp);font-weight:700;color:var(--gold);font-size:12.5px;width:24px;flex:none}
-.tm-name{font-weight:600;font-size:13px;color:var(--ink);flex:1;display:flex;align-items:center;gap:6px;min-width:0;flex-wrap:wrap}
-.tm-pct{font-size:11px;color:var(--muted);flex:none}
-.tf-row{padding:8px 4px;border-bottom:1px solid var(--line)}
-.tf-name{font-size:12.5px;font-weight:600;color:var(--ink)}
-.tf-tag{font-size:10.5px;color:var(--muted)}
-.tf-sprites{display:flex;gap:3px;margin-top:4px;flex-wrap:wrap}
-.tf-sprites img{width:30px;height:30px;image-rendering:pixelated}
-@media(max-width:980px){.detail-cols{display:block}.dd-right{border-left:none;padding-left:0;margin-top:18px;border-top:1px solid var(--line);padding-top:16px;position:static}}
 .detail-head{display:flex;gap:18px;align-items:center;margin-bottom:18px}
 .detail-art{width:120px;height:120px;flex-shrink:0}
 .detail h2{font-family:var(--disp);font-size:22px}
@@ -471,25 +443,12 @@ a.tt-watch{text-decoration:none;display:inline-flex;align-items:center;gap:5px;c
 .ut-paste{min-height:120px;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;line-height:1.5}
 .ut-form-btns{display:flex;gap:8px}
 .tt-empty{color:var(--muted);font-size:13.5px;padding:6px 2px}
-.freq-toggle{margin-top:8px;width:100%;justify-content:center;display:inline-flex}
 .theme-btn{font-size:16px}
 .sq-chip-click{cursor:pointer}
 .sq-chip-click:hover{border-color:var(--gold-dim);color:var(--gold)}
 .sq-item-edit{display:block;position:relative}
 .sq-item-edit .f-input{height:20px;padding:1px 7px;font-size:10px;font-family:var(--disp);font-weight:600;width:120px;border-radius:5px}
 .sq-item-edit .ac-panel{min-width:185px}
-.chip-menu-wrap{position:relative;display:block}
-.chip-menu-anchor{opacity:.75}
-.chip-menu{position:absolute;top:calc(100% + 3px);left:0;z-index:60;min-width:150px;background:var(--panel2);border:1px solid #33456A;border-radius:7px;padding:4px;box-shadow:0 8px 22px rgba(0,0,0,.45)}
-.chip-menu-opt{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;background:none;border:none;border-radius:5px;padding:5px 8px;color:var(--ink);font-size:11.5px;text-align:left;cursor:pointer}
-.chip-menu-opt:hover{background:#1A2536}
-.chip-menu-opt.sel{background:#202C41}
-.chip-menu-note{font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--gold)}
-[data-theme="light"] .chip-menu{border-color:#B4C1D8}
-[data-theme="light"] .chip-menu-opt:hover{background:#DCE6F5}
-[data-theme="light"] .chip-menu-opt.sel{background:#CBD9EE}
-.sq-nat-edit{display:block;position:relative}
-.sq-nat-edit .ns-trigger{height:20px;min-height:20px;font-size:10px;padding:1px 7px}
 .col-actions .team-lib-name{width:130px;padding:5px 9px;font-size:12px}
 .col-actions .team-lib-sel{max-width:120px}
 @media (max-width:900px){.col-actions{flex-wrap:wrap}}
@@ -2603,7 +2562,6 @@ const ABIL_DESC = {"Stench":"By releasing a stench when attacking, the Pokémon 
 const {useState, useMemo, useEffect, useRef} = React;
 
 /* ============ shared data ============ */
-const LADDER = {"month":"July 2026","fmt":"Reg M-B","cutoff":1760,"battles":1764686,"usage":{"kingambit":[1,36.79],"incineroar":[2,33.95],"garchomp":[3,33.19],"charizard-mega-y":[4,30.58],"basculegion-male":[5,30.22],"sinistcha":[6,26.11],"whimsicott":[7,22.49],"sneasler":[8,20.9],"farigiraf":[9,20.2],"sylveon":[10,17.47],"floette-mega":[11,15.02],"archaludon":[12,14.27],"pelipper":[13,12.88],"staraptor-mega":[14,11.34],"grimmsnarl":[15,10.36],"aerodactyl-mega":[16,9.9],"gholdengo":[17,9.22],"delphox-mega":[18,8.65],"blastoise-mega":[19,8.51],"swampert-mega":[20,8.45],"venusaur":[21,7.37],"milotic":[22,7.12],"metagross-mega":[23,7.01],"raichu-mega-y":[24,6.97],"ninetales-alola":[25,6.53],"maushold-family-of-four":[26,6.25],"torkoal":[27,6.07],"mawile-mega":[28,5.21],"toxapex":[29,5.07],"gengar-mega":[30,4.94],"tyranitar-mega":[31,4.89],"annihilape":[32,4.81],"venusaur-mega":[33,4.77],"ceruledge":[34,4.52],"hydreigon":[35,4.49],"excadrill":[36,4.06],"politoed":[37,3.86],"rotom-wash":[38,3.78],"froslass-mega":[39,3.7],"glimmora":[40,3.69],"talonflame":[41,3.48],"kommo-o":[42,3.43],"sableye":[43,3.36],"aerodactyl":[44,3.16],"scovillain-mega":[45,3.14],"vivillon":[46,3.11],"blaziken-mega":[47,3.08],"mamoswine":[48,2.91],"meowscarada":[49,2.79],"lycanroc-dusk":[50,2.69],"dragonite":[51,2.54],"tyranitar":[52,2.43],"gallade":[53,2.42],"dragonite-mega":[54,2.36],"gardevoir-mega":[55,2.34],"camerupt-mega":[56,2.06],"corviknight":[57,2.04],"tsareena":[58,1.99],"kangaskhan-mega":[59,1.99],"scrafty-mega":[60,1.97],"glimmora-mega":[61,1.83],"primarina":[62,1.7],"staraptor":[63,1.6],"pyroar-mega":[64,1.59],"kangaskhan":[65,1.53],"vileplume":[66,1.4],"houndstone":[67,1.38],"chandelure":[68,1.2],"arcanine-hisui":[69,1.2],"volcarona":[70,1.19],"garchomp-mega":[71,1.09],"meganium-mega":[72,0.91],"lopunny-mega":[73,0.86],"sceptile-mega":[74,0.85],"vanilluxe":[75,0.84],"aegislash-shield":[76,0.82],"rotom-heat":[77,0.8],"charizard-mega-x":[78,0.79],"tinkaton":[79,0.79],"raichu-mega-x":[80,0.78],"meowstic-male":[81,0.77],"eelektross-mega":[82,0.77],"scizor-mega":[83,0.74],"dragapult":[84,0.73],"typhlosion-hisui":[85,0.73],"armarouge":[86,0.7],"zoroark-hisui":[87,0.68],"hatterene":[88,0.67],"altaria":[89,0.65],"abomasnow-mega":[90,0.64],"araquanid":[91,0.63],"mudsdale":[92,0.63],"overqwil":[93,0.62],"weavile":[94,0.6],"mimikyu-disguised":[95,0.57],"clefable":[96,0.56],"kleavor":[97,0.51],"snorlax":[98,0.5],"samurott-hisui":[99,0.48],"palafin-zero":[100,0.48],"gyarados-mega":[101,0.48],"drampa":[102,0.48],"starmie-mega":[103,0.46],"scrafty":[104,0.46],"scizor":[105,0.45],"klefki":[106,0.43],"oranguru":[107,0.43],"drampa-mega":[108,0.42],"malamar-mega":[109,0.42],"dragalge-mega":[110,0.42],"blaziken":[111,0.41],"chandelure-mega":[112,0.41],"espathra":[113,0.38],"basculegion-female":[114,0.36],"azumarill":[115,0.35],"raichu":[116,0.33],"decidueye-hisui":[117,0.32],"ninetales":[118,0.32],"metagross":[119,0.32],"slowking-galar":[120,0.32],"lucario-mega":[121,0.31],"gyarados":[122,0.3],"golurk-mega":[123,0.3],"sableye-mega":[124,0.29],"bellibolt":[125,0.29],"gardevoir":[126,0.28],"heliolisk":[127,0.28],"ditto":[128,0.28],"chesnaught-mega":[129,0.27],"arcanine":[130,0.27],"umbreon":[131,0.26],"tauros-paldea-aqua-breed":[132,0.26],"skarmory-mega":[133,0.26],"conkeldurr":[134,0.25],"noivern":[135,0.25],"krookodile":[136,0.24],"goodra-hisui":[137,0.23],"mr-rime":[138,0.23],"jolteon":[139,0.23],"scolipede-mega":[140,0.23],"malamar":[141,0.22],"reuniclus":[142,0.22],"crabominable-mega":[143,0.22],"aggron-mega":[144,0.21],"barbaracle-mega":[145,0.21],"feraligatr-mega":[146,0.21],"cofagrigus":[147,0.21],"ampharos-mega":[148,0.2],"banette-mega":[149,0.2],"heracross-mega":[150,0.19],"rotom-mow":[151,0.19],"wyrdeer":[152,0.18],"greninja":[153,0.18],"empoleon":[154,0.18],"manectric-mega":[155,0.18],"audino":[156,0.18],"hydrapple":[157,0.17],"hawlucha-mega":[158,0.17],"serperior":[159,0.17],"glaceon":[160,0.16],"greninja-mega":[161,0.16],"alakazam-mega":[162,0.16],"excadrill-mega":[163,0.16],"beedrill-mega":[164,0.16],"alcremie":[165,0.15],"gengar":[166,0.15],"blastoise":[167,0.15],"liepard":[168,0.15],"aromatisse":[169,0.14],"altaria-mega":[170,0.13],"avalugg-hisui":[171,0.13],"vaporeon":[172,0.13],"victreebel-mega":[173,0.13],"rotom-frost":[174,0.13],"salazzle":[175,0.12],"rhyperior":[176,0.12],"pidgeot-mega":[177,0.12],"lucario":[178,0.12],"houndoom-mega":[179,0.12],"steelix-mega":[180,0.12],"falinks-mega":[181,0.12],"gallade-mega":[182,0.11],"hippowdon":[183,0.11],"feraligatr":[184,0.11],"clefable-mega":[185,0.11],"pinsir-mega":[186,0.11],"skeledirge":[187,0.11],"orthworm":[188,0.11],"slowbro-mega":[189,0.11],"houndoom":[190,0.11],"slowking":[191,0.11],"medicham":[192,0.1],"espeon":[193,0.1],"gliscor":[194,0.1],"rampardos":[195,0.1],"typhlosion":[196,0.09],"audino-mega":[197,0.09],"sceptile":[198,0.08],"chimecho-mega":[199,0.08],"charizard":[200,0.08],"floette":[201,0.08],"clawitzer":[202,0.08],"alakazam":[203,0.08],"garganacl":[204,0.07],"infernape":[205,0.07],"gourgeist-large":[206,0.07],"runerigus":[207,0.07],"medicham-mega":[208,0.07],"victreebel":[209,0.06],"quaquaval":[210,0.06],"swampert":[211,0.06],"spiritomb":[212,0.06],"scovillain":[213,0.06],"aurorus":[214,0.06],"leafeon":[215,0.06],"delphox":[216,0.06],"musharna":[217,0.06],"toxicroak":[218,0.06],"dragalge":[219,0.06],"dedenne":[220,0.06],"meowstic-female-mega":[221,0.05],"diggersby":[222,0.05],"meowstic-male-mega":[223,0.05],"emboar-mega":[224,0.05],"slowbro-galar":[225,0.05],"trevenant":[226,0.05],"ariados":[227,0.05],"torterra":[228,0.05],"scolipede":[229,0.05],"slowbro":[230,0.05],"tyrantrum":[231,0.05],"machamp":[232,0.04],"watchog":[233,0.04],"tauros-paldea-blaze-breed":[234,0.04],"starmie":[235,0.04],"lycanroc-midday":[236,0.04],"goodra":[237,0.04],"chesnaught":[238,0.04],"golurk":[239,0.04],"pikachu":[240,0.04],"roserade":[241,0.04],"luxray":[242,0.04],"passimian":[243,0.03],"polteageist":[244,0.03],"beartic":[245,0.03],"sandaconda":[246,0.03],"sharpedo":[247,0.03],"glalie-mega":[248,0.03],"zoroark":[249,0.03],"garbodor":[250,0.03],"abomasnow":[251,0.03],"sharpedo-mega":[252,0.03],"morpeko-full-belly":[253,0.03],"lopunny":[254,0.03],"froslass":[255,0.03],"florges":[256,0.02],"pangoro":[257,0.02],"gourgeist-super":[258,0.02],"toucannon":[259,0.02],"absol-mega":[260,0.02],"manectric":[261,0.02],"flapple":[262,0.02],"absol":[263,0.02],"hawlucha":[264,0.02],"flareon":[265,0.02],"bastiodon":[266,0.02],"simipour":[267,0.02],"emolga":[268,0.02],"skarmory":[269,0.02],"aggron":[270,0.01],"lycanroc-midnight":[271,0.01],"qwilfish":[272,0.01],"raichu-alola":[273,0.01],"castform":[274,0.01],"falinks":[275,0.01],"crabominable":[276,0.01],"glalie":[277,0.01],"steelix":[278,0.01],"tauros-paldea-combat-breed":[279,0.01],"eelektross":[280,0.01],"tauros":[281,0.01],"appletun":[282,0.01],"decidueye":[283,0.01],"emboar":[284,0.01],"gourgeist-small":[285,0.01],"stunfisk-galar":[286,0.01],"avalugg":[287,0.01],"arbok":[288,0.01],"ampharos":[289,0.01],"furfrou":[290,0.01],"camerupt":[291,0.01],"simisage":[292,0.005],"rotom-fan":[293,0.005],"rotom":[294,0.004],"forretress":[295,0.004],"slurpuff":[296,0.004],"heracross":[297,0.004],"simisear":[298,0.004],"barbaracle":[299,0.003],"samurott":[300,0.003],"stunfisk":[301,0.003],"gourgeist-average":[302,0.002],"pinsir":[303,0.002],"meganium":[304,0.002],"pidgeot":[305,0.002],"chimecho":[306,0.002],"banette":[307,0.001],"mawile":[308,0.001],"pyroar-male":[309,0.0002],"beedrill":[310,0.0001]}};
 const TYPE_ORDER = {};
 const TYPE_ORDER_LIST = ['normal','grass','fire','water','electric','bug','flying','rock','poison','ground','ice','fighting','psychic','ghost','dragon','dark','steel','fairy'];
 const TYPE_ABBR = {normal:'NOR',fire:'FIR',water:'WAT',electric:'ELE',grass:'GRA',ice:'ICE',fighting:'FIG',poison:'POI',ground:'GRO',flying:'FLY',psychic:'PSY',bug:'BUG',rock:'ROC',ghost:'GHO',dragon:'DRA',dark:'DAR',steel:'STE',fairy:'FAI'};
@@ -2952,109 +2910,6 @@ function MovesPanel({mon}){
   );
 }
 
-/* ---- competitive intel: teammates + featured teams from every team the app knows ----
-   Sources: bundled tournament snapshot, creator teams, your trending teams, your saved
-   library, and the opponent log. When the site goes online this swaps to live
-   Showdown-ladder teammate stats + tournament team lists. */
-function knownTeams(){
-  const out = [];
-  const add = (name, tag, paste, log) => {
-    try{
-      const sp = parsePaste(paste).map(m => m.species).filter(Boolean);
-      if(sp.length) out.push({name, tag, species: sp, log: !!log});
-    }catch(_){}
-  };
-  TOP_TEAMS.forEach(t => add(t.name, t.src, t.paste));
-  CREATOR_TEAMS.forEach(t => add(t.name, t.creator, t.paste));
-  lsArr('cc-user-teams-v1').forEach(t => add(t.name, 'Your trending team', t.paste));
-  lsArr('cc-saved-teams-v1').forEach(t => add(t.name, 'Saved team', t.paste));
-  lsArr('cc-opponent-log-v1').forEach((e, i) => {
-    if(e.excluded) return;
-    const sp = (e.mons || []).map(m => m.species).filter(Boolean);
-    if(sp.length) out.push({name: 'Logged opponent #' + (i + 1), tag: 'Opponent log', species: sp, log: true});
-  });
-  return out;
-}
-function teammateIntel(name){
-  const canon = sp => { const d = findMon(sp); return d ? d.name : sp; };
-  const me = canon(name);
-  const teams = knownTeams();
-  const withMe = teams.filter(t => t.species.some(sp => canon(sp) === me));
-  const tally = {};
-  withMe.forEach(t => {
-    [...new Set(t.species.map(canon))].forEach(sp => { if(sp !== me) tally[sp] = (tally[sp] || 0) + 1; });
-  });
-  const mates = Object.entries(tally)
-    .map(([sp, n]) => ({species: sp, n, pct: Math.round(n / withMe.length * 100)}))
-    .sort((a, b) => b.n - a.n || a.species.localeCompare(b.species))
-    .slice(0, 8);
-  return {withMe, mates};
-}
-
-function CompIntel({mon, onJump}){
-  const {withMe, mates} = useMemo(() => teammateIntel(mon.name), [mon.id]);
-  const featured = withMe.filter(t => !t.log).slice(0, 6);
-  const logCount = withMe.filter(t => t.log).length;
-  const u0 = ladderOf(mon);
-  if(!withMe.length) return (
-    <div>
-      {u0 && <div className="dd-sec">
-        <div className="dd-h">Ladder snapshot <span className="dd-hn">{LADDER.month} · {LADDER.cutoff}+ rating</span></div>
-        <div className="ladder-stat"><span className="ladder-rank">#{u0[0]}</span>
-          <span className="ladder-pct">{u0[1]}%</span>
-          <span className="ladder-lbl">of teams — {LADDER.fmt} ranked ladder</span></div>
-      </div>}
-      <div className="dd-h">Best teammates</div>
-      <div className="dd-note">No team data for {mon.name} yet — it hasn't appeared in the bundled tournament snapshot, your trending or saved teams, or the opponent log. Data grows as you add teams and log battles; the online version will pull live ladder stats.</div>
-    </div>
-  );
-  const u = ladderOf(mon);
-  return (
-    <div>
-      {u && <div className="dd-sec">
-        <div className="dd-h">Ladder snapshot <span className="dd-hn">{LADDER.month} · {(LADDER.battles/1000000).toFixed(2)}M battles · {LADDER.cutoff}+ rating</span></div>
-        <div className="ladder-stat"><span className="ladder-rank">#{u[0]}</span>
-          <span className="ladder-pct">{u[1]}%</span>
-          <span className="ladder-lbl">of teams — {LADDER.fmt} ranked ladder</span></div>
-      </div>}
-      <div className="dd-sec">
-        <div className="dd-h">Best teammates <span className="dd-hn">from {withMe.length} known team{withMe.length === 1 ? '' : 's'}</span></div>
-        {mates.map((m, i) => {
-          const d = findMon(m.species);
-          return (
-            <div className="tm-row" key={m.species} role={d ? 'button' : undefined}
-              onClick={d ? () => onJump(d) : undefined}
-              title={d ? 'Open ' + d.name : undefined}>
-              <span className="tm-rank">#{i + 1}</span>
-              {d ? <img src={SPRITE(d.id)} alt="" loading="lazy" onError={e => spriteFallback(e, d)}/> : <span className="leadph"/>}
-              <span className="tm-name">{m.species}
-                {d && d.types.map(t => <span key={t} className="tb" style={{background:TYPE_COLORS[t], fontSize:'8.5px', padding:'1px 5px'}}>{t}</span>)}
-              </span>
-              <span className="tm-pct">{m.pct}% · {m.n}×</span>
-            </div>
-          );
-        })}
-      </div>
-      <div className="dd-sec">
-        <div className="dd-h">Teams featuring {mon.name}</div>
-        {featured.length === 0 && <div className="dd-note">Only opponent-log appearances so far.</div>}
-        {featured.map((t, i) => (
-          <div className="tf-row" key={i}>
-            <span className="tf-name">{t.name}</span> <span className="tf-tag">· {t.tag}</span>
-            <div className="tf-sprites">
-              {t.species.map((sp, x) => {
-                const d = findMon(sp);
-                return d ? <img key={x} src={SPRITE(d.id)} alt="" loading="lazy" onError={e => spriteFallback(e, d)}/> : null;
-              })}
-            </div>
-          </div>
-        ))}
-        {logCount > 0 && <div className="dd-note" style={{marginTop:6}}>Also seen on {logCount} logged opponent team{logCount === 1 ? '' : 's'}.</div>}
-      </div>
-    </div>
-  );
-}
-
 function MonDetail({mon, onClose, onPrev, onNext, onJump}){
   const allAbilities = [...mon.abilities, ...(mon.hiddenAbility ? [mon.hiddenAbility] : [])];
   const modAbilities = allAbilities.filter(a => ABILITY_MODS[a]);
@@ -3088,12 +2943,9 @@ function MonDetail({mon, onClose, onPrev, onNext, onJump}){
     const suffix = baseName && s.name.startsWith(baseName) ? s.name.slice(baseName.length).replace(/^-/, '') : s.name;
     return suffix || s.name;
   };
-  const isComp = !!(LEARN[mon.id] && LEARN[mon.id].length);
   return (
     <div className="overlay" onClick={e => { if(e.target === e.currentTarget) onClose(); }}>
-      <div className={'detail' + (isComp ? ' detail-wide' : '')} role="dialog" aria-modal="true" aria-label={mon.name}>
-        <div className={isComp ? 'detail-cols' : ''}>
-        <div className="dd-left">
+      <div className="detail" role="dialog" aria-modal="true" aria-label={mon.name}>
         <div className="detail-head">
           <img className="detail-art" key={(shiny ? 's' : 'n') + artId} src={shiny ? ART_SHINY(artId) : ART(artId)} alt=""
             onError={e => {
@@ -3103,8 +2955,6 @@ function MonDetail({mon, onClose, onPrev, onNext, onJump}){
           <div>
             <div className="row-dexno">#{String(mon.dex).padStart(4,'0')} · Gen {mon.gen}
               {REG.legal.has(mon.dex) && <span style={{color:'var(--gold)'}}> · {REG.id} legal</span>}</div>
-            {ladderOf(mon) && <div className="usage-line">Ladder #{ladderOf(mon)[0]} · {ladderOf(mon)[1]}% usage
-              <span className="usage-meta"> — {LADDER.fmt} · {LADDER.month} · {LADDER.cutoff}+</span></div>}
             <h2>{mon.name}</h2>
             <div className="type-badges" style={{marginTop:6}}>
               {mon.types.map(t => <span key={t} className="tb" style={{background:TYPE_COLORS[t]}}>{t}</span>)}
@@ -3200,9 +3050,6 @@ function MonDetail({mon, onClose, onPrev, onNext, onJump}){
             {(mon.height/10).toFixed(1)} m · {(mon.weight/10).toFixed(1)} kg
           </span>
         </div>
-        </div>
-        {isComp && <div className="dd-right"><CompIntel mon={mon} onJump={onJump}/></div>}
-        </div>
       </div>
     </div>
   );
@@ -3211,7 +3058,6 @@ function MonDetail({mon, onClose, onPrev, onNext, onJump}){
 const COLS = [
   {key:'dex', label:'#', sortable:true},
   {key:'name', label:'Pokémon', sortable:true},
-  {key:'usage', label:'Usage', sortable:true},
   {key:'abil', label:'Abilities', sortable:false},
   {key:'hp', label:'HP', sortable:true, stat:0},
   {key:'atk', label:'Atk', sortable:true, stat:1},
@@ -3262,7 +3108,6 @@ function DexPage(){
       if(sortKey === 'name') return sortDir * a.name.localeCompare(b.name);
       let va, vb;
       if(sortKey === 'dex'){ va = a.dex * 1000000 + a.id; vb = b.dex * 1000000 + b.id; }
-      else if(sortKey === 'usage'){ va = ladderOf(a) ? -ladderOf(a)[0] : -99999; vb = ladderOf(b) ? -ladderOf(b)[0] : -99999; }
       else if(sortKey === 'bst'){ va = a.bst; vb = b.bst; }
       else { va = a.stats[col.stat]; vb = b.stats[col.stat]; }
       return sortDir * (va - vb) || a.id - b.id;
@@ -3285,7 +3130,7 @@ function DexPage(){
   return (
     <div>
       <div className="page-head">
-        <h1>Competitive Pokédex</h1>
+        <h1>Pokédex</h1>
       </div>
       <div className="mode-toggle" role="group" aria-label="Dex mode">
         <button className={'mode-btn' + (mode === 'complete' ? ' on' : '')} onClick={() => setMode('complete')}>Complete Pokédex</button>
@@ -3327,9 +3172,6 @@ function DexPage(){
             {filtered.slice(0, limit).map((p, i) => (
               <tr key={p.id} onClick={() => setSel(p)}>
                 <td className="row-dexno">{String(p.dex).padStart(3,'0')}</td>
-                <td className="cell-usage">{(() => { const u = ladderOf(p);
-                  return u ? <Tip text={`#${u[0]} · ${u[1]}% usage — ${LADDER.fmt} ladder, ${LADDER.month} (${LADDER.cutoff}+)`}>
-                    <span className="usage-chip">#{u[0]}</span></Tip> : <span className="usage-none">—</span>; })()}</td>
                 <td>
                   <div className="cell-mon">
                     <img className="row-sprite" loading="lazy" src={SPRITE(p.id)} alt="" onError={e => spriteFallback(e, p)}/>
@@ -3412,7 +3254,6 @@ const MEGA_STONES = {
 'baxcalibur-mega':'Baxcalibrite','drampa-mega':'Drampanite','zygarde-mega':'Zygardite',
 'magearna-mega':'Magearnite','zeraora-mega':'Zeraorite','darkrai-mega':'Darkranite','heatran-mega':'Heatranite','mewtwo-mega-x':'Mewtwonite X','mewtwo-mega-y':'Mewtwonite Y','salamence-mega':'Salamencite','metagross-mega':'Metagrossite','latias-mega':'Latiasite','latios-mega':'Latiosite','diancie-mega':'Diancite','golisopod-mega':'Golisopite'
 };
-const ladderOf = p => LADDER.usage[p.slug] || null;   // -> [rank, usage%] | null
 const compPool = () => POKEDEX.filter(inMB);
 
 /* ---- Champions stat engine: fixed 31 IVs, Stat Points 0-32 per stat / 66 total, Lv 50 ---- */
@@ -3484,8 +3325,6 @@ function SquadCard({mon, mine, side, onEdit, onRemove, onUpdate, statMode, dragP
   };
   const [addIdx, setAddIdx] = useState(null);
   const [itemEdit, setItemEdit] = useState(false);
-  const [abilEdit, setAbilEdit] = useState(false);
-  const [natEdit, setNatEdit] = useState(false);
   const dex = findMon(mon.species);
   const nm = NATURE_MODS[mon.nature] || {};
   const shiny = !!mon.shiny;
@@ -3542,15 +3381,9 @@ function SquadCard({mon, mine, side, onEdit, onRemove, onUpdate, statMode, dragP
             {view.types.map(t => <span key={t} className="tb" style={{background:TYPE_COLORS[t]}}>{t}</span>)}
           </div>}
           <div className="sq-chipstack">
-            {abilEdit && view
-              ? <ChipMenu anchorLabel={mon.ability || 'No Ability'} value={mon.ability}
-                  options={[...view.abilities.map(a => ({value:a, label:a})),
-                            ...(view.hiddenAbility ? [{value:view.hiddenAbility, label:view.hiddenAbility, note:'Hidden'}] : [])]}
-                  onPick={a => onUpdate({ability: a})} onClose={() => setAbilEdit(false)}/>
-              : <Tip text={mon.ability ? ABIL_DESC[mon.ability] : 'Click to set the ability'}>
-                  <span className={'sq-chip' + (view ? ' sq-chip-click' : '') + (!mon.ability ? ' mutedc' : '')} role="button"
-                    onClick={view ? e => { e.stopPropagation(); setAbilEdit(true); } : undefined}>{mon.ability || 'No Ability'}</span>
-                </Tip>}
+            {mon.ability
+              ? <Tip text={ABIL_DESC[mon.ability]}><span className="sq-chip">{mon.ability}</span></Tip>
+              : <span className="sq-chip mutedc">No Ability</span>}
             {itemEdit
               ? <CardItemEditor value={mon.item} onDone={v => { setItemEdit(false); if(v !== null) onUpdate({item: v.trim()}); }}/>
               : (view && MEGA_STONES[view.slug])
@@ -3559,16 +3392,11 @@ function SquadCard({mon, mine, side, onEdit, onRemove, onUpdate, statMode, dragP
                     <span className={'sq-chip sq-chip-click' + (!mon.item ? ' mutedc' : '')} role="button"
                       onClick={e => { e.stopPropagation(); setItemEdit(true); }}>{mon.item || 'No Item'}</span>
                   </Tip>}
-            {natEdit
-              ? <span className="sq-nat-edit" onClick={e => e.stopPropagation()}>
-                  <NatureSelect compact startOpen value={mon.nature} placeholder="Nature"
-                    onChange={v => { onUpdate({nature: v}); setNatEdit(false); }}
-                    onClose={() => setNatEdit(false)}/>
-                </span>
-              : <Tip text={mon.nature ? (nm.up ? `+${nm.up} / −${nm.down}` : 'Neutral nature') : 'Click to set the nature'}>
-                  <span className={'sq-chip sq-chip-click' + (!mon.nature ? ' mutedc' : '')} role="button"
-                    onClick={e => { e.stopPropagation(); setNatEdit(true); }}>{mon.nature || 'No Nature'}</span>
-                </Tip>}
+            {mon.nature
+              ? <Tip text={nm.up ? `+${nm.up} / −${nm.down}` : 'Neutral nature'}>
+                  <span className="sq-chip">{mon.nature}</span>
+                </Tip>
+              : <span className="sq-chip mutedc">No Nature</span>}
           </div>
         </div>
         <div className="sq-moves">
@@ -3662,13 +3490,13 @@ function NatureMods({name, color}){
   if(!m.up) return <span className="ns-mods dn">no change</span>;
   return <span className="ns-mods" style={{color}}>+{m.up} <span className="dn">-{m.down}</span></span>;
 }
-function NatureSelect({value, onChange, compact, placeholder, startOpen, onClose}){
-  const [open, setOpen] = useState(!!startOpen);
+function NatureSelect({value, onChange, compact, placeholder}){
+  const [open, setOpen] = useState(false);
   const [hi, setHi] = useState(0);
   const wrap = React.useRef(null);
   useEffect(() => {
     if(!open) return;
-    const away = e => { if(wrap.current && !wrap.current.contains(e.target)){ setOpen(false); if(onClose) onClose(); } };
+    const away = e => { if(wrap.current && !wrap.current.contains(e.target)) setOpen(false); };
     document.addEventListener('mousedown', away);
     return () => document.removeEventListener('mousedown', away);
   }, [open]);
@@ -3820,32 +3648,6 @@ function MoveInput({value, learnIds, placeholder, autoFocus, onCommit, onCancel,
         </div>
       )}
     </div>
-  );
-}
-
-/* Tiny popup list used for inline ability editing on cards — same overlay pattern,
-   chip row height untouched. */
-function ChipMenu({options, value, onPick, onClose, anchorLabel}){
-  const wrap = React.useRef(null);
-  useEffect(() => {
-    const away = e => { if(wrap.current && !wrap.current.contains(e.target)) onClose(); };
-    const key = e => { if(e.key === 'Escape') onClose(); };
-    document.addEventListener('mousedown', away);
-    document.addEventListener('keydown', key);
-    return () => { document.removeEventListener('mousedown', away); document.removeEventListener('keydown', key); };
-  }, []);
-  return (
-    <span ref={wrap} className="chip-menu-wrap" onClick={e => e.stopPropagation()}>
-      <span className="sq-chip chip-menu-anchor">{anchorLabel}</span>
-      <div className="chip-menu">
-        {options.map(o => (
-          <button key={o.value} className={'chip-menu-opt' + (o.value === value ? ' sel' : '')}
-            onClick={() => { onPick(o.value); onClose(); }}>
-            <span>{o.label}</span>{o.note && <span className="chip-menu-note">{o.note}</span>}
-          </button>
-        ))}
-      </div>
-    </span>
   );
 }
 
@@ -4392,7 +4194,6 @@ function SpeedTiers({squad, setSquad, refs, setRefs}){
 
 /* ============ opponent log ============ */
 function OpponentLog({oppLog, refs, onResult, onExclude, onDelete, onClear, onLoad}){
-  const [showAllFreq, setShowAllFreq] = useState(false);
   /* Excluded battles (forfeits, bad data) skip the Pokémon stats; their W/L still counts. */
   const counted = oppLog.filter(o => !o.excluded);
   const omitted = oppLog.length - counted.length;
@@ -4471,7 +4272,7 @@ function OpponentLog({oppLog, refs, onResult, onExclude, onDelete, onClear, onLo
             <section className="pane">
               <h4>Most encountered</h4>
               <p className="blurb">Across {counted.length} counted team{counted.length === 1 ? '' : 's'}. Full bar = seen on the opponent's team; green = actually brought into battle. Forms count separately.</p>
-              {(showAllFreq ? ranked : ranked.slice(0, 9)).map(f => (
+              {ranked.map(f => (
                 <div className="freqrow" key={f.species}>
                   {spriteOf(f.species)
                     ? <img src={spriteOf(f.species)} alt="" loading="lazy"/>
@@ -4484,11 +4285,6 @@ function OpponentLog({oppLog, refs, onResult, onExclude, onDelete, onClear, onLo
                   <span className="freqcount"><b>{f.seen}</b>{f.brought} brought</span>
                 </div>
               ))}
-              {ranked.length > 9 && (
-                <button className="btn tsm freq-toggle" onClick={() => setShowAllFreq(v => !v)}>
-                  {showAllFreq ? 'Show less ▲' : `Show all ${ranked.length} ▼`}
-                </button>
-              )}
             </section>
             <section className="pane">
               <h4>Lead &amp; bring rates <span className="log-meta" style={{marginLeft:8}}>{scoped ? 'current reference' : 'whole log'}</span></h4>
@@ -5098,7 +4894,7 @@ function App(){
           <span className="logo">Champions <b>Companion</b></span>
           <span className="reg-chip">REG M-B · SEASON M-4</span>
           <nav aria-label="Main">
-            {[['vgc','VGC'],['teams','Trending Teams'],['dex','Competitive Pokédex']].map(([id,label]) => (
+            {[['vgc','VGC'],['teams','Trending Teams'],['dex','Pokédex']].map(([id,label]) => (
               <button key={id} className={'tab-btn' + (tab === id ? ' active' : '')} onClick={() => setTab(id)}>{label}</button>
             ))}
             <Tip text={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
