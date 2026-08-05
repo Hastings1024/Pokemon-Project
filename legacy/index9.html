@@ -409,7 +409,7 @@ table.moves td{padding:6px 8px;border-bottom:1px solid #1C2637}
 .team-lib-name{width:190px;max-width:50vw;font-size:12.5px;padding:6px 10px}
 .team-lib-sel{max-width:220px}
 .spd-row{display:grid;grid-template-columns:26px 26px 30px 1fr 46px;gap:8px;align-items:center;margin-bottom:6px}
-.spd-row.wide{grid-template-columns:26px 26px 30px 148px 58px 64px 1fr 46px}
+.spd-row.wide{grid-template-columns:26px 26px 30px 148px 58px 1fr 46px}
 @media(max-width:900px){.spd-row.wide{grid-template-columns:26px 26px 30px 1fr 46px}.spd-inline-edit{display:none}}
 .spd-inline-edit{display:flex;gap:5px;align-items:center;min-width:0}
 .spd-check{width:16px;height:16px;accent-color:var(--gold);cursor:pointer;justify-self:center;margin:0}
@@ -559,10 +559,7 @@ html[data-theme="light"]{scrollbar-color:#9AAAC8 var(--bg)}
 [data-theme="light"] .sq-stats{border-top-color:#DCE3EF}
 .spd-bar.rival span{color:#EAF2FF}
 .spd-val{font-family:var(--disp);font-weight:700;font-size:13px;text-align:right}
-.spd-icons{display:grid;grid-template-columns:26px 26px 30px 148px 58px 64px 1fr 46px;gap:8px;color:var(--muted);margin-bottom:4px;align-items:end}
-.spd-collbl{font-family:var(--disp);font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
-.spd-twall{justify-self:start}
-.spd-stage{width:100%;font-size:11.5px;padding:4px 6px}
+.spd-icons{display:grid;grid-template-columns:26px 26px;gap:8px;color:var(--muted);margin-bottom:4px}
 .spd-icons .spd-sym{display:flex;align-items:center;justify-content:center}
 .spd-icons .spd-sym img{width:18px;height:18px;image-rendering:pixelated;display:block}
 .spd-icons .spd-sym svg{display:block}
@@ -3806,10 +3803,8 @@ const typeEff = (atk, defTypes) => defTypes.reduce((m, t) => m * (CHART[atk][t] 
 
 
 /* team analysis helpers */
-const finalSpeed = (dex, mon, scarf, tw, stage) => {
+const finalSpeed = (dex, mon, scarf, tw) => {
   let v = calcStat(dex.stats[5], (mon.evs || {}).Spe, 'Spe', mon.nature);
-  const st = stage || 0;
-  if(st) v = Math.floor(v * (st > 0 ? (2 + st) / 2 : 2 / (2 - st)));
   if(scarf) v = Math.floor(v * 1.5);
   if(tw) v = Math.floor(v * 2);
   return v;
@@ -4685,22 +4680,21 @@ const speedTierColor = v => TIER_COLORS[v >= 180 ? 'top' : v >= 130 ? 'hi' : v >
 function SpeedTiers({squad, setSquad, refs, setRefs}){
   const [mods, setMods] = useState({});
   const toggle = (k, f) => setMods(m => ({...m, [k]: {...m[k], [f]: !(m[k] && m[k][f])}}));
-  const setStage = (k, v) => setMods(m => ({...m, [k]: {...m[k], stg: v}}));
   const setRefMon = (i, patch) => setRefs(refs.map((m, xi) => xi === i ? {...m, ...patch} : m));
   const setSquadMon = (mon, patch) => setSquad(squad.map(m => m === mon ? {...m, ...patch} : m));
   const rows = [];
   resolveTeam(squad).forEach(({mon, dex}, i) => {
     const k = 'sq' + i, md = mods[k] || {};
-    rows.push({key: k, kind: 'squad', name: mon.nickname || mon.species, dex, mon, scarf: !!md.scarf, tw: !!md.tw, stage: md.stg || 0,
-      spe: finalSpeed(dex, mon, md.scarf, md.tw, md.stg)});
+    rows.push({key: k, kind: 'squad', name: mon.nickname || mon.species, dex, mon, scarf: !!md.scarf, tw: !!md.tw,
+      spe: finalSpeed(dex, mon, md.scarf, md.tw)});
   });
   refs.forEach((mon, i) => {
     if(!mon) return;
     const dex = findMon(mon.species);
     if(!dex) return;
     const k = 'rf' + i, md = mods[k] || {};
-    rows.push({key: k, kind: 'ref', refIdx: i, name: mon.nickname || mon.species, dex, mon, scarf: !!md.scarf, tw: !!md.tw, stage: md.stg || 0,
-      spe: finalSpeed(dex, mon, md.scarf, md.tw, md.stg)});
+    rows.push({key: k, kind: 'ref', refIdx: i, name: mon.nickname || mon.species, dex, mon, scarf: !!md.scarf, tw: !!md.tw,
+      spe: finalSpeed(dex, mon, md.scarf, md.tw)});
   });
   rows.sort((a, b) => b.spe - a.spe);
   const max = Math.max(1, ...rows.map(r => r.spe));
@@ -4708,43 +4702,21 @@ function SpeedTiers({squad, setSquad, refs, setRefs}){
   const barColor = r =>
     r.kind === 'ref' ? 'linear-gradient(90deg,#8A2F2A,#E06858)' :
     'linear-gradient(90deg,#2C5C9E,#5A9BE8)';
-  const suffix = r => (r.kind === 'ref' ? ' · Ref' : '') + (r.scarf ? ' · Scarf' : '') + (r.tw ? ' · TW' : '') + (r.stage ? ' · ' + (r.stage > 0 ? '+' : '') + r.stage : '');
+  const suffix = r => (r.kind === 'ref' ? ' · Ref' : '') + (r.scarf ? ' · Scarf' : '') + (r.tw ? ' · TW' : '');
   return (
     <section className="pane spd-pane">
       <h4>Speed tiers</h4>
       <p className="blurb">Final Speed at Lv {LV} from each set's Stat Alignment and Speed SP. Blue bars are your squad, red bars are Reference benchmarks. Every row's Stat Alignment and Speed SP are editable inline — squad edits sync back to your squad cards. Toggle Choice Scarf (×1.5) and Tailwind (×2) per row to adjust the final Speed.</p>
-      {rows.length > 0 && (() => {
-        const allTw = rows.every(r => r.tw);
-        const twAll = () => setMods(m => {
-          const next = {...m};
-          rows.forEach(r => { next[r.key] = {...next[r.key], tw: !allTw}; });
-          return next;
-        });
-        return (
-          <div className="spd-icons" style={{marginLeft:0}}>
-            <Tip text="Choice Scarf ×1.5" className="spd-sym">
-              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/choice-scarf.png" alt="Choice Scarf"/>
-            </Tip>
-            <Tip text="Tailwind ×2" className="spd-sym">
-              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-                <path d="M2 8h13a3 3 0 1 0-3-3M2 13h17a3 3 0 1 1-3 3M2 18h9a2.5 2.5 0 1 1-2.5 2.5" fill="none" stroke="#3FC8C8" strokeWidth="2" strokeLinecap="round"/>
-              </svg>
-            </Tip>
-            <span/>
-            <span className="spd-collbl">Alignment</span>
-            <span className="spd-collbl">EVs</span>
-            <span className="spd-collbl">Stage</span>
-            <span className="spd-twall">
-              <Tip text={allTw ? 'Turn Tailwind off for every row' : 'Turn Tailwind on for every row (×2)'}>
-                <button type="button" className={'btn' + (allTw ? ' primary' : '')} style={{padding:'4px 10px', fontSize:10}} onClick={twAll}>
-                  {allTw ? 'Tailwind: all on' : 'Tailwind all'}
-                </button>
-              </Tip>
-            </span>
-            <span/>
-          </div>
-        );
-      })()}
+      {rows.length > 0 && <div className="spd-icons" style={{marginLeft:0}}>
+        <Tip text="Choice Scarf ×1.5" className="spd-sym">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/choice-scarf.png" alt="Choice Scarf"/>
+        </Tip>
+        <Tip text="Tailwind ×2" className="spd-sym">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+            <path d="M2 8h13a3 3 0 1 0-3-3M2 13h17a3 3 0 1 1-3 3M2 18h9a2.5 2.5 0 1 1-2.5 2.5" fill="none" stroke="#3FC8C8" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+        </Tip>
+      </div>}
       {rows.map(r => (
         <div className="spd-row wide" key={r.key}>
           <input type="checkbox" className="spd-check" checked={r.scarf} onChange={() => toggle(r.key, 'scarf')} aria-label="Choice Scarf"/>
@@ -4769,16 +4741,6 @@ function SpeedTiers({squad, setSquad, refs, setRefs}){
                       }
                       patchMon({evs: {...r.mon.evs, Spe: v}});
                     }}/></span>
-                </Tip>
-                <Tip text="Speed stages (−6 to +6) — from moves like Tailwind aside: Icy Wind, Dragon Dance, Electroweb…">
-                  <span className="spd-inline-edit" onClick={e => e.stopPropagation()}>
-                    <select className="mini-sel spd-stage" value={r.stage} aria-label="Speed stages"
-                      onChange={e => setStage(r.key, Number(e.target.value))}>
-                      {[6,5,4,3,2,1,0,-1,-2,-3,-4,-5,-6].map(n => (
-                        <option key={n} value={n}>{n > 0 ? '+' + n : String(n)}</option>
-                      ))}
-                    </select>
-                  </span>
                 </Tip>
               </React.Fragment>
             );
@@ -5414,7 +5376,6 @@ function TopTeamRow({t, id, open, setOpen, onLoadTeam, badge, extraTag, extraAct
    Every release adds a dated entry here, newest first. */
 const CHANGELOG = [
   {date: 'August 5, 2026', items: [
-    {tag: 'VGC', text: 'Speed tiers upgrades: column headers now label the Alignment and EVs editors; a new Stage dropdown on every row applies speed stages from \u22126 to +6 to the final Speed (shown in the bar, e.g. \u00b7 +2); and a Tailwind all button toggles Tailwind for every row at once.'},
     {tag: 'Fixes', text: 'Squad and Reference toolbars now share one consistent layout: the section title sits on its own line with the buttons in a right-aligned row beneath it on both sides, so Log Opponent / Import \u2044 Export / Clear line up exactly with the squad controls.'},
     {tag: 'Fixes', text: 'Column alignment is now structural: the squad and reference headers share one layout row, so when the squad toolbar grows (long team names, extra buttons) both card grids shift down together and every card row stays level \u2014 no matter what\u2019s in the toolbar.'},
     {tag: 'VGC', text: 'Team-sheet screenshots redesigned to mirror the on-screen cards exactly \u2014 a 2\u00d73 grid of full cards with artwork, type pills, ability / item / nature chips, moves with type diamonds, and the complete stat rows including nature arrows and tier-colored bars, in whichever Base / Actual mode is selected.'},
