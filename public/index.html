@@ -5435,7 +5435,7 @@ function TopTeamRow({t, id, open, setOpen, onLoadTeam, badge, extraTag, extraAct
    Every release adds a dated entry here, newest first. */
 const CHANGELOG = [
   {date: 'August 5, 2026', items: [
-    {tag: 'Teams', text: 'Trending Teams now carries a Featured Teams section curated by PokePanion \u2014 hand-picked squads with references, visible to everyone and updated by the site. (Your personal saved teams still live in the VGC Companion\u2019s team library.)'},
+    {tag: 'Teams', text: 'Trending Teams is now fully curated by PokePanion \u2014 the page shows hand-picked squads with references, added, updated, and removed by the site. (Your personal saved teams still live in the VGC Companion\u2019s team library.)'},
     {tag: 'General', text: 'Added a site footer and an About & credits window: fan-project disclaimer, data credits, privacy note (this site collects nothing \u2014 all your data stays in your browser), and a contact address.'},
     {tag: 'General', text: 'All Pok\u00e9mon sprites and artwork are now served from PokePanion itself instead of an external image host \u2014 pages load faster, nothing depends on third-party servers, and the whole app works offline once cached.'},
     {tag: 'VGC', text: 'Speed tiers upgrades: column headers now label the Alignment and EVs editors; a new Stage dropdown on every row applies speed stages from \u22126 to +6 to the final Speed (shown in the bar, e.g. \u00b7 +2); and Tailwind Squad / Tailwind Reference buttons toggle Tailwind for each side\u2019s rows at once.'},
@@ -5517,6 +5517,7 @@ function TopTeamsPage({onLoadTeam}){
   const [userTeams, setUserTeams] = useState(() => lsArr('cc-user-teams-v1'));
   const [featured, setFeatured] = useState(null);
   const CURATE = !!(window.location && /[?#&]curate/.test((window.location.search || '') + (window.location.hash || '')));
+  const siteMode = !!(featured && featured.teams.length > 0);
   useEffect(() => {
     let live = true;
     fetch('trending.json', {cache: 'no-store'})
@@ -5562,15 +5563,15 @@ function TopTeamsPage({onLoadTeam}){
         <h1>Trending Teams</h1>
         <p className="sub">Proven Reg M-B archetypes assembled from tournament team lists (RK9 / Limitless events) and Showdown ranked ladder data, with full sets included — bundled as a July 2026 snapshot until the online version syncs live results. Tap a row for the complete builds, or load a team straight into Your Squad or the Reference side.</p>
       </div>
-      {TOP_TEAMS.map(t => (
+      {!siteMode && TOP_TEAMS.map(t => (
         <TopTeamRow key={'t' + t.rank} id={'t' + t.rank} t={t} open={open} setOpen={setOpen}
           onLoadTeam={onLoadTeam} badge={String(t.rank).padStart(2,'0')} extraTag={t.src}/>
       ))}
-      <div className="tt-section">
+      {!siteMode && <div className="tt-section">
         <h2 className="tt-section-title">Content Creator Teams</h2>
         <p className="sub">Teams featured in recent community videos — watch the breakdown, then load the build straight into the app.</p>
-      </div>
-      {CREATOR_TEAMS.map(t => (
+      </div>}
+      {!siteMode && CREATOR_TEAMS.map(t => (
         <TopTeamRow key={t.id} id={t.id} t={t} open={open} setOpen={setOpen}
           onLoadTeam={onLoadTeam} badge={'▶'} extraTag={t.creator}/>
       ))}
@@ -5588,7 +5589,7 @@ function TopTeamsPage({onLoadTeam}){
         )}
         {CURATE && <React.Fragment>
           <h2 className="tt-section-title">Curate Featured Teams</h2>
-          <p className="sub">Site-owner mode. Build the featured list here — title, PokéPaste, optional reference link. When it looks right, click Export site file and drop the downloaded trending.json into your site's public folder; every visitor will then see these as Featured Teams.</p>
+          <p className="sub">Site-owner mode. Build the featured list here — title, PokéPaste, optional reference link. When it looks right, click Export site file and drop the downloaded trending.json into your site's public folder. Once that file has teams, it becomes the whole page for visitors — the built-in Tournament and Creator lists disappear, so use Import bundled teams first if you want to keep any of them.</p>
         </React.Fragment>}
       </div>}
       {CURATE && <React.Fragment>
@@ -5606,6 +5607,17 @@ function TopTeamsPage({onLoadTeam}){
             {editingId ? 'Save changes' : '+ Add team'}
           </button>
           {editingId && <button className="btn" onClick={resetForm}>Cancel edit</button>}
+          <Tip text="Copies the app's built-in Tournament and Creator teams into your draft list below, so you can keep, edit, or delete each before exporting">
+            <button className="btn" onClick={() => {
+              setUserTeams(ts => {
+                const have = new Set(ts.map(t => t.name));
+                const inc = [];
+                TOP_TEAMS.forEach(t => { if(!have.has(t.name)) inc.push({id: 'u' + Date.now() + '-' + inc.length, name: t.name, paste: t.paste, url: t.url || '', tag: t.tag}); });
+                CREATOR_TEAMS.forEach(t => { if(!have.has(t.name)) inc.push({id: 'u' + Date.now() + '-' + inc.length, name: t.name, paste: t.paste, url: t.url || '', tag: t.tag}); });
+                return [...ts, ...inc];
+              });
+            }}>Import bundled teams</button>
+          </Tip>
           {userTeams.length > 0 && <Tip text="Site owners: downloads trending.json built from the teams below \u2014 put it in your site's public/ folder and every visitor will see them as Featured Teams (read-only)">
             <button className="btn" onClick={() => {
               const out = {updated: new Date().toISOString().slice(0, 10),
