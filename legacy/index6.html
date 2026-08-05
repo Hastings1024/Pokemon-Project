@@ -2845,10 +2845,9 @@ function openInPokepaste(team, title){
   document.body.appendChild(form); form.submit(); form.remove();
 }
 
-/* Render the squad's six cards to a PNG team sheet — a faithful 2×3 canvas copy
-   of the on-screen cards: art, name, types, chip stack, moves with type diamonds,
-   and the full stat rows with nature arrows and tier-colored bars. */
-const SHOT = {bg:'#0F1522', panel:'#18202F', panel2:'#1E2839', line:'#263349', ink:'#E8EDF7', muted:'#8A9CBB', gold:'#F0C24B', goldDim:'#9A7B2E', up:'#E5766B', down:'#5AA7F0'};
+/* Render the squad's six cards to a PNG "team sheet" — pure canvas, drawn from the
+   same data as the cards. Copies to the clipboard when allowed and downloads the file. */
+const SHOT = {bg:'#0F1522', panel:'#18202F', panel2:'#1E2839', line:'#263349', ink:'#E8EDF7', muted:'#8A9CBB', gold:'#F0C24B'};
 function shotRR(ctx, x, y, w, h, r){
   ctx.beginPath();
   if(ctx.roundRect){ ctx.roundRect(x, y, w, h, r); return; }
@@ -2868,15 +2867,7 @@ const shotImg = url => new Promise(res => {
   im.onload = () => res(im); im.onerror = () => res(null);
   im.src = url;
 });
-function shotChip(ctx, x, y, text, filled){
-  ctx.font = '600 11.5px system-ui, sans-serif';
-  const t = shotFit(ctx, text, 150), w = ctx.measureText(t).width + 16;
-  ctx.fillStyle = SHOT.panel2; shotRR(ctx, x, y, w, 20, 5); ctx.fill();
-  ctx.strokeStyle = SHOT.line; ctx.lineWidth = 1; shotRR(ctx, x, y, w, 20, 5); ctx.stroke();
-  ctx.fillStyle = filled ? SHOT.ink : SHOT.muted;
-  ctx.fillText(t, x + 8, y + 14);
-}
-async function makeSquadShot(squad, teamName, statMode){
+async function makeSquadShot(squad, teamName){
   const mons = squad.filter(Boolean).slice(0, 6);
   if(!mons.length) return false;
   const arts = await Promise.all(mons.map(async m => {
@@ -2884,99 +2875,87 @@ async function makeSquadShot(squad, teamName, statMode){
     if(!d) return null;
     return (await shotImg(m.shiny ? ART_SHINY(d.id) : ART(d.id))) || (await shotImg(SPRITE(d.id)));
   }));
-  const CW = 452, CH = 306, GAP = 14, M = 14;
-  const cols = Math.min(2, mons.length), rows = Math.ceil(mons.length / 2);
+  const CW = 452, CH = 296, GAP = 18, M = 24, HEAD = 86;
+  const cols = Math.min(3, mons.length), rows = Math.ceil(mons.length / 3);
   const W = M * 2 + CW * cols + GAP * (cols - 1);
-  const H = M * 2 + CH * rows + GAP * (rows - 1);
+  const H = M + HEAD + rows * CH + (rows - 1) * GAP + M;
   const canvas = document.createElement('canvas');
   canvas.width = W * 2; canvas.height = H * 2;
   const ctx = canvas.getContext('2d');
   ctx.scale(2, 2);
-  ctx.textBaseline = 'alphabetic';
   ctx.fillStyle = SHOT.bg; ctx.fillRect(0, 0, W, H);
-  mons.forEach((mon, idx) => {
-    const view = findMon(mon.species);
-    const cx = M + (idx % 2) * (CW + GAP), cy = M + Math.floor(idx / 2) * (CH + GAP);
-    /* card shell — gold "mine" border like on-screen */
-    ctx.fillStyle = SHOT.panel;
-    shotRR(ctx, cx, cy, CW, CH, 12); ctx.fill();
-    ctx.strokeStyle = SHOT.goldDim; ctx.lineWidth = 1.5;
-    shotRR(ctx, cx, cy, CW, CH, 12); ctx.stroke();
+  /* header */
+  ctx.fillStyle = SHOT.gold;
+  ctx.font = "800 30px 'Chakra Petch', system-ui, sans-serif";
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText(shotFit(ctx, (teamName || 'My Squad').toUpperCase(), W - 420), M, M + 40);
+  ctx.fillStyle = SHOT.muted;
+  ctx.font = "600 13px 'Chakra Petch', system-ui, sans-serif";
+  const sub = 'POKEPANION · REG M-B · ' + new Date().toLocaleDateString(undefined, {month:'short', day:'numeric', year:'numeric'}).toUpperCase();
+  ctx.fillText(sub, W - M - ctx.measureText(sub).width, M + 40);
+  ctx.strokeStyle = SHOT.line; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(M, M + 58); ctx.lineTo(W - M, M + 58); ctx.stroke();
+  /* cards */
+  mons.forEach((mon, i) => {
+    const d = findMon(mon.species);
+    const cx = M + (i % 3) * (CW + GAP), cy = M + HEAD + Math.floor(i / 3) * (CH + GAP);
+    ctx.fillStyle = SHOT.panel; ctx.strokeStyle = SHOT.line; ctx.lineWidth = 1.5;
+    shotRR(ctx, cx, cy, CW, CH, 12); ctx.fill(); ctx.stroke();
     /* art */
-    const art = arts[idx];
+    const art = arts[i];
     if(art){
-      ctx.save(); shotRR(ctx, cx + 14, cy + 14, 106, 106, 10); ctx.clip();
-      ctx.drawImage(art, cx + 14, cy + 14, 106, 106); ctx.restore();
+      ctx.save(); shotRR(ctx, cx + 14, cy + 14, 108, 108, 10); ctx.clip();
+      ctx.drawImage(art, cx + 14, cy + 14, 108, 108); ctx.restore();
     } else {
-      ctx.fillStyle = SHOT.panel2; shotRR(ctx, cx + 14, cy + 14, 106, 106, 10); ctx.fill();
+      ctx.fillStyle = SHOT.panel2; shotRR(ctx, cx + 14, cy + 14, 108, 108, 10); ctx.fill();
     }
-    const tx = cx + 134, movesX = cx + CW - 168;
-    /* name + shiny */
+    const tx = cx + 136;
+    /* name (+shiny star) */
     ctx.fillStyle = SHOT.ink;
-    ctx.font = "700 16px 'Chakra Petch', system-ui, sans-serif";
-    const nm0 = mon.nickname ? mon.nickname + ' (' + mon.species + ')' : mon.species;
-    const nm = shotFit(ctx, nm0, movesX - tx - 8 - (mon.shiny ? 18 : 0));
-    ctx.fillText(nm, tx, cy + 32);
+    ctx.font = "700 19px 'Chakra Petch', system-ui, sans-serif";
+    const nm = shotFit(ctx, mon.nickname ? mon.nickname + ' (' + mon.species + ')' : mon.species, CW - 150 - (mon.shiny ? 22 : 0));
+    ctx.fillText(nm, tx, cy + 34);
     if(mon.shiny){
-      const w0 = ctx.measureText(nm).width;
-      ctx.fillStyle = SHOT.gold; ctx.font = '13px system-ui';
-      ctx.fillText('✦', tx + w0 + 7, cy + 31);
+      const nameW = ctx.measureText(nm).width;
+      ctx.fillStyle = SHOT.gold; ctx.font = '15px system-ui';
+      ctx.fillText('✦', tx + nameW + 8, cy + 33);
     }
     /* type pills */
     let px = tx;
-    (view ? view.types : []).forEach(t => {
-      ctx.font = '700 9.5px system-ui, sans-serif';
-      const label = t.toUpperCase(), w = ctx.measureText(label).width + 14;
-      ctx.fillStyle = TYPE_COLORS[t]; shotRR(ctx, px, cy + 41, w, 17, 4); ctx.fill();
-      ctx.fillStyle = '#FFFFFF'; ctx.fillText(label, px + 7, cy + 53);
-      px += w + 5;
+    (d ? d.types : []).forEach(t => {
+      ctx.font = '700 10px system-ui, sans-serif';
+      const label = t.toUpperCase(), w = ctx.measureText(label).width + 16;
+      ctx.fillStyle = TYPE_COLORS[t]; shotRR(ctx, px, cy + 44, w, 18, 5); ctx.fill();
+      ctx.fillStyle = '#FFFFFF'; ctx.fillText(label, px + 8, cy + 57);
+      px += w + 6;
     });
-    /* chip stack: ability / item (stone lock like the card) / nature */
-    const stone = view && MEGA_STONES[view.slug];
-    shotChip(ctx, tx, cy + 66,  mon.ability || 'No Ability', !!mon.ability);
-    shotChip(ctx, tx, cy + 90,  stone ? (mon.item || stone) : (mon.item || 'No Item'), !!(mon.item || stone));
-    shotChip(ctx, tx, cy + 114, mon.nature || 'No Nature', !!mon.nature);
-    /* moves with type diamonds */
+    /* ability / item / nature chips */
+    const chips = [mon.ability || 'No Ability', mon.item || 'No Item', mon.nature ? mon.nature + ' Nature' : 'No Nature'];
+    let chy = cy + 74;
+    chips.forEach(c => {
+      ctx.font = '600 12px system-ui, sans-serif';
+      const t = shotFit(ctx, c, CW - 150 - 18), w = ctx.measureText(t).width + 18;
+      ctx.fillStyle = SHOT.panel2; shotRR(ctx, tx, chy, w, 21, 6); ctx.fill();
+      ctx.strokeStyle = SHOT.line; ctx.lineWidth = 1; shotRR(ctx, tx, chy, w, 21, 6); ctx.stroke();
+      ctx.fillStyle = SHOT.ink; ctx.fillText(t, tx + 9, chy + 15);
+      chy += 26;
+    });
+    /* divider + moves */
+    ctx.strokeStyle = SHOT.line; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(cx + 14, cy + 166); ctx.lineTo(cx + CW - 14, cy + 166); ctx.stroke();
     for(let mi = 0; mi < 4; mi++){
       const mv = (mon.moves || [])[mi];
-      const my = cy + 34 + mi * 28;
+      const my = cy + 190 + mi * 26;
       const md = mv ? MOVE_BY_NAME[mv] : null;
+      /* diamond */
       ctx.save();
-      ctx.translate(movesX + 7, my - 4); ctx.rotate(Math.PI / 4);
+      ctx.translate(cx + 26, my - 5); ctx.rotate(Math.PI / 4);
       ctx.fillStyle = mv ? (md ? TYPE_COLORS[md.type] : SHOT.muted) : SHOT.panel2;
-      ctx.fillRect(-4.5, -4.5, 9, 9);
+      ctx.fillRect(-5, -5, 10, 10);
       ctx.restore();
       ctx.fillStyle = mv ? SHOT.ink : SHOT.muted;
-      ctx.font = '600 13px system-ui, sans-serif';
-      ctx.fillText(mv ? shotFit(ctx, mv, 148) : '—', movesX + 20, my);
-    }
-    /* stat rows — same math as the on-screen card */
-    const nmod = (mon.nature && NATURE_MODS[mon.nature]) || {};
-    const vals = view ? (statMode === 'actual' ? finalStats(view, mon) : view.stats) : [0,0,0,0,0,0];
-    const scale = statMode === 'actual' ? 2.6 : 2;
-    const sy0 = cy + 152, step = 24;
-    const trackX = cx + 128, trackW = CW - 128 - 18;
-    for(let i = 0; i < 6; i++){
-      const key = STAT_KEYS[i], v = vals[i], ry = sy0 + i * step;
-      if(nmod.up === key || nmod.down === key){
-        ctx.fillStyle = nmod.up === key ? SHOT.up : SHOT.down;
-        ctx.font = '9px system-ui';
-        ctx.fillText(nmod.up === key ? '▲' : '▼', cx + 16, ry);
-      }
-      ctx.fillStyle = SHOT.muted;
-      ctx.font = "700 9.5px 'Chakra Petch', system-ui, sans-serif";
-      ctx.fillText(key.toUpperCase(), cx + 30, ry);
-      ctx.fillStyle = SHOT.ink;
-      ctx.font = '700 12.5px system-ui, sans-serif';
-      const vs = String(v);
-      ctx.fillText(vs, cx + 118 - ctx.measureText(vs).width, ry);
-      ctx.fillStyle = SHOT.panel2;
-      shotRR(ctx, trackX, ry - 8, trackW, 5, 2.5); ctx.fill();
-      const frac = Math.min(100, v / scale) / 100;
-      if(frac > 0){
-        ctx.fillStyle = TIER_COLORS[statTier(statMode === 'actual' ? Math.round(v / 1.35) : v)];
-        shotRR(ctx, trackX, ry - 8, Math.max(4, trackW * frac), 5, 2.5); ctx.fill();
-      }
+      ctx.font = '600 14.5px system-ui, sans-serif';
+      ctx.fillText(mv ? shotFit(ctx, mv, CW - 70) : '—', cx + 44, my);
     }
   });
   /* export: clipboard when allowed, always download */
@@ -2985,7 +2964,7 @@ async function makeSquadShot(squad, teamName, statMode){
   try{ await navigator.clipboard.write([new window.ClipboardItem({'image/png': blob})]); }catch(_){}
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'pokepanion_output.png';
+  a.download = ((teamName || 'squad').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '-') || 'squad') + '-team.png';
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 4000);
   return true;
@@ -4958,7 +4937,7 @@ function VgcPage({squad, setSquad, refs, setRefs}){
     if(shotBusy) return;
     setShotBusy(true);
     try{
-      const ok = await makeSquadShot(squad, teamName.trim(), statMode);
+      const ok = await makeSquadShot(squad, teamName.trim());
       if(ok){ setShotDone(true); setTimeout(() => setShotDone(false), 1600); }
     }catch(_){}
     setShotBusy(false);
@@ -5373,7 +5352,6 @@ function TopTeamRow({t, id, open, setOpen, onLoadTeam, badge, extraTag, extraAct
    Every release adds a dated entry here, newest first. */
 const CHANGELOG = [
   {date: 'August 5, 2026', items: [
-    {tag: 'VGC', text: 'Team-sheet screenshots redesigned to mirror the on-screen cards exactly \u2014 a 2\u00d73 grid of full cards with artwork, type pills, ability / item / nature chips, moves with type diamonds, and the complete stat rows including nature arrows and tier-colored bars, in whichever Base / Actual mode is selected.'},
     {tag: 'Fixes', text: 'Fixed the squad and reference columns falling out of alignment \u2014 the squad toolbar could wrap to a second line and push its cards down. The Screenshot button is now a compact camera icon and the team-name field slightly narrower, keeping both columns level.'},
     {tag: 'Data', text: 'New live data source: the Competitive Pok\u00e9dex now pulls in-game ranked ladder statistics from Pokemon Champions Battle Data (championsbattledata.com) \u2014 top moves, items, abilities, stat alignments, stat point spreads, and common teammates from the game\u2019s own ranked seasons, with a Doubles / Singles toggle. Fetched live per Pok\u00e9mon, cached for 12 hours, and shown alongside the baked Showdown ladder tables so you can compare the two populations. Requires an internet connection; everything else remains fully offline.'},
     {tag: 'General', text: 'The app has a new name: PokePanion. Same companion, fresh banner \u2014 you\u2019ll see it across the header, shared pastes, and team-sheet screenshots.'}
