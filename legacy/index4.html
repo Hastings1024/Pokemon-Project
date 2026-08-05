@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PokePanion — VGC</title>
+<title>Champions Companion — VGC</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
@@ -150,17 +150,6 @@ table.moves td{padding:6px 8px;border-bottom:1px solid #1C2637}
 .ld-pct{position:relative;z-index:1;font-family:var(--disp);font-size:10.5px;font-weight:700;color:var(--gold);flex:none}
 .ld-click{cursor:pointer}
 .ld-click:hover .ld-fill{background:#24375A}
-.cbd-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.cbd-fmts{display:flex;gap:4px}
-.cbd-fmt{font-family:var(--disp);font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:5px;border:1px solid var(--line);background:var(--panel2);color:var(--muted);cursor:pointer}
-.cbd-fmt.on{color:var(--gold);border-color:var(--gold-dim)}
-.cbd-note{font-size:11.5px;color:var(--muted);padding:4px 0 6px;line-height:1.5}
-.cbd-mates{margin-top:8px}
-.cbd-mate{display:inline-block;font-size:11.5px;font-weight:600;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:3px 8px;margin:0 5px 5px 0;cursor:pointer}
-.cbd-mate:hover{border-color:var(--gold-dim);color:var(--gold)}
-.cbd-mate.off{cursor:default;color:var(--muted)}
-.cbd-credit{display:block;margin-top:6px;font-size:10.5px;color:var(--muted);text-decoration:none}
-.cbd-credit:hover{color:var(--gold)}
 [data-theme="light"] .ld-click:hover .ld-fill{background:#CBD9EE}
 .tm-row{display:flex;align-items:center;gap:9px;padding:5px 6px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:6px}
 .tm-row:hover{background:var(--panel2)}
@@ -285,9 +274,6 @@ table.moves td{padding:6px 8px;border-bottom:1px solid #1C2637}
 .sq-name{font-family:var(--disp);font-weight:700;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sq-icons{position:absolute;top:8px;right:8px;display:flex;flex-direction:column;gap:3px;z-index:2}
 .bld-icons{margin-left:auto;display:flex;flex-direction:column;gap:4px;align-items:center;align-self:flex-start}
-.bld-ico{width:32px;height:32px;background:var(--panel2);border:1px solid var(--line);color:var(--muted);border-radius:6px;font-size:13px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer}
-.bld-ico.gold{color:var(--gold);border-color:var(--gold-dim)}
-.bld-ico:hover{border-color:var(--gold-dim)}
 .block-tip{display:block}
 .icon-btn{width:22px;height:22px;background:var(--panel2);border:1px solid var(--line);color:var(--muted);border-radius:5px;font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center}
 .icon-btn:hover{color:var(--ink);border-color:#39507a}
@@ -495,16 +481,6 @@ a.tt-watch{text-decoration:none;display:inline-flex;align-items:center;gap:5px;c
 .ut-paste{min-height:120px;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;line-height:1.5}
 .ut-form-btns{display:flex;gap:8px}
 .tt-empty{color:var(--muted);font-size:13.5px;padding:6px 2px}
-.upd-block{margin-bottom:26px}
-.upd-date{font-family:var(--disp);font-size:14px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);border-bottom:1px solid var(--line);padding-bottom:6px;margin-bottom:10px}
-.upd-item{display:flex;align-items:flex-start;gap:10px;padding:6px 0}
-.upd-tag{flex:none;font-family:var(--disp);font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:5px;border:1px solid var(--line);color:var(--muted);margin-top:1px;min-width:64px;text-align:center}
-.upd-data{color:#6FA8FF;border-color:#2C4A7A}
-.upd-pokdex,.upd-pokédex{color:#8BD48B;border-color:#2E5B33}
-.upd-teams{color:#E0A34D;border-color:#6B4E1E}
-.upd-vgc{color:#C79BF2;border-color:#4E3573}
-.upd-fixes{color:#E06858;border-color:#6B2A24}
-.upd-text{font-size:13px;line-height:1.6;color:var(--ink)}
 .freq-toggle{margin-top:8px;width:100%;justify-content:center;display:inline-flex}
 .theme-btn{font-size:16px}
 .sq-chip-click{cursor:pointer}
@@ -2830,144 +2806,6 @@ function exportPaste(team){
   }).join('\n\n');
 }
 
-/* Open a team on pokepast.es in a new tab — POSTs the paste to their create
-   endpoint, which redirects straight to the finished paste page. */
-function openInPokepaste(team, title){
-  const paste = exportPaste(team);
-  if(!paste) return;
-  const form = document.createElement('form');
-  form.method = 'POST'; form.action = 'https://pokepast.es/create'; form.target = '_blank';
-  const add = (n, v) => { const i = document.createElement('input'); i.type = 'hidden'; i.name = n; i.value = v; form.appendChild(i); };
-  add('paste', paste); add('title', title || 'PokePanion squad');
-  add('author', ''); add('notes', 'Shared from PokePanion · Pokémon Champions Reg M-B');
-  document.body.appendChild(form); form.submit(); form.remove();
-}
-
-/* Render the squad's six cards to a PNG "team sheet" — pure canvas, drawn from the
-   same data as the cards. Copies to the clipboard when allowed and downloads the file. */
-const SHOT = {bg:'#0F1522', panel:'#18202F', panel2:'#1E2839', line:'#263349', ink:'#E8EDF7', muted:'#8A9CBB', gold:'#F0C24B'};
-function shotRR(ctx, x, y, w, h, r){
-  ctx.beginPath();
-  if(ctx.roundRect){ ctx.roundRect(x, y, w, h, r); return; }
-  ctx.moveTo(x + r, y);
-  ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
-  ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
-}
-function shotFit(ctx, text, maxW){
-  if(ctx.measureText(text).width <= maxW) return text;
-  let t = text;
-  while(t.length > 1 && ctx.measureText(t + '…').width > maxW) t = t.slice(0, -1);
-  return t + '…';
-}
-const shotImg = url => new Promise(res => {
-  const im = new window.Image();
-  im.crossOrigin = 'anonymous';
-  im.onload = () => res(im); im.onerror = () => res(null);
-  im.src = url;
-});
-async function makeSquadShot(squad, teamName){
-  const mons = squad.filter(Boolean).slice(0, 6);
-  if(!mons.length) return false;
-  const arts = await Promise.all(mons.map(async m => {
-    const d = findMon(m.species);
-    if(!d) return null;
-    return (await shotImg(m.shiny ? ART_SHINY(d.id) : ART(d.id))) || (await shotImg(SPRITE(d.id)));
-  }));
-  const CW = 452, CH = 296, GAP = 18, M = 24, HEAD = 86;
-  const cols = Math.min(3, mons.length), rows = Math.ceil(mons.length / 3);
-  const W = M * 2 + CW * cols + GAP * (cols - 1);
-  const H = M + HEAD + rows * CH + (rows - 1) * GAP + M;
-  const canvas = document.createElement('canvas');
-  canvas.width = W * 2; canvas.height = H * 2;
-  const ctx = canvas.getContext('2d');
-  ctx.scale(2, 2);
-  ctx.fillStyle = SHOT.bg; ctx.fillRect(0, 0, W, H);
-  /* header */
-  ctx.fillStyle = SHOT.gold;
-  ctx.font = "800 30px 'Chakra Petch', system-ui, sans-serif";
-  ctx.textBaseline = 'alphabetic';
-  ctx.fillText(shotFit(ctx, (teamName || 'My Squad').toUpperCase(), W - 420), M, M + 40);
-  ctx.fillStyle = SHOT.muted;
-  ctx.font = "600 13px 'Chakra Petch', system-ui, sans-serif";
-  const sub = 'POKEPANION · REG M-B · ' + new Date().toLocaleDateString(undefined, {month:'short', day:'numeric', year:'numeric'}).toUpperCase();
-  ctx.fillText(sub, W - M - ctx.measureText(sub).width, M + 40);
-  ctx.strokeStyle = SHOT.line; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(M, M + 58); ctx.lineTo(W - M, M + 58); ctx.stroke();
-  /* cards */
-  mons.forEach((mon, i) => {
-    const d = findMon(mon.species);
-    const cx = M + (i % 3) * (CW + GAP), cy = M + HEAD + Math.floor(i / 3) * (CH + GAP);
-    ctx.fillStyle = SHOT.panel; ctx.strokeStyle = SHOT.line; ctx.lineWidth = 1.5;
-    shotRR(ctx, cx, cy, CW, CH, 12); ctx.fill(); ctx.stroke();
-    /* art */
-    const art = arts[i];
-    if(art){
-      ctx.save(); shotRR(ctx, cx + 14, cy + 14, 108, 108, 10); ctx.clip();
-      ctx.drawImage(art, cx + 14, cy + 14, 108, 108); ctx.restore();
-    } else {
-      ctx.fillStyle = SHOT.panel2; shotRR(ctx, cx + 14, cy + 14, 108, 108, 10); ctx.fill();
-    }
-    const tx = cx + 136;
-    /* name (+shiny star) */
-    ctx.fillStyle = SHOT.ink;
-    ctx.font = "700 19px 'Chakra Petch', system-ui, sans-serif";
-    const nm = shotFit(ctx, mon.nickname ? mon.nickname + ' (' + mon.species + ')' : mon.species, CW - 150 - (mon.shiny ? 22 : 0));
-    ctx.fillText(nm, tx, cy + 34);
-    if(mon.shiny){
-      const nameW = ctx.measureText(nm).width;
-      ctx.fillStyle = SHOT.gold; ctx.font = '15px system-ui';
-      ctx.fillText('✦', tx + nameW + 8, cy + 33);
-    }
-    /* type pills */
-    let px = tx;
-    (d ? d.types : []).forEach(t => {
-      ctx.font = '700 10px system-ui, sans-serif';
-      const label = t.toUpperCase(), w = ctx.measureText(label).width + 16;
-      ctx.fillStyle = TYPE_COLORS[t]; shotRR(ctx, px, cy + 44, w, 18, 5); ctx.fill();
-      ctx.fillStyle = '#FFFFFF'; ctx.fillText(label, px + 8, cy + 57);
-      px += w + 6;
-    });
-    /* ability / item / nature chips */
-    const chips = [mon.ability || 'No Ability', mon.item || 'No Item', mon.nature ? mon.nature + ' Nature' : 'No Nature'];
-    let chy = cy + 74;
-    chips.forEach(c => {
-      ctx.font = '600 12px system-ui, sans-serif';
-      const t = shotFit(ctx, c, CW - 150 - 18), w = ctx.measureText(t).width + 18;
-      ctx.fillStyle = SHOT.panel2; shotRR(ctx, tx, chy, w, 21, 6); ctx.fill();
-      ctx.strokeStyle = SHOT.line; ctx.lineWidth = 1; shotRR(ctx, tx, chy, w, 21, 6); ctx.stroke();
-      ctx.fillStyle = SHOT.ink; ctx.fillText(t, tx + 9, chy + 15);
-      chy += 26;
-    });
-    /* divider + moves */
-    ctx.strokeStyle = SHOT.line; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(cx + 14, cy + 166); ctx.lineTo(cx + CW - 14, cy + 166); ctx.stroke();
-    for(let mi = 0; mi < 4; mi++){
-      const mv = (mon.moves || [])[mi];
-      const my = cy + 190 + mi * 26;
-      const md = mv ? MOVE_BY_NAME[mv] : null;
-      /* diamond */
-      ctx.save();
-      ctx.translate(cx + 26, my - 5); ctx.rotate(Math.PI / 4);
-      ctx.fillStyle = mv ? (md ? TYPE_COLORS[md.type] : SHOT.muted) : SHOT.panel2;
-      ctx.fillRect(-5, -5, 10, 10);
-      ctx.restore();
-      ctx.fillStyle = mv ? SHOT.ink : SHOT.muted;
-      ctx.font = '600 14.5px system-ui, sans-serif';
-      ctx.fillText(mv ? shotFit(ctx, mv, CW - 70) : '—', cx + 44, my);
-    }
-  });
-  /* export: clipboard when allowed, always download */
-  const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
-  if(!blob) return false;
-  try{ await navigator.clipboard.write([new window.ClipboardItem({'image/png': blob})]); }catch(_){}
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = ((teamName || 'squad').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '-') || 'squad') + '-team.png';
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-  return true;
-}
-
 /* Lightweight session persistence — all user data lives in this browser via localStorage
    (no account needed). Falls back to defaults where storage is unavailable. */
 const lsGet = (key, fallback) => {
@@ -3164,114 +3002,6 @@ function teammateIntel(name){
   return {withMe, mates};
 }
 
-/* ---- Live in-game ranked data · championsbattledata.com ----
-   Fan-made explorer of the game's own ranked ladder (CORS-enabled API, credit required).
-   Fetched on demand per Pokémon + format, cached for 12h, silent when offline. */
-const CBD_URL = 'https://championsbattledata.com';
-const CBD_CACHE_KEY = 'cc-cbd-v1';
-const CBD_TTL = 12 * 60 * 60 * 1000;
-function cbdId(mon){
-  const base = mon.name.toLowerCase().replace(/[^a-z0-9]/g, '');
-  return {floette: 'floetteeternal'}[base] || base;
-}
-function cbdDistill(rows){
-  const by = cat => rows.filter(r => r.category === cat);
-  const pct = r => (r.percentage_value == null ? null : r.percentage_value);
-  return {
-    m: by('move').slice(0, 6).map(r => [r.name, pct(r)]),
-    i: by('held_item').slice(0, 6).map(r => [r.name, pct(r)]),
-    a: by('ability').slice(0, 3).map(r => [r.name, pct(r)]),
-    n: by('stat_alignment').slice(0, 3).map(r => [r.name + (r.stat_up ? ' (+' + r.stat_up + ' −' + r.stat_down + ')' : ''), pct(r)]),
-    s: by('stat_points').slice(0, 4).map(r => [[r.hp_points, r.attack_points, r.defense_points, r.sp_atk_points, r.sp_def_points, r.speed_points].map(v => v === '' ? 0 : v).join('/'), pct(r)]),
-    t: by('teammate').slice(0, 6).map(r => r.name)
-  };
-}
-async function cbdFetch(id, format){
-  const res = await fetch(CBD_URL + '/api/battle/' + format + '/' + id);
-  if(!res.ok) throw new Error('http ' + res.status);
-  const json = await res.json();
-  const rows = json.rows && json.rows.length ? json.rows
-    : (json.daily && json.daily.length ? json.daily[0].rows : []);
-  if(!rows.length) throw new Error('empty');
-  return {season: json.season || '', data: cbdDistill(rows)};
-}
-function CbdSection({mon, onJump}){
-  const [fmt, setFmt] = useState('Doubles');
-  const [state, setState] = useState({status: 'loading'});
-  useEffect(() => {
-    let live = true;
-    const key = fmt + ':' + mon.slug;
-    let cache = {};
-    try{ cache = JSON.parse(localStorage.getItem(CBD_CACHE_KEY) || '{}'); }catch(_){}
-    const hit = cache[key];
-    if(hit && Date.now() - hit.at < CBD_TTL){
-      setState({status: 'ok', season: hit.season, data: hit.data});
-      return;
-    }
-    setState({status: 'loading'});
-    (async () => {
-      try{
-        let out;
-        try{ out = await cbdFetch(cbdId(mon), fmt); }
-        catch(e){
-          const baseSlug = mon.slug.replace(/-mega(-[a-z])?$/, '');
-          if(baseSlug === mon.slug) throw e;
-          const baseMon = POKEDEX.find(x => x.slug === baseSlug);
-          if(!baseMon) throw e;
-          out = await cbdFetch(cbdId(baseMon), fmt);
-          out.viaBase = baseMon.name;
-        }
-        if(!live) return;
-        try{
-          cache[key] = {at: Date.now(), season: out.season, data: out.data, viaBase: out.viaBase};
-          localStorage.setItem(CBD_CACHE_KEY, JSON.stringify(cache));
-        }catch(_){}
-        setState({status: 'ok', season: out.season, data: out.data, viaBase: out.viaBase});
-      }catch(_){
-        if(live) setState({status: 'err'});
-      }
-    })();
-    return () => { live = false; };
-  }, [mon.slug, fmt]);
-  const d = state.data;
-  return (
-    <div className="dd-sec cbd">
-      <div className="dd-h cbd-head">
-        <span>In-game ranked ladder{state.season ? ' · Season ' + state.season : ''}</span>
-        <span className="cbd-fmts">
-          {['Doubles', 'Singles'].map(f => (
-            <button key={f} type="button" className={'cbd-fmt' + (fmt === f ? ' on' : '')} onClick={() => setFmt(f)}>{f}</button>
-          ))}
-        </span>
-      </div>
-      {state.status === 'loading' && <div className="cbd-note">Loading live battle data…</div>}
-      {state.status === 'err' && <div className="cbd-note">Live data unavailable — this section needs an internet connection (or this Pokémon has no ranked data yet).</div>}
-      {state.status === 'ok' && d && (
-        <React.Fragment>
-          {state.viaBase && <div className="cbd-note">Shown under {state.viaBase} — the in-game ladder counts Mega usage on the base form (see its Mega Stone below).</div>}
-          <LadderSection title={'Top moves · in-game ' + fmt} rows={d.m}/>
-          <LadderSection title={'Top items · in-game ' + fmt} rows={d.i}/>
-          {(d.a.length > 1) && <LadderSection title="Abilities" rows={d.a}/>}
-          <LadderSection title="Stat alignments" rows={d.n}/>
-          <LadderSection title="Stat point spreads (HP/Atk/Def/SpA/SpD/Spe)" rows={d.s}/>
-          {d.t.length > 0 && (
-            <div className="cbd-mates">
-              <div className="dd-hn" style={{marginBottom: 4}}>Common teammates · in-game {fmt}</div>
-              {d.t.map(nm => {
-                const dm = findMon(nm) || findMon(nm.replace(/ (Male|Female)$/, ''));
-                return dm
-                  ? <button key={nm} type="button" className="cbd-mate" onClick={() => onJump(dm)}>{dm.name}</button>
-                  : <span key={nm} className="cbd-mate off">{nm}</span>;
-              })}
-            </div>
-          )}
-        </React.Fragment>
-      )}
-      <a className="cbd-credit" href="https://championsbattledata.com/" target="_blank" rel="noopener noreferrer">Data: Pokemon Champions Battle Data — championsbattledata.com</a>
-    </div>
-  );
-}
-
 function LadderBar({name, pct, onClick}){
   return (
     <div className={'ld-row' + (onClick ? ' ld-click' : '')} onClick={onClick} role={onClick ? 'button' : undefined}>
@@ -3329,7 +3059,6 @@ function CompIntel({mon, onJump}){
           <LadderSection title="Common spreads (Nature · HP/Atk/Def/SpA/SpD/Spe)" rows={d.s}/>
         </React.Fragment>
       ); })()}
-      <CbdSection mon={mon} onJump={onJump}/>
       <div className="dd-sec">
         <div className="dd-h">{LADDER.detail[mon.slug] ? 'Teammates in your app data' : 'Best teammates'} <span className="dd-hn">from {withMe.length} known team{withMe.length === 1 ? '' : 's'}</span></div>
         {mates.map((m, i) => {
@@ -4367,15 +4096,6 @@ function BuilderModal({initial, slot, onSave, onClose, onCycle}){
   };
   /* Tab / Shift+Tab anywhere in the editor: save this mon and open the next /
      previous teammate on the same side */
-  const bldIsMega = dexMon ? /-mega(-[a-z])?$/.test(dexMon.slug) : false;
-  const bldBase = dexMon ? (bldIsMega ? (POKEDEX.find(x => x.slug === dexMon.slug.replace(/-mega(-[a-z])?$/, '')) || dexMon) : dexMon) : null;
-  const bldMegas = bldBase ? POKEDEX.filter(x => x.slug === bldBase.slug + '-mega' || x.slug.startsWith(bldBase.slug + '-mega-')) : [];
-  const bldCycleMega = () => {
-    const cycle = [bldBase, ...bldMegas];
-    const cur = cycle.findIndex(f => f.id === dexMon.id);
-    const next = cycle[(cur + 1) % cycle.length];
-    if(next.id !== dexMon.id) setQ(next.name);
-  };
   const handleTab = e => {
     if(e.key !== 'Tab' || !onCycle) return;
     e.preventDefault();
@@ -4399,10 +4119,7 @@ function BuilderModal({initial, slot, onSave, onClose, onCycle}){
           <div className="bld-icons">
             <button className="close-x" onClick={onClose} aria-label="Close">✕</button>
             {dexMon && <Tip text="Toggle shiny artwork">
-              <button type="button" className={'bld-ico' + (shiny ? ' gold' : '')} onClick={() => setShiny(s => !s)} aria-label="Shiny"><ShinyIcon/></button>
-            </Tip>}
-            {dexMon && bldMegas.length > 0 && <Tip text={bldIsMega ? 'Showing ' + dexMon.name + ' — click to cycle back' : (bldMegas.length > 1 ? 'Mega Evolve (cycles forms)' : 'Mega Evolve')}>
-              <button type="button" className={'bld-ico' + (bldIsMega ? ' gold' : '')} onClick={bldCycleMega} aria-label="Mega form"><MegaIcon/></button>
+              <button type="button" className={'icon-btn' + (shiny ? ' gold' : '')} onClick={() => setShiny(s => !s)} aria-label="Shiny"><ShinyIcon/></button>
             </Tip>}
           </div>
         </div>
@@ -4531,7 +4248,13 @@ function IOModal({title, team, isSquad, onLoad, onClose}){
     try{ await navigator.clipboard.writeText(current); setMsg({t:'Copied to clipboard.', k:'ok'}); }
     catch{ setMsg({t:'Clipboard blocked — select the text and copy manually.', k:'err'}); }
   };
-  const toPokepaste = () => openInPokepaste(team, 'PokePanion ' + (isSquad ? 'squad' : 'reference'));
+  const toPokepaste = () => {
+    const form = document.createElement('form');
+    form.method = 'POST'; form.action = 'https://pokepast.es/create'; form.target = '_blank';
+    const add = (n,v) => { const i = document.createElement('input'); i.type = 'hidden'; i.name = n; i.value = v; form.appendChild(i); };
+    add('paste', current); add('title', 'Champions Companion ' + (isSquad ? 'squad' : 'reference')); add('author',''); add('notes','');
+    document.body.appendChild(form); form.submit(); form.remove();
+  };
   const load = () => {
     const parsed = parsePaste(text);
     if(!parsed.length){ setMsg({t:'Nothing to import — paste a team in PokéPaste / Showdown format.', k:'err'}); return; }
@@ -4921,17 +4644,6 @@ function VgcPage({squad, setSquad, refs, setRefs}){
   const [oppLog, setOppLog] = useState(() => oppStore.read());
   const persistLog = list => { setOppLog(list); oppStore.write(list); };
   const [loggedFlash, setLoggedFlash] = useState(false);
-  const [shotBusy, setShotBusy] = useState(false);
-  const [shotDone, setShotDone] = useState(false);
-  const takeShot = async () => {
-    if(shotBusy) return;
-    setShotBusy(true);
-    try{
-      const ok = await makeSquadShot(squad, teamName.trim());
-      if(ok){ setShotDone(true); setTimeout(() => setShotDone(false), 1600); }
-    }catch(_){}
-    setShotBusy(false);
-  };
   const toggleBrought = i => setMarks(m => {
     const c = m[i] || {};
     const on = !c.brought;
@@ -5077,10 +4789,6 @@ function VgcPage({squad, setSquad, refs, setRefs}){
                 <button className="btn" onClick={deleteTeam}>Delete</button>
               </Tip>}
           </React.Fragment>}
-          {side === 'squad' && <Tip text="Save these six cards as a PNG team sheet — downloads the image and copies it to your clipboard when the browser allows">
-            <button className="btn" onClick={takeShot} disabled={filled === 0 || shotBusy}
-              style={filled === 0 ? {opacity:.5} : null}>{shotDone ? 'Saved ✓' : (shotBusy ? 'Rendering…' : 'Screenshot')}</button>
-          </Tip>}
           {side === 'ref' && <button className={'btn' + (loggedFlash ? '' : ' primary')} onClick={logOpponent}
             disabled={filled === 0} style={filled === 0 ? {opacity:.5} : null}>
             {loggedFlash ? 'Logged ✓' : 'Log opponent'}
@@ -5336,56 +5044,6 @@ function TopTeamRow({t, id, open, setOpen, onLoadTeam, badge, extraTag, extraAct
   );
 }
 
-/* ---- Updates / changelog ----
-   Every release adds a dated entry here, newest first. */
-const CHANGELOG = [
-  {date: 'August 5, 2026', items: [
-    {tag: 'Data', text: 'New live data source: the Competitive Pok\u00e9dex now pulls in-game ranked ladder statistics from Pokemon Champions Battle Data (championsbattledata.com) \u2014 top moves, items, abilities, stat alignments, stat point spreads, and common teammates from the game\u2019s own ranked seasons, with a Doubles / Singles toggle. Fetched live per Pok\u00e9mon, cached for 12 hours, and shown alongside the baked Showdown ladder tables so you can compare the two populations. Requires an internet connection; everything else remains fully offline.'},
-    {tag: 'General', text: 'The app has a new name: PokePanion. Same companion, fresh banner \u2014 you\u2019ll see it across the header, shared pastes, and team-sheet screenshots.'}
-  ]},
-  {date: 'August 4, 2026', items: [
-    {tag: 'VGC', text: 'New Screenshot button in the squad header \u2014 renders your six cards as a clean PNG team sheet (art, types, ability, item, nature, and moves, headed by your team name) that downloads instantly and lands on your clipboard when the browser allows.'},
-    {tag: 'VGC', text: 'The Pok\u00e9mon editor gained the Mega Evolve toggle from the cards \u2014 top-right icon rail beneath the \u2715 and shiny chips, cycling base \u2192 Mega (\u2192 X/Y) with the stone and ability updating automatically; rail chips resized to match the close button.'},
-    {tag: 'Data', text: 'Baked official Smogon ladder statistics into the Competitive Pokédex: July 2026 Reg M-B usage ranks for all 310 ranked Pokémon (1.76M battles, 1760+ rating cutoff), plus detailed June ladder tables — top moves, items, abilities, spreads, and teammate percentages — for the 56 most-used Pokémon.'},
-    {tag: 'Pokédex', text: 'Pokémon detail windows for M-B-legal Pokémon expanded to a two-column layout: full dex info on the left, competitive intel on the right — ladder snapshot, ranked Best Teammates (click any teammate to jump to its page), and every known team featuring that Pokémon.'},
-    {tag: 'Pokédex', text: 'Added a sortable Usage column to the dex table, and a "Filter by move" box next to the ability filter that narrows the list to Pokémon whose Champions learnset contains the move.'},
-    {tag: 'Teams', text: 'Trending Teams: added Your Trending Teams — create, edit, and delete your own entries with a title, PokéPaste, and optional reference link. Link buttons are platform-aware (YouTube ▶ Watch, X Post, generic Link), and multiple team rows can now stay expanded at once.'},
-    {tag: 'VGC', text: 'Ability, item, and nature chips on squad and reference cards are now editable in place — click a chip to change it without opening the full editor. Mega Stones stay locked on Mega Pokémon.'},
-    {tag: 'VGC', text: 'Builder quality-of-life: hover tooltips on the ability selector, held item, and move rows; item effect descriptions added for all 158 legal items; shiny toggle moved to the top-right icon rail.'},
-    {tag: 'Fixes', text: 'Fixed a crash when opening Import / Export after restoring an opponent-log team; tooltips now render correctly in light mode; opponent log\u2019s Most Encountered list collapses to the top 9 with a Show all toggle.'},
-    {tag: 'General', text: 'VGC tab renamed to VGC Companion; added this Updates page.'}
-  ]},
-  {date: 'August 3, 2026', items: [
-    {tag: 'Data', text: 'Full accuracy audit of the entire library against Showdown\u2019s official Champions data, cross-validated with Serebii\u2019s Champions Pokédex: 2,720 illegal moves removed and 462 missing legal moves added across 300 Pokémon. The move catalog is now exactly the 496 moves legal in Champions, including the game\u2019s balance changes.'},
-    {tag: 'Data', text: 'Item list rebuilt to the 158 items legal in Champions (Assault Vest, Throat Spray, Power Herb, Choice Band/Specs, Rocky Helmet, Weakness Policy and others are not obtainable). Eleven Mega Stone names corrected to their official spellings (Staraptite, Sceptilite, Mawilite, Baxcalibrite\u2026).'},
-    {tag: 'Data', text: 'Regulation M-B pool corrections: Patrat, Hisuian Qwilfish, and the unreleased Mega-Z forms removed; Floette updated to Eternal Flower Floette with its correct stats; Battle Bond removed from Greninja.'},
-    {tag: 'Teams', text: 'Bundled tournament teams re-validated against the corrected data and repaired where sets had become illegal.'}
-  ]},
-  {date: 'July 30, 2026', items: [
-    {tag: 'General', text: 'Initial release of Champions Companion: complete and competitive Pokédex built on an in-app data library, VGC squad and reference builder with PokéPaste import/export, team analysis, speed tiers, opponent log, saved team library, tournament team snapshot, and light mode. All data stored locally in your browser \u2014 fully offline, no account needed.'}
-  ]}
-];
-
-function UpdatesPage(){
-  return (
-    <div className="page">
-      <h1>Updates</h1>
-      <p className="sub">What’s new in PokePanion, newest first.</p>
-      {CHANGELOG.map(rel => (
-        <div className="upd-block" key={rel.date}>
-          <div className="upd-date">{rel.date}</div>
-          {rel.items.map((it, i) => (
-            <div className="upd-item" key={i}>
-              <span className={'upd-tag upd-' + it.tag.toLowerCase().replace(/[^a-z]/g, '')}>{it.tag}</span>
-              <span className="upd-text">{it.text}</span>
-            </div>
-          ))}
-        </div>
-      ))}
-    </div>
-  );
-}
-
 function TopTeamsPage({onLoadTeam}){
   const [open, setOpen] = useState({});   // id -> expanded (multiple rows can stay open)
   /* user-added trending teams — persisted locally, editable in place */
@@ -5470,7 +5128,7 @@ function TopTeamsPage({onLoadTeam}){
 function App(){
   const [tab, setTab] = useState(() => {
     const t = lsGet('cc-tab-v1', 'vgc');
-    return ['vgc','teams','dex','updates'].includes(t) ? t : 'vgc';
+    return ['vgc','teams','dex'].includes(t) ? t : 'vgc';
   });
   const [squad, setSquad] = useState(() => lsArr('cc-squad-v1'));
   const [refs, setRefs] = useState(() => lsArr('cc-refs-v1'));
@@ -5494,10 +5152,10 @@ function App(){
     <React.Fragment>
       <header className="topbar">
         <div className="topbar-inner">
-          <span className="logo">Poke<b>Panion</b></span>
+          <span className="logo">Champions <b>Companion</b></span>
           <span className="reg-chip">REG M-B · SEASON M-4</span>
           <nav aria-label="Main">
-            {[['vgc','VGC Companion'],['teams','Trending Teams'],['dex','Competitive Pokédex'],['updates','Updates']].map(([id,label]) => (
+            {[['vgc','VGC'],['teams','Trending Teams'],['dex','Competitive Pokédex']].map(([id,label]) => (
               <button key={id} className={'tab-btn' + (tab === id ? ' active' : '')} onClick={() => setTab(id)}>{label}</button>
             ))}
             <Tip text={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
@@ -5509,7 +5167,6 @@ function App(){
       </header>
       <main className={'wrap' + (tab === 'vgc' ? ' wide' : '')}>
         {tab === 'dex' && <DexPage/>}
-        {tab === 'updates' && <UpdatesPage/>}
         {tab === 'vgc' && <VgcPage squad={squad} setSquad={setSquad} refs={refs} setRefs={setRefs}/>}
         {tab === 'teams' && <TopTeamsPage onLoadTeam={loadTopTeam}/>}
       </main>
