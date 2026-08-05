@@ -2655,11 +2655,11 @@ ice:'#6FC9C9',fighting:'#C4443F',poison:'#9A50A0',ground:'#CBA34A',flying:'#8FA3
 bug:'#9AAB33',rock:'#B0A05A',ghost:'#6A5C9E',dragon:'#6A55DF',dark:'#5C544C',steel:'#9BA6B5',fairy:'#DE8FDE'};
 const TYPES = Object.keys(TYPE_COLORS);
 const STAT_KEYS = ['HP','Atk','Def','SpA','SpD','Spe'];
-const SPRITE = id => `img/sprite/${id}.png`;
-const ART = id => `img/art/${id}.png`;
-const ART_S = id => `img/art-shiny/${id}.png`;
-const SPRITE_S = id => `img/sprite-shiny/${id}.png`;
-const ART_SHINY = id => `img/art-shiny/${id}.png`;
+const SPRITE = id => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+const ART = id => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
+const ART_S = id => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/shiny/${id}.png`;
+const SPRITE_S = id => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${id}.png`;
+const ART_SHINY = id => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/shiny/${id}.png`;
 
 const norm = s => s.toLowerCase().replace(/♀/g,'-f').replace(/♂/g,'-m')
   .replace(/[é]/g,'e').replace(/[.':%]/g,'').replace(/\s+/g,'-').replace(/--+/g,'-');
@@ -2870,6 +2870,7 @@ function shotFit(ctx, text, maxW){
 }
 const shotImg = url => new Promise(res => {
   const im = new window.Image();
+  im.crossOrigin = 'anonymous';
   im.onload = () => res(im); im.onerror = () => res(null);
   im.src = url;
 });
@@ -4730,7 +4731,7 @@ function SpeedTiers({squad, setSquad, refs, setRefs}){
         return (
           <div className="spd-icons" style={{marginLeft:0}}>
             <Tip text="Choice Scarf ×1.5" className="spd-sym">
-              <img src="img/items/choice-scarf.png" alt="Choice Scarf"/>
+              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/choice-scarf.png" alt="Choice Scarf"/>
             </Tip>
             <Tip text="Tailwind ×2" className="spd-sym">
               <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
@@ -5426,7 +5427,6 @@ function TopTeamRow({t, id, open, setOpen, onLoadTeam, badge, extraTag, extraAct
    Every release adds a dated entry here, newest first. */
 const CHANGELOG = [
   {date: 'August 5, 2026', items: [
-    {tag: 'General', text: 'All Pok\u00e9mon sprites and artwork are now served from PokePanion itself instead of an external image host \u2014 pages load faster, nothing depends on third-party servers, and the whole app works offline once cached.'},
     {tag: 'VGC', text: 'Speed tiers upgrades: column headers now label the Alignment and EVs editors; a new Stage dropdown on every row applies speed stages from \u22126 to +6 to the final Speed (shown in the bar, e.g. \u00b7 +2); and Tailwind Squad / Tailwind Reference buttons toggle Tailwind for each side\u2019s rows at once.'},
     {tag: 'Fixes', text: 'Squad and Reference toolbars now share one consistent layout: the section title sits on its own line with the buttons in a right-aligned row beneath it on both sides, so Log Opponent / Import \u2044 Export / Clear line up exactly with the squad controls.'},
     {tag: 'Fixes', text: 'Column alignment is now structural: the squad and reference headers share one layout row, so when the squad toolbar grows (long team names, extra buttons) both card grids shift down together and every card row stays level \u2014 no matter what\u2019s in the toolbar.'},
