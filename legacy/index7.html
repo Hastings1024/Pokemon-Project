@@ -196,9 +196,7 @@ table.moves td{padding:6px 8px;border-bottom:1px solid #1C2637}
 .close-x:hover{color:var(--ink);border-color:#39507a}
 
 /* ---------- VGC ---------- */
-.vgc-cols{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto 1fr;gap:0 18px}
-.vgc-cols > section{display:grid;grid-template-rows:subgrid;grid-row:span 2;align-content:start}
-@supports not (grid-template-rows: subgrid){.vgc-cols > section{display:block}}
+.vgc-cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 @media(max-width:1280px){.vgc-cols{grid-template-columns:1fr}}
 @media(min-width:1081px){
   .wrap.wide{padding-top:16px}
@@ -266,7 +264,7 @@ table.moves td{padding:6px 8px;border-bottom:1px solid #1C2637}
   .col-title{font-size:13px}
   .btn{font-size:10.5px;padding:6px 10px}
 }
-.col-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.col-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
 .col-title{font-family:var(--disp);font-weight:700;font-size:15px;letter-spacing:.12em;text-transform:uppercase}
 .col-title .idx{color:var(--gold);margin-right:8px;font-size:12px}
 .col-actions{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
@@ -5375,7 +5373,6 @@ function TopTeamRow({t, id, open, setOpen, onLoadTeam, badge, extraTag, extraAct
    Every release adds a dated entry here, newest first. */
 const CHANGELOG = [
   {date: 'August 5, 2026', items: [
-    {tag: 'Fixes', text: 'Column alignment is now structural: the squad and reference headers share one layout row, so when the squad toolbar grows (long team names, extra buttons) both card grids shift down together and every card row stays level \u2014 no matter what\u2019s in the toolbar.'},
     {tag: 'VGC', text: 'Team-sheet screenshots redesigned to mirror the on-screen cards exactly \u2014 a 2\u00d73 grid of full cards with artwork, type pills, ability / item / nature chips, moves with type diamonds, and the complete stat rows including nature arrows and tier-colored bars, in whichever Base / Actual mode is selected.'},
     {tag: 'Fixes', text: 'Fixed the squad and reference columns falling out of alignment \u2014 the squad toolbar could wrap to a second line and push its cards down. The Screenshot button is now a compact camera icon and the team-name field slightly narrower, keeping both columns level.'},
     {tag: 'Data', text: 'New live data source: the Competitive Pok\u00e9dex now pulls in-game ranked ladder statistics from Pokemon Champions Battle Data (championsbattledata.com) \u2014 top moves, items, abilities, stat alignments, stat point spreads, and common teammates from the game\u2019s own ranked seasons, with a Doubles / Singles toggle. Fetched live per Pok\u00e9mon, cached for 12 hours, and shown alongside the baked Showdown ladder tables so you can compare the two populations. Requires an internet connection; everything else remains fully offline.'},
