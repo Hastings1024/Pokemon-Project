@@ -3175,7 +3175,6 @@ function knownTeams(){
     }catch(_){}
   };
   TOP_TEAMS.forEach(t => add(t.name, t.src, t.paste));
-  CREATOR_TEAMS.forEach(t => add(t.name, t.creator, t.paste));
   lsArr('cc-user-teams-v1').forEach(t => add(t.name, 'Your trending team', t.paste));
   lsArr('cc-saved-teams-v1').forEach(t => add(t.name, 'Saved team', t.paste));
   lsArr('cc-opponent-log-v1').forEach((e, i) => {
@@ -5309,16 +5308,6 @@ const TOP_TEAMS = [
   "paste": "Glimmora @ Focus Sash\nAbility: Toxic Debris\nLevel: 50\nEVs: 32 SpA / 32 Spe / 2 HP\nTimid Nature\n- Meteor Beam\n- Sludge Bomb\n- Earth Power\n- Spiky Shield\n\nWhimsicott @ Focus Sash\nAbility: Prankster\nLevel: 50\nEVs: 32 SpA / 32 Spe / 2 HP\nTimid Nature\n- Tailwind\n- Moonblast\n- Encore\n- Protect\n\nGarchomp @ Choice Scarf\nAbility: Rough Skin\nLevel: 50\nEVs: 32 Atk / 32 Spe / 2 HP\nJolly Nature\n- Earthquake\n- Dragon Claw\n- Rock Slide\n- Stomping Tantrum\n\nSylveon @ Leftovers\nAbility: Pixilate\nLevel: 50\nEVs: 32 SpA / 32 HP / 2 SpD\nModest Nature\n- Hyper Voice\n- Moonblast\n- Helping Hand\n- Protect\n\nTalonflame @ Sharp Beak\nAbility: Gale Wings\nLevel: 50\nEVs: 32 Atk / 32 Spe / 2 HP\nJolly Nature\n- Brave Bird\n- Flare Blitz\n- Tailwind\n- Will-O-Wisp\n\nMetagross-Mega @ Metagrossite\nAbility: Tough Claws\nLevel: 50\nEVs: 32 Atk / 32 HP / 2 Def\nAdamant Nature\n- Iron Head\n- Zen Headbutt\n- Bullet Punch\n- Protect"
  }
 ];
-const CREATOR_TEAMS = [
- {
-  "id": "c1",
-  "name": "Reg M-B Video Team",
-  "creator": "Content creator",
-  "tag": "Placeholder sets — swap in the paste from the video description",
-  "url": "https://www.youtube.com/watch?v=2krHK78OcXU",
-  "paste": "Raichu-Mega-Y @ Raichunite Y\nAbility: No Guard\nLevel: 50\nEVs: 32 SpA / 32 Spe / 2 HP\nTimid Nature\n- Thunder\n- Volt Switch\n- Electroweb\n- Protect\n\nWhimsicott @ Focus Sash\nAbility: Prankster\nLevel: 50\nEVs: 32 SpA / 32 Spe / 2 HP\nTimid Nature\n- Tailwind\n- Moonblast\n- Encore\n- Protect\n\nGarchomp @ Choice Scarf\nAbility: Rough Skin\nLevel: 50\nEVs: 32 Atk / 32 Spe / 2 HP\nJolly Nature\n- Earthquake\n- Dragon Claw\n- Rock Slide\n- Stomping Tantrum\n\nKingambit @ Focus Sash\nAbility: Defiant\nLevel: 50\nEVs: 32 Atk / 32 HP / 2 Def\nAdamant Nature\n- Swords Dance\n- Kowtow Cleave\n- Sucker Punch\n- Protect\n\nSinistcha @ Sitrus Berry\nAbility: Hospitality\nLevel: 50\nEVs: 32 HP / 32 SpA / 2 Def\nQuiet Nature\n- Matcha Gotcha\n- Shadow Ball\n- Trick Room\n- Life Dew\n\nTalonflame @ Sharp Beak\nAbility: Gale Wings\nLevel: 50\nEVs: 32 Atk / 32 Spe / 2 HP\nJolly Nature\n- Brave Bird\n- Flare Blitz\n- Tailwind\n- Will-O-Wisp"
- }
-];
 
 
 function TopTeamMiniCard({mon}){
@@ -5435,6 +5424,7 @@ function TopTeamRow({t, id, open, setOpen, onLoadTeam, badge, extraTag, extraAct
    Every release adds a dated entry here, newest first. */
 const CHANGELOG = [
   {date: 'August 5, 2026', items: [
+    {tag: 'Teams', text: 'Removed the Content Creator Teams section and its placeholder entry \u2014 featured content is curated directly by the site now.'},
     {tag: 'Teams', text: 'Trending Teams is now fully curated by PokePanion \u2014 the page shows hand-picked squads with references, added, updated, and removed by the site. (Your personal saved teams still live in the VGC Companion\u2019s team library.)'},
     {tag: 'General', text: 'Added a site footer and an About & credits window: fan-project disclaimer, data credits, privacy note (this site collects nothing \u2014 all your data stays in your browser), and a contact address.'},
     {tag: 'General', text: 'All Pok\u00e9mon sprites and artwork are now served from PokePanion itself instead of an external image host \u2014 pages load faster, nothing depends on third-party servers, and the whole app works offline once cached.'},
@@ -5567,14 +5557,6 @@ function TopTeamsPage({onLoadTeam}){
         <TopTeamRow key={'t' + t.rank} id={'t' + t.rank} t={t} open={open} setOpen={setOpen}
           onLoadTeam={onLoadTeam} badge={String(t.rank).padStart(2,'0')} extraTag={t.src}/>
       ))}
-      {!siteMode && <div className="tt-section">
-        <h2 className="tt-section-title">Content Creator Teams</h2>
-        <p className="sub">Teams featured in recent community videos — watch the breakdown, then load the build straight into the app.</p>
-      </div>}
-      {!siteMode && CREATOR_TEAMS.map(t => (
-        <TopTeamRow key={t.id} id={t.id} t={t} open={open} setOpen={setOpen}
-          onLoadTeam={onLoadTeam} badge={'▶'} extraTag={t.creator}/>
-      ))}
       {(CURATE || (featured && featured.teams.length > 0)) && <div className="tt-section">
         {featured && featured.teams.length > 0 && (
           <React.Fragment>
@@ -5607,13 +5589,12 @@ function TopTeamsPage({onLoadTeam}){
             {editingId ? 'Save changes' : '+ Add team'}
           </button>
           {editingId && <button className="btn" onClick={resetForm}>Cancel edit</button>}
-          <Tip text="Copies the app's built-in Tournament and Creator teams into your draft list below, so you can keep, edit, or delete each before exporting">
+          <Tip text="Copies the app's built-in tournament teams into your draft list below, so you can keep, edit, or delete each before exporting">
             <button className="btn" onClick={() => {
               setUserTeams(ts => {
                 const have = new Set(ts.map(t => t.name));
                 const inc = [];
                 TOP_TEAMS.forEach(t => { if(!have.has(t.name)) inc.push({id: 'u' + Date.now() + '-' + inc.length, name: t.name, paste: t.paste, url: t.url || '', tag: t.tag}); });
-                CREATOR_TEAMS.forEach(t => { if(!have.has(t.name)) inc.push({id: 'u' + Date.now() + '-' + inc.length, name: t.name, paste: t.paste, url: t.url || '', tag: t.tag}); });
                 return [...ts, ...inc];
               });
             }}>Import bundled teams</button>
