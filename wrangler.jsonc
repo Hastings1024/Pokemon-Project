@@ -1,0 +1,7 @@
+{
+  "name": "pokemon-project",
+  "compatibility_date": "2026-08-05",
+  "observability": { "enabled": true },
+  "assets": { "directory": "./public" },
+  "compatibility_flags": ["nodejs_compat"]
+}
