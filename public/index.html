@@ -510,6 +510,15 @@ a.tt-watch{text-decoration:none;display:inline-flex;align-items:center;gap:5px;c
 .upd-vgc{color:#C79BF2;border-color:#4E3573}
 .upd-fixes{color:#E06858;border-color:#6B2A24}
 .upd-text{font-size:13px;line-height:1.6;color:var(--ink)}
+.site-foot{max-width:1500px;margin:30px auto 0;padding:16px 20px 22px;border-top:1px solid var(--line);display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center;text-align:center;font-size:11px;color:var(--muted)}
+.foot-link{background:none;border:none;color:var(--gold);font-size:11px;font-weight:600;cursor:pointer;text-decoration:underline;padding:0}
+.about-box{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:14px;max-width:620px;width:94vw;max-height:86vh;overflow:auto;padding:26px 28px}
+.about-box .close-x{position:absolute;top:14px;right:14px}
+.about-title{font-family:var(--disp);font-size:20px;font-weight:800;color:var(--gold);margin:0 0 12px}
+.about-h{font-family:var(--disp);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:18px 0 6px}
+.about-p{font-size:13px;line-height:1.7;color:var(--ink);margin:0}
+.about-p a{color:var(--gold);text-decoration:none}
+.about-p a:hover{text-decoration:underline}
 .freq-toggle{margin-top:8px;width:100%;justify-content:center;display:inline-flex}
 .theme-btn{font-size:16px}
 .sq-chip-click{cursor:pointer}
@@ -5426,6 +5435,8 @@ function TopTeamRow({t, id, open, setOpen, onLoadTeam, badge, extraTag, extraAct
    Every release adds a dated entry here, newest first. */
 const CHANGELOG = [
   {date: 'August 5, 2026', items: [
+    {tag: 'Teams', text: 'Trending Teams now carries a Featured Teams section curated by PokePanion \u2014 hand-picked squads with references, visible to everyone and updated by the site. (Your personal saved teams still live in the VGC Companion\u2019s team library.)'},
+    {tag: 'General', text: 'Added a site footer and an About & credits window: fan-project disclaimer, data credits, privacy note (this site collects nothing \u2014 all your data stays in your browser), and a contact address.'},
     {tag: 'General', text: 'All Pok\u00e9mon sprites and artwork are now served from PokePanion itself instead of an external image host \u2014 pages load faster, nothing depends on third-party servers, and the whole app works offline once cached.'},
     {tag: 'VGC', text: 'Speed tiers upgrades: column headers now label the Alignment and EVs editors; a new Stage dropdown on every row applies speed stages from \u22126 to +6 to the final Speed (shown in the bar, e.g. \u00b7 +2); and Tailwind Squad / Tailwind Reference buttons toggle Tailwind for each side\u2019s rows at once.'},
     {tag: 'Fixes', text: 'Squad and Reference toolbars now share one consistent layout: the section title sits on its own line with the buttons in a right-aligned row beneath it on both sides, so Log Opponent / Import \u2044 Export / Clear line up exactly with the squad controls.'},
@@ -5458,6 +5469,28 @@ const CHANGELOG = [
   ]}
 ];
 
+function AboutModal({onClose}){
+  return (
+    <div className="overlay" onClick={e => { if(e.target === e.currentTarget) onClose(); }}>
+      <div className="about-box" role="dialog" aria-modal="true" aria-label="About PokePanion">
+        <button className="close-x" onClick={onClose} aria-label="Close">✕</button>
+        <h2 className="about-title">About PokePanion</h2>
+        <p className="about-p">PokePanion is a free, fan-made companion app for competitive Pokémon Champions — a Pokédex, team builder, and battle-data explorer for Regulation M-B. It is not affiliated with, endorsed by, or sponsored by Nintendo, The Pokémon Company, Game Freak, or Creatures Inc. Pokémon and all respective names, artwork, and sprites are trademarks and © of their respective owners. This site is non-commercial: no ads, no accounts, nothing for sale.</p>
+        <h3 className="about-h">Data &amp; credits</h3>
+        <p className="about-p">
+          In-game ranked battle statistics are provided live by <a href="https://championsbattledata.com/" target="_blank" rel="noopener noreferrer">Pokemon Champions Battle Data</a>.
+          {' '}Ladder usage statistics are derived from <a href="https://www.smogon.com/stats/" target="_blank" rel="noopener noreferrer">Smogon’s public usage data</a>.
+          {' '}Game data is built on the open-source <a href="https://github.com/smogon/pokemon-showdown" target="_blank" rel="noopener noreferrer">Pokémon Showdown</a> project.
+          {' '}Sprites and artwork are served from the <a href="https://github.com/PokeAPI/sprites" target="_blank" rel="noopener noreferrer">PokeAPI sprites</a> collection.
+        </p>
+        <h3 className="about-h">Privacy</h3>
+        <p className="about-p">This site collects nothing. There are no accounts, no ads, no tracking cookies. Your squads, saved teams, opponent log, and settings live entirely in your own browser’s local storage and never leave your device. The Competitive Pokédex makes one kind of outbound request: fetching public battle statistics from championsbattledata.com.</p>
+        <h3 className="about-h">Contact</h3>
+        <p className="about-p">Questions, corrections, or takedown requests: <a href="mailto:contact@poke-panion.com">contact@poke-panion.com</a>. Requests from rights holders are honored promptly.</p>
+      </div>
+    </div>
+  );
+}
 function UpdatesPage(){
   return (
     <div className="page">
@@ -5482,6 +5515,23 @@ function TopTeamsPage({onLoadTeam}){
   const [open, setOpen] = useState({});   // id -> expanded (multiple rows can stay open)
   /* user-added trending teams — persisted locally, editable in place */
   const [userTeams, setUserTeams] = useState(() => lsArr('cc-user-teams-v1'));
+  const [featured, setFeatured] = useState(null);
+  const CURATE = !!(window.location && /[?#&]curate/.test((window.location.search || '') + (window.location.hash || '')));
+  useEffect(() => {
+    let live = true;
+    fetch('trending.json', {cache: 'no-store'})
+      .then(r => r.ok ? r.json() : null)
+      .then(j => {
+        if(!live || !j || !Array.isArray(j.teams)) return;
+        const ok = j.teams.filter(t => t && typeof t.name === 'string' && typeof t.paste === 'string' && parsePaste(t.paste).length);
+        setFeatured({updated: j.updated || '', teams: ok.map((t, i) => ({
+          id: 'ft' + i, name: t.name, paste: t.paste, url: t.url || '',
+          tag: 'Featured \u00b7 ' + parsePaste(t.paste).length + ' Pok\u00e9mon'
+        }))});
+      })
+      .catch(() => {});
+    return () => { live = false; };
+  }, []);
   useEffect(() => lsSet('cc-user-teams-v1', userTeams), [userTeams]);
   const [fName, setFName] = useState('');
   const [fPaste, setFPaste] = useState('');
@@ -5524,10 +5574,24 @@ function TopTeamsPage({onLoadTeam}){
         <TopTeamRow key={t.id} id={t.id} t={t} open={open} setOpen={setOpen}
           onLoadTeam={onLoadTeam} badge={'▶'} extraTag={t.creator}/>
       ))}
-      <div className="tt-section">
-        <h2 className="tt-section-title">Your Trending Teams</h2>
-        <p className="sub">Add your own teams to this page — give it a title, drop in a PokéPaste, and it renders exactly like the lists above for quick reference or loading.</p>
-      </div>
+      {(CURATE || (featured && featured.teams.length > 0)) && <div className="tt-section">
+        {featured && featured.teams.length > 0 && (
+          <React.Fragment>
+            <h2 className="tt-section-title">Featured Teams</h2>
+            <p className="sub">Curated by PokePanion{featured.updated ? ' \u00b7 updated ' + featured.updated : ''}.</p>
+            {featured.teams.map((t, i) => (
+              <TopTeamRow key={t.id} id={t.id} t={t} open={open} setOpen={setOpen}
+                onLoadTeam={onLoadTeam} badge={String(i + 1).padStart(2, '0')}/>
+            ))}
+            <div style={{height: 18}}/>
+          </React.Fragment>
+        )}
+        {CURATE && <React.Fragment>
+          <h2 className="tt-section-title">Curate Featured Teams</h2>
+          <p className="sub">Site-owner mode. Build the featured list here — title, PokéPaste, optional reference link. When it looks right, click Export site file and drop the downloaded trending.json into your site's public folder; every visitor will then see these as Featured Teams.</p>
+        </React.Fragment>}
+      </div>}
+      {CURATE && <React.Fragment>
       <div className="ut-form">
         <input className="f-input" placeholder="Team title" value={fName} maxLength={60}
           onChange={e => setFName(e.target.value)}/>
@@ -5542,6 +5606,17 @@ function TopTeamsPage({onLoadTeam}){
             {editingId ? 'Save changes' : '+ Add team'}
           </button>
           {editingId && <button className="btn" onClick={resetForm}>Cancel edit</button>}
+          {userTeams.length > 0 && <Tip text="Site owners: downloads trending.json built from the teams below \u2014 put it in your site's public/ folder and every visitor will see them as Featured Teams (read-only)">
+            <button className="btn" onClick={() => {
+              const out = {updated: new Date().toISOString().slice(0, 10),
+                teams: userTeams.map(t => ({name: t.name, paste: t.paste, url: t.url || ''}))};
+              const blob = new Blob([JSON.stringify(out, null, 2)], {type: 'application/json'});
+              const a = document.createElement('a');
+              a.href = URL.createObjectURL(blob); a.download = 'trending.json';
+              document.body.appendChild(a); a.click(); a.remove();
+              setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+            }}>Export site file</button>
+          </Tip>}
         </div>
         {formErr && <div className="status err">{formErr}</div>}
       </div>
@@ -5553,13 +5628,15 @@ function TopTeamsPage({onLoadTeam}){
             <button className="btn tsm" onClick={() => deleteUserTeam(t)}>Delete</button>
           </React.Fragment>}/>
       ))}
-      {!userTeams.length && <div className="tt-empty">No teams added yet — your saved entries will appear here.</div>}
+      {!userTeams.length && <div className="tt-empty">No teams drafted yet — teams you add here become the site's Featured Teams once exported.</div>}
+      </React.Fragment>}
     </div>
   );
 }
 
 /* ============ shell ============ */
 function App(){
+  const [aboutOpen, setAboutOpen] = useState(false);
   const [tab, setTab] = useState(() => {
     const t = lsGet('cc-tab-v1', 'vgc');
     return ['vgc','teams','dex','updates'].includes(t) ? t : 'vgc';
@@ -5605,6 +5682,11 @@ function App(){
         {tab === 'vgc' && <VgcPage squad={squad} setSquad={setSquad} refs={refs} setRefs={setRefs}/>}
         {tab === 'teams' && <TopTeamsPage onLoadTeam={loadTopTeam}/>}
       </main>
+      <footer className="site-foot">
+        <span>PokePanion is a free, fan-made companion for Pokémon Champions · Not affiliated with Nintendo, The Pokémon Company, or Game Freak</span>
+        <button className="foot-link" onClick={() => setAboutOpen(true)}>About &amp; credits</button>
+      </footer>
+      {aboutOpen && <AboutModal onClose={() => setAboutOpen(false)}/>}
     </React.Fragment>
   );
 }
