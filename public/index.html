@@ -519,6 +519,19 @@ a.tt-watch{text-decoration:none;display:inline-flex;align-items:center;gap:5px;c
 .about-p{font-size:13px;line-height:1.7;color:var(--ink);margin:0}
 .about-p a{color:var(--gold);text-decoration:none}
 .about-p a:hover{text-decoration:underline}
+.shot-box{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:14px;max-width:940px;width:94vw;max-height:92vh;overflow:auto;padding:22px 24px}
+.shot-box .close-x{position:absolute;top:14px;right:14px}
+.shot-img{display:block;width:100%;height:auto;max-height:70vh;object-fit:contain;border-radius:10px;border:1px solid var(--line);margin:6px 0 14px;background:var(--bg)}
+.shot-actions{display:flex;gap:8px;justify-content:center}
+.contrib-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin:6px 0 2px;cursor:pointer}
+.contrib-row input{accent-color:var(--gold)}
+.contrib-q{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border:1px solid var(--line);border-radius:50%;font-size:10px;color:var(--muted)}
+.cm-row{display:grid;grid-template-columns:30px 34px minmax(140px,200px) 52px 1fr;gap:10px;align-items:center;padding:5px 8px;border:1px solid var(--line);border-radius:8px;margin-bottom:5px;background:var(--panel)}
+.cm-rank{font-family:var(--disp);font-weight:800;font-size:12px;color:var(--muted)}
+.cm-sprite{width:32px;height:32px;image-rendering:pixelated}
+.cm-name{font-weight:700;font-size:13px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cm-pct{font-family:var(--disp);font-weight:800;font-size:13px;color:var(--gold);text-align:right}
+.cm-tops{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .freq-toggle{margin-top:8px;width:100%;justify-content:center;display:inline-flex}
 .theme-btn{font-size:16px}
 .sq-chip-click{cursor:pointer}
@@ -2847,6 +2860,27 @@ function exportPaste(team){
   }).join('\n\n');
 }
 
+/* Community meta — opt-in, anonymous. When enabled, logging an opponent also
+   submits species/ability/item/nature/moves (nothing else) to this site's API. */
+const contribOn = () => { try{ return localStorage.getItem('cc-contrib-v1') === '1'; }catch(_){ return false; } };
+const setContrib = v => { try{ localStorage.setItem('cc-contrib-v1', v ? '1' : '0'); }catch(_){} };
+function contributeLog(refs){
+  if(!contribOn()) return;
+  if(!(window.location && /^https?:/.test(window.location.protocol))) return;
+  const mons = refs.filter(Boolean).map(m => ({
+    species: m.species || '',
+    ability: m.ability || '',
+    item: m.item || '',
+    nature: m.nature || '',
+    moves: (m.moves || []).filter(Boolean).slice(0, 4)
+  })).filter(m => m.species);
+  if(!mons.length) return;
+  try{
+    fetch('/api/log', {method: 'POST', headers: {'content-type': 'application/json'},
+      body: JSON.stringify({mons})}).catch(() => {});
+  }catch(_){}
+}
+
 /* Open a team on pokepast.es in a new tab — POSTs the paste to their create
    endpoint, which redirects straight to the finished paste page. */
 function openInPokepaste(team, title){
@@ -2993,16 +3027,8 @@ async function makeSquadShot(squad, teamName, statMode){
       }
     }
   });
-  /* export: clipboard when allowed, always download */
-  const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
-  if(!blob) return false;
-  try{ await navigator.clipboard.write([new window.ClipboardItem({'image/png': blob})]); }catch(_){}
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'pokepanion_output.png';
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-  return true;
+  /* hand the finished image back for previewing */
+  return await new Promise(res => canvas.toBlob(res, 'image/png'));
 }
 
 /* Lightweight session persistence — all user data lives in this browser via localStorage
@@ -3073,6 +3099,9 @@ const NEWS = [
   {date:'2026-07-16', cat:'Events', title:'Monthly Challenge Series — July 2026',
    body:'MCS July runs Jul 23–26 (PDT), Single Battle format under Regulation M-B. Registration opened Jul 16 and stays open through the event. Three finished battles earns a Mawile, 100 Quick Coupons, and the MCS 07/2026 Challenger title.',
    url:'https://www.pokemon.com/us/news/pokemon-champions-july-2026-events-mcs-ranked-battles-season-and-battle-pass'},
+  {date:'2026-08-05', cat:'Ranked', title:'Ranked Battles Season M-5 + Battle Pass M-5 live',
+   body:'Season M-5 runs Aug 5 – Sep 9 (02:00 UTC), staying on Regulation Set M-B through Worlds — no roster changes. Ranks reset; Champion Tier and Master Ball ranks 1–3 open Aug 12, one week in. Battle Pass M-5 rewards include Chandelurite, Excadrite, and Scraftinite, and the Raichu + Raichunite X/Y gift codes run through Sep 2. Your final Season M-4 placement shows before your first ranked battle of the season.',
+   url:'https://www.serebii.net/pokemonchampions/rankedbattle/seasonm-5.shtml'},
   {date:'2026-07-07', cat:'Ranked', title:'Ranked Battles Season M-4 + Battle Pass M-4 live',
    body:'Season M-4 runs Jul 7 – Aug 4 (PDT), continuing on Regulation Set M-B. Champion Tier and Master Ball Tier ranks 1–3 opened one week in. Battle Pass M-4 features rewards around the Hoenn starters.',
    url:'https://www.pokemon.com/us/news/pokemon-champions-july-2026-events-mcs-ranked-battles-season-and-battle-pass'},
@@ -3579,6 +3608,7 @@ function DexPage(){
   const [q, setQ] = useState(typeof df.q === 'string' ? df.q : '');
   const [abilQ, setAbilQ] = useState(typeof df.abilQ === 'string' ? df.abilQ : '');
   const [moveQ, setMoveQ] = useState(typeof df.moveQ === 'string' ? df.moveQ : '');
+  const [moveQ2, setMoveQ2] = useState(typeof df.moveQ2 === 'string' ? df.moveQ2 : '');
   const [types, setTypes] = useState(Array.isArray(df.types) ? df.types : []);          // multi-select type filter
   const [gen, setGen] = useState(typeof df.gen === 'number' ? df.gen : 0);
   const [sortKey, setSortKey] = useState(typeof df.sortKey === 'string' ? df.sortKey : 'dex');
@@ -3587,8 +3617,8 @@ function DexPage(){
   const [limit, setLimit] = useState(100);
   const [sel, setSel] = useState(null);
   const sentinelRef = React.useRef(null);
-  useEffect(() => lsSet('cc-dexfilters-v1', {q, abilQ, moveQ, types, gen, sortKey, sortDir, forms}),
-    [q, abilQ, moveQ, types, gen, sortKey, sortDir, forms]);
+  useEffect(() => lsSet('cc-dexfilters-v1', {q, abilQ, moveQ, moveQ2, types, gen, sortKey, sortDir, forms}),
+    [q, abilQ, moveQ, moveQ2, types, gen, sortKey, sortDir, forms]);
 
   const toggleType = t => setTypes(ts => ts.includes(t) ? ts.filter(x => x !== t) : [...ts, t]);
   const setSort = key => {
@@ -3602,12 +3632,13 @@ function DexPage(){
     if(mode === 'comp') list = list.filter(p => REG.legal.has(p.dex) && !COMP_EXCLUDE.test(p.slug));
     else if(!forms) list = list.filter(p => p.default);
     if(q){ const n = norm(q); list = list.filter(p => p.slug.includes(n) || norm(p.name).includes(n)); }
-    if(moveQ.trim()){
-      const mq = moveQ.trim().toLowerCase();
+    [moveQ, moveQ2].forEach(mv => {
+      if(!mv.trim()) return;
+      const mq = mv.trim().toLowerCase();
       const hit = new Set();
       MOVES.forEach((m, i) => { if(m.name.toLowerCase().includes(mq)) hit.add(i); });
       list = list.filter(p => (LEARN[p.id] || []).some(i => hit.has(i)));
-    }
+    });
     if(abilQ){ const a = abilQ.toLowerCase();
       list = list.filter(p => p.abilities.some(x => x.toLowerCase().includes(a)) ||
                               (p.hiddenAbility && p.hiddenAbility.toLowerCase().includes(a))); }
@@ -3624,9 +3655,9 @@ function DexPage(){
       return sortDir * (va - vb) || a.id - b.id;
     });
     return list;
-  }, [mode, q, abilQ, moveQ, types, gen, sortKey, sortDir, forms]);
+  }, [mode, q, abilQ, moveQ, moveQ2, types, gen, sortKey, sortDir, forms]);
 
-  useEffect(() => { setLimit(100); setSel(null); }, [mode, q, abilQ, moveQ, types, gen, sortKey, sortDir, forms]);
+  useEffect(() => { setLimit(100); setSel(null); }, [mode, q, abilQ, moveQ, moveQ2, types, gen, sortKey, sortDir, forms]);
 
   useEffect(() => {
     const el = sentinelRef.current;
@@ -3658,6 +3689,7 @@ function DexPage(){
       <div className="dex-toolbar">
         <input className="search" style={{width:180}} placeholder="Filter by ability…" value={abilQ} onChange={e => setAbilQ(e.target.value)} aria-label="Filter by ability"/>
         <input className="search" style={{width:180}} placeholder="Filter by move…" value={moveQ} onChange={e => setMoveQ(e.target.value)} aria-label="Filter by move"/>
+        <input className="search" style={{width:180}} placeholder="+ second move…" value={moveQ2} onChange={e => setMoveQ2(e.target.value)} aria-label="Filter by second move"/>
         <select className="ctl" value={gen} onChange={e => setGen(+e.target.value)} aria-label="Generation">
           <option value={0}>All gens</option>
           {[1,2,3,4,5,6,7,8,9].map(g => <option key={g} value={g}>Gen {g}</option>)}
@@ -3808,7 +3840,6 @@ const SP_PRESETS = [
   {n:'Clear', sp:{}},
 ];
 /* Top-20 Reg M-B ranked usage (Showdown ladder via Pikalytics battledataregmbs3; baked at build) */
-const META_TOP = ['Garchomp','Sinistcha','Basculegion','Whimsicott','Kingambit','Staraptor','Incineroar','Charizard','Raichu','Pelipper','Sneasler','Archaludon','Grimmsnarl','Sylveon','Swampert','Metagross','Farigiraf','Floette-Eternal','Gholdengo','Aerodactyl'];
 const typeEff = (atk, defTypes) => defTypes.reduce((m, t) => m * (CHART[atk][t] !== undefined ? CHART[atk][t] : 1), 1);
 
 
@@ -3821,7 +3852,12 @@ const finalSpeed = (dex, mon, scarf, tw, stage) => {
   if(tw) v = Math.floor(v * 2);
   return v;
 };
-const META_MONS = META_TOP.map(n => ({name:n, dex:findMon(n)})).filter(t => t.dex);
+const META_MONS = Object.entries(LADDER.usage)
+  .sort((a, b) => b[1][1] - a[1][1])
+  .slice(0, 20)
+  .map(([slug]) => POKEDEX.find(p => p.slug === slug))
+  .filter(Boolean)
+  .map(dex => ({name: dex.name, dex}));
 const resolveTeam = list => list.filter(Boolean).map(m => ({mon:m, dex:findMon(m.species)})).filter(x => x.dex);
 const teamDmgMoves = list => resolveTeam(list).flatMap(({mon, dex}) =>
   mon.moves.map(mv => MOVE_BY_NAME[mv]).filter(md => md && md.cat !== 'STA')
@@ -4289,6 +4325,36 @@ function NumStep({value, min, max, onChange, ariaLabel, small}){
   );
 }
 
+function ShotModal({shot, onClose}){
+  const [copied, setCopied] = useState(false);
+  const [copyErr, setCopyErr] = useState(false);
+  const doCopy = async () => {
+    try{
+      await navigator.clipboard.write([new window.ClipboardItem({'image/png': shot.blob})]);
+      setCopied(true); setCopyErr(false);
+      setTimeout(() => setCopied(false), 1600);
+    }catch(_){ setCopyErr(true); }
+  };
+  const doDownload = () => {
+    const a = document.createElement('a');
+    a.href = shot.url; a.download = 'pokepanion_output.png';
+    document.body.appendChild(a); a.click(); a.remove();
+  };
+  return (
+    <div className="overlay" onClick={e => { if(e.target === e.currentTarget) onClose(); }}>
+      <div className="shot-box" role="dialog" aria-modal="true" aria-label="Team sheet preview">
+        <button className="close-x" onClick={onClose} aria-label="Close">✕</button>
+        <h2 className="about-title">Team sheet</h2>
+        <img className="shot-img" src={shot.url} alt="Squad team sheet preview"/>
+        <div className="shot-actions">
+          <button className="btn primary" onClick={doCopy}>{copied ? 'Copied ✓' : 'Copy image'}</button>
+          <button className="btn" onClick={doDownload}>Download PNG</button>
+        </div>
+        {copyErr && <div className="cbd-note" style={{textAlign:'center'}}>This browser wouldn't allow copying — use Download instead.</div>}
+      </div>
+    </div>
+  );
+}
 function CameraIcon(){
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -4670,7 +4736,7 @@ function TeamAnalysis({squad}){
         ))}
       </section>
       <section className="pane">
-        <h4>Meta threats</h4>
+        <h4>Meta threats <span className="dd-hn">top 20 · July 2026 ladder · newest published</span></h4>
         <p className="blurb">Top-20 Reg M-B ranked usage (Showdown ladder snapshot). <b>Cover</b> = your squad's best move effectiveness against it; <b>Weak</b> = squad members its STAB hits super-effectively (red = overly exposed).</p>
         <div className="meta-head"><span>Pokémon</span><span style={{textAlign:'center'}}>Cover</span><span style={{textAlign:'center'}}>Weak</span></div>
         {threats.map(t => (
@@ -4819,6 +4885,8 @@ function SpeedTiers({squad, setSquad, refs, setRefs}){
 /* ============ opponent log ============ */
 function OpponentLog({oppLog, refs, onResult, onExclude, onDelete, onClear, onLoad}){
   const [showAllFreq, setShowAllFreq] = useState(false);
+  const [contrib, setContribState] = useState(() => contribOn());
+  const flipContrib = () => { setContrib(!contrib); setContribState(!contrib); };
   /* Excluded battles (forfeits, bad data) skip the Pokémon stats; their W/L still counts. */
   const counted = oppLog.filter(o => !o.excluded);
   const omitted = oppLog.length - counted.length;
@@ -4881,6 +4949,13 @@ function OpponentLog({oppLog, refs, onResult, onExclude, onDelete, onClear, onLo
     <React.Fragment>
       <div className="ana-head">
         <span className="col-title"><span className="idx">04</span>Opponent Log</span>
+        <label className="contrib-row" onClick={e => e.stopPropagation()}>
+          <input type="checkbox" checked={contrib} onChange={flipContrib}/>
+          <span>Contribute anonymous opponent data to the community meta</span>
+          <Tip text="When on, each battle you log also sends the opponent's species, ability, item, nature, and moves — nothing else, no identity — to the community snapshot on Trending Teams. Off by default.">
+            <span className="contrib-q">?</span>
+          </Tip>
+        </label>
         {oppLog.length > 0 && <span className="log-meta" style={{marginLeft:'auto'}}>
           {oppLog.length} team{oppLog.length === 1 ? '' : 's'} · {totalMons} mons faced
           {wins + losses ? ` · ${wins}W–${losses}L` : ''}{omitted ? ` · ${omitted} omitted` : ''}
@@ -5014,15 +5089,19 @@ function VgcPage({squad, setSquad, refs, setRefs}){
   const persistLog = list => { setOppLog(list); oppStore.write(list); };
   const [loggedFlash, setLoggedFlash] = useState(false);
   const [shotBusy, setShotBusy] = useState(false);
-  const [shotDone, setShotDone] = useState(false);
+  const [shot, setShot] = useState(null);
   const takeShot = async () => {
     if(shotBusy) return;
     setShotBusy(true);
     try{
-      const ok = await makeSquadShot(squad, teamName.trim(), statMode);
-      if(ok){ setShotDone(true); setTimeout(() => setShotDone(false), 1600); }
+      const blob = await makeSquadShot(squad, teamName.trim(), statMode);
+      if(blob) setShot({blob, url: URL.createObjectURL(blob)});
     }catch(_){}
     setShotBusy(false);
+  };
+  const closeShot = () => {
+    if(shot) setTimeout(() => URL.revokeObjectURL(shot.url), 1000);
+    setShot(null);
   };
   const toggleBrought = i => setMarks(m => {
     const c = m[i] || {};
@@ -5041,6 +5120,7 @@ function VgcPage({squad, setSquad, refs, setRefs}){
       lead: !!(marks[i] && marks[i].lead)
     } : null).filter(Boolean);
     if(!mons.length) return;
+    contributeLog(refs);
     persistLog([{id: Date.now() + '_' + Math.random().toString(36).slice(2,7), ts: Date.now(), mons, result: null}, ...oppLog]);
     setLoggedFlash(true);
     setTimeout(() => setLoggedFlash(false), 1400);
@@ -5169,10 +5249,10 @@ function VgcPage({squad, setSquad, refs, setRefs}){
                 <button className="btn" onClick={deleteTeam}>Delete</button>
               </Tip>}
           </React.Fragment>}
-          {side === 'squad' && <Tip text={shotBusy ? 'Rendering the team sheet…' : 'Screenshot — save these six cards as a PNG team sheet (also copied to your clipboard when the browser allows)'}>
-            <button className={'btn btn-ico' + (shotDone ? ' gold' : '')} onClick={takeShot} disabled={filled === 0 || shotBusy}
+          {side === 'squad' && <Tip text={shotBusy ? 'Rendering the team sheet…' : 'Screenshot — preview these six cards as a PNG team sheet, then copy or download it'}>
+            <button className="btn btn-ico" onClick={takeShot} disabled={filled === 0 || shotBusy}
               style={filled === 0 ? {opacity:.5} : null} aria-label="Screenshot team sheet">
-              {shotDone ? '✓' : <CameraIcon/>}
+              <CameraIcon/>
             </button>
           </Tip>}
           {side === 'ref' && <button className={'btn' + (loggedFlash ? '' : ' primary')} onClick={logOpponent}
@@ -5235,6 +5315,7 @@ function VgcPage({squad, setSquad, refs, setRefs}){
           initial={builder.index !== null ? sideState(builder.side)[0][builder.index] : null}
           onSave={saveMon} onClose={() => setBuilder(null)} onCycle={cycleBuilder}/>
       )}
+      {shot && <ShotModal shot={shot} onClose={closeShot}/>}
       {ioFor && (
         <IOModal title={ioFor === 'squad' ? 'Squad · Import / Export' : 'Reference · Import / Export'}
           team={ioFor === 'squad' ? squad : refs} isSquad={ioFor === 'squad'}
@@ -5253,59 +5334,59 @@ function VgcPage({squad, setSquad, refs, setRefs}){
 const TOP_TEAMS = [
  {
   "rank": 1,
-  "name": "Garchomp–Whimsicott Balance",
-  "tag": "Most common core · 18.7% of sampled teams",
-  "src": "Reg M-B S3 ranked snapshot",
-  "paste": "Garchomp @ Choice Scarf\nAbility: Rough Skin\nLevel: 50\nEVs: 32 Atk / 32 Spe / 2 HP\nJolly Nature\n- Earthquake\n- Dragon Claw\n- Rock Slide\n- Stomping Tantrum\n\nWhimsicott @ Focus Sash\nAbility: Prankster\nLevel: 50\nEVs: 32 SpA / 32 Spe / 2 HP\nTimid Nature\n- Tailwind\n- Moonblast\n- Encore\n- Protect\n\nCharizard-Mega-Y @ Charizardite Y\nAbility: Drought\nLevel: 50\nEVs: 32 SpA / 32 Spe / 2 HP\nTimid Nature\n- Heat Wave\n- Solar Beam\n- Air Slash\n- Protect\n\nKingambit @ Black Glasses\nAbility: Defiant\nLevel: 50\nEVs: 32 Atk / 32 HP / 2 Def\nAdamant Nature\n- Kowtow Cleave\n- Sucker Punch\n- Iron Head\n- Protect\n\nBasculegion-Male @ Choice Scarf\nAbility: Adaptability\nLevel: 50\nEVs: 32 Atk / 32 Spe / 2 HP\nAdamant Nature\n- Wave Crash\n- Last Respects\n- Aqua Jet\n- Flip Turn\n\nIncineroar @ Sitrus Berry\nAbility: Intimidate\nLevel: 50\nEVs: 32 HP / 32 SpD / 2 Atk\nCareful Nature\n- Fake Out\n- Flare Blitz\n- Parting Shot\n- Darkest Lariat"
+  "name": "Garchomp Sun Offense",
+  "tag": "The ladder’s most common core — Garchomp pairs with Whimsicott on 43.9% of its teams and Mega Charizard Y on 40%",
+  "src": "July 2026 ladder · 1760+",
+  "paste": "Garchomp @ Life Orb\nAbility: Rough Skin\nLevel: 50\nEVs: 2 HP / 32 Atk / 32 Spe\nJolly Nature\n- Dragon Claw\n- Rock Slide\n- Earthquake\n- Protect\n\nWhimsicott @ Focus Sash\nAbility: Prankster\nLevel: 50\nEVs: 2 HP / 32 SpA / 32 Spe\nTimid Nature\n- Tailwind\n- Moonblast\n- Encore\n- Protect\n\nCharizard-Mega-Y @ Charizardite Y\nAbility: Drought\nLevel: 50\nEVs: 2 HP / 32 SpA / 32 Spe\nTimid Nature\n- Protect\n- Heat Wave\n- Solar Beam\n- Weather Ball\n\nKingambit @ Black Glasses\nAbility: Defiant\nLevel: 50\nEVs: 32 HP / 32 Atk / 2 SpD\nAdamant Nature\n- Sucker Punch\n- Kowtow Cleave\n- Protect\n- Iron Head\n\nBasculegion-Male @ Choice Scarf\nAbility: Adaptability\nLevel: 50\nEVs: 2 HP / 32 Atk / 32 Spe\nJolly Nature\n- Last Respects\n- Aqua Jet\n- Wave Crash\n- Protect\n\nIncineroar @ Sitrus Berry\nAbility: Intimidate\nLevel: 50\nEVs: 32 HP / 14 Def / 20 SpD\nCareful Nature\n- Fake Out\n- Parting Shot\n- Flare Blitz\n- Throat Chop"
  },
  {
   "rank": 2,
   "name": "Archaludon Rain",
-  "tag": "Top 3-core: Archaludon + Pelipper + Mega Swampert",
-  "src": "Reg M-B S3 ranked snapshot",
-  "paste": "Pelipper @ Focus Sash\nAbility: Drizzle\nLevel: 50\nEVs: 32 SpA / 32 HP / 2 SpD\nModest Nature\n- Hurricane\n- Weather Ball\n- Tailwind\n- Wide Guard\n\nArchaludon @ Sitrus Berry\nAbility: Stalwart\nLevel: 50\nEVs: 32 SpA / 32 HP / 2 Def\nModest Nature\n- Electro Shot\n- Draco Meteor\n- Flash Cannon\n- Dragon Pulse\n\nSwampert-Mega @ Swampertite\nAbility: Swift Swim\nLevel: 50\nEVs: 32 Atk / 32 Spe / 2 HP\nAdamant Nature\n- Liquidation\n- Earthquake\n- Ice Punch\n- Protect\n\nBasculegion-Male @ Choice Scarf\nAbility: Adaptability\nLevel: 50\nEVs: 32 Atk / 32 Spe / 2 HP\nAdamant Nature\n- Wave Crash\n- Last Respects\n- Aqua Jet\n- Flip Turn\n\nSylveon @ Leftovers\nAbility: Pixilate\nLevel: 50\nEVs: 32 SpA / 32 HP / 2 SpD\nModest Nature\n- Hyper Voice\n- Moonblast\n- Helping Hand\n- Protect\n\nKingambit @ Focus Sash\nAbility: Defiant\nLevel: 50\nEVs: 32 Atk / 32 HP / 2 Def\nAdamant Nature\n- Swords Dance\n- Kowtow Cleave\n- Sucker Punch\n- Protect"
+  "tag": "Pelipper + Archaludon appear together on 79% of Archaludon teams, with Mega Swampert on 74%",
+  "src": "July 2026 ladder · 1760+",
+  "paste": "Pelipper @ Focus Sash\nAbility: Drizzle\nLevel: 50\nEVs: 2 HP / 32 SpA / 32 Spe\nModest Nature\n- Hurricane\n- Weather Ball\n- Tailwind\n- Wide Guard\n\nArchaludon @ Leftovers\nAbility: Stamina\nLevel: 50\nEVs: 32 HP / 1 SpA / 29 SpD / 4 Spe\nModest Nature\n- Electro Shot\n- Protect\n- Flash Cannon\n- Dragon Pulse\n\nSwampert-Mega @ Swampertite\nAbility: Swift Swim\nLevel: 50\nEVs: 2 HP / 32 Atk / 32 Spe\nAdamant Nature\n- Protect\n- Wave Crash\n- Ice Punch\n- Earthquake\n\nSinistcha @ Kasib Berry\nAbility: Hospitality\nLevel: 50\nEVs: 32 HP / 14 Def / 20 SpD\nBold Nature\n- Matcha Gotcha\n- Rage Powder\n- Trick Room\n- Protect\n\nGrimmsnarl @ Light Clay\nAbility: Prankster\nLevel: 50\nEVs: 32 HP / 19 Def / 15 SpD\nCareful Nature\n- Parting Shot\n- Reflect\n- Light Screen\n- Spirit Break\n\nBasculegion-Male @ Choice Scarf\nAbility: Adaptability\nLevel: 50\nEVs: 2 HP / 32 Atk / 32 Spe\nJolly Nature\n- Last Respects\n- Aqua Jet\n- Wave Crash\n- Protect"
  },
  {
   "rank": 3,
-  "name": "Kingambit Fake Out Goodstuffs",
-  "tag": "Kingambit 70.5% usage at NAIC Day 2",
-  "src": "2026 NA International Championships",
-  "paste": "Kingambit @ Focus Sash\nAbility: Defiant\nLevel: 50\nEVs: 32 Atk / 32 HP / 2 Def\nAdamant Nature\n- Swords Dance\n- Kowtow Cleave\n- Sucker Punch\n- Protect\n\nSneasler @ Focus Sash\nAbility: Unburden\nLevel: 50\nEVs: 32 Atk / 32 Spe / 2 HP\nJolly Nature\n- Close Combat\n- Dire Claw\n- Fake Out\n- Protect\n\nIncineroar @ Sitrus Berry\nAbility: Intimidate\nLevel: 50\nEVs: 32 HP / 32 SpD / 2 Atk\nCareful Nature\n- Fake Out\n- Flare Blitz\n- Parting Shot\n- Darkest Lariat\n\nFloette-Mega @ Floettite\nAbility: Fairy Aura\nLevel: 50\nEVs: 32 SpA / 32 HP / 2 SpD\nModest Nature\n- Moonblast\n- Dazzling Gleam\n- Calm Mind\n- Protect\n\nGarchomp @ Life Orb\nAbility: Rough Skin\nLevel: 50\nEVs: 32 Atk / 32 Spe / 2 HP\nJolly Nature\n- Swords Dance\n- Earthquake\n- Scale Shot\n- Protect\n\nSylveon @ Leftovers\nAbility: Pixilate\nLevel: 50\nEVs: 32 SpA / 32 HP / 2 SpD\nModest Nature\n- Hyper Voice\n- Moonblast\n- Helping Hand\n- Protect"
+  "name": "Torkoal Trick Room Sun",
+  "tag": "Farigiraf sets the room, Torkoal erupts — 70.7% of Torkoal teams carry Farigiraf; Final Gambit Staraptor clears setup turns",
+  "src": "July 2026 ladder · 1760+",
+  "paste": "Torkoal @ Charcoal\nAbility: Drought\nLevel: 50\nEVs: 32 HP / 32 SpA / 2 SpD\nQuiet Nature\n- Eruption\n- Protect\n- Weather Ball\n- Heat Wave\n\nFarigiraf @ Sitrus Berry\nAbility: Armor Tail\nLevel: 50\nEVs: 25 HP / 26 Def / 15 SpD\nBold Nature\n- Trick Room\n- Helping Hand\n- Psychic\n- Protect\n\nMawile-Mega @ Mawilite\nAbility: Huge Power\nLevel: 50\nEVs: 32 HP / 32 Atk / 2 SpD\nBrave Nature\n- Play Rough\n- Sucker Punch\n- Protect\n- Iron Head\n\nKangaskhan @ Silk Scarf\nAbility: Scrappy\nLevel: 50\nEVs: 32 HP / 32 Atk / 2 Def\nBrave Nature\n- Fake Out\n- Last Resort\n\nStaraptor @ Choice Scarf\nAbility: Intimidate\nLevel: 50\nEVs: 32 HP / 2 Atk / 32 Spe\nJolly Nature\n- Final Gambit\n- Close Combat\n- Brave Bird\n- U-turn\n\nIncineroar @ Passho Berry\nAbility: Intimidate\nLevel: 50\nEVs: 32 HP / 14 Def / 20 SpD\nCareful Nature\n- Fake Out\n- Parting Shot\n- Flare Blitz\n- Throat Chop"
  },
  {
   "rank": 4,
-  "name": "Mega Charizard Y Sun",
-  "tag": "Char-Y top-5 usage in every major event",
-  "src": "2026 NAIC / Grand Champions Festival",
-  "paste": "Charizard-Mega-Y @ Charizardite Y\nAbility: Drought\nLevel: 50\nEVs: 32 SpA / 32 Spe / 2 HP\nTimid Nature\n- Heat Wave\n- Solar Beam\n- Air Slash\n- Protect\n\nVenusaur-Mega @ Venusaurite\nAbility: Thick Fat\nLevel: 50\nEVs: 32 SpA / 32 HP / 2 SpD\nModest Nature\n- Sludge Bomb\n- Earth Power\n- Sleep Powder\n- Protect\n\nTalonflame @ Sharp Beak\nAbility: Gale Wings\nLevel: 50\nEVs: 32 Atk / 32 Spe / 2 HP\nJolly Nature\n- Brave Bird\n- Flare Blitz\n- Tailwind\n- Will-O-Wisp\n\nKingambit @ Black Glasses\nAbility: Defiant\nLevel: 50\nEVs: 32 Atk / 32 HP / 2 Def\nAdamant Nature\n- Kowtow Cleave\n- Sucker Punch\n- Iron Head\n- Protect\n\nFarigiraf @ Sitrus Berry\nAbility: Armor Tail\nLevel: 50\nEVs: 32 HP / 32 SpA / 2 Def\nQuiet Nature\n- Trick Room\n- Psychic\n- Foul Play\n- Helping Hand\n\nBasculegion-Male @ Focus Sash\nAbility: Adaptability\nLevel: 50\nEVs: 32 Atk / 32 Spe / 2 HP\nAdamant Nature\n- Wave Crash\n- Last Respects\n- Aqua Jet\n- Protect"
+  "name": "Kingambit Dark Balance",
+  "tag": "The #1 Pokémon on the ladder (36.8%) with its most common partners: Last Respects Basculegion and Tailwind Whimsicott",
+  "src": "July 2026 ladder · 1760+",
+  "paste": "Kingambit @ Black Glasses\nAbility: Defiant\nLevel: 50\nEVs: 32 HP / 32 Atk / 2 SpD\nAdamant Nature\n- Sucker Punch\n- Kowtow Cleave\n- Protect\n- Iron Head\n\nBasculegion-Male @ Choice Scarf\nAbility: Adaptability\nLevel: 50\nEVs: 2 HP / 32 Atk / 32 Spe\nJolly Nature\n- Last Respects\n- Aqua Jet\n- Wave Crash\n- Protect\n\nWhimsicott @ Focus Sash\nAbility: Prankster\nLevel: 50\nEVs: 2 HP / 32 SpA / 32 Spe\nTimid Nature\n- Tailwind\n- Moonblast\n- Encore\n- Protect\n\nFloette-Mega @ Floettite\nAbility: Fairy Aura\nLevel: 50\nEVs: 2 HP / 32 SpA / 32 Spe\nTimid Nature\n- Protect\n- Dazzling Gleam\n- Moonblast\n- Light of Ruin\n\nSneasler @ White Herb\nAbility: Unburden\nLevel: 50\nEVs: 2 HP / 32 Atk / 32 Spe\nJolly Nature\n- Close Combat\n- Fake Out\n- Dire Claw\n- Protect\n\nIncineroar @ Sitrus Berry\nAbility: Intimidate\nLevel: 50\nEVs: 32 HP / 14 Def / 20 SpD\nCareful Nature\n- Fake Out\n- Parting Shot\n- Flare Blitz\n- Throat Chop"
  },
  {
   "rank": 5,
-  "name": "Trick Room Engine",
-  "tag": "Farigiraf + Sinistcha TR package",
-  "src": "Grand Champions Festival Encore",
-  "paste": "Farigiraf @ Sitrus Berry\nAbility: Armor Tail\nLevel: 50\nEVs: 32 HP / 32 SpA / 2 Def\nQuiet Nature\n- Trick Room\n- Psychic\n- Foul Play\n- Helping Hand\n\nSinistcha @ Sitrus Berry\nAbility: Hospitality\nLevel: 50\nEVs: 32 HP / 32 SpA / 2 Def\nQuiet Nature\n- Matcha Gotcha\n- Shadow Ball\n- Trick Room\n- Life Dew\n\nMetagross-Mega @ Metagrossite\nAbility: Tough Claws\nLevel: 50\nEVs: 32 Atk / 32 HP / 2 Def\nAdamant Nature\n- Iron Head\n- Zen Headbutt\n- Bullet Punch\n- Protect\n\nKingambit @ Black Glasses\nAbility: Defiant\nLevel: 50\nEVs: 32 Atk / 32 HP / 2 Def\nAdamant Nature\n- Kowtow Cleave\n- Sucker Punch\n- Iron Head\n- Protect\n\nIncineroar @ Sitrus Berry\nAbility: Intimidate\nLevel: 50\nEVs: 32 HP / 32 SpD / 2 Atk\nCareful Nature\n- Fake Out\n- Flare Blitz\n- Parting Shot\n- Darkest Lariat\n\nFloette-Mega @ Floettite\nAbility: Fairy Aura\nLevel: 50\nEVs: 32 SpA / 32 HP / 2 SpD\nModest Nature\n- Moonblast\n- Dazzling Gleam\n- Calm Mind\n- Protect"
+  "name": "Sinistcha Redirection",
+  "tag": "Rage Powder Sinistcha shields Unburden Sneasler and Mega Delphox — the #2 support Pokémon at 34.4% usage",
+  "src": "July 2026 ladder · 1760+",
+  "paste": "Sinistcha @ Kasib Berry\nAbility: Hospitality\nLevel: 50\nEVs: 32 HP / 14 Def / 20 SpD\nBold Nature\n- Matcha Gotcha\n- Rage Powder\n- Trick Room\n- Protect\n\nSneasler @ White Herb\nAbility: Unburden\nLevel: 50\nEVs: 2 HP / 32 Atk / 32 Spe\nJolly Nature\n- Close Combat\n- Fake Out\n- Dire Claw\n- Protect\n\nDelphox-Mega @ Delphoxite\nAbility: Levitate\nLevel: 50\nEVs: 1 HP / 32 SpA / 1 SpD / 32 Spe\nTimid Nature\n- Heat Wave\n- Protect\n- Nasty Plot\n- Psyshock\n\nKingambit @ Black Glasses\nAbility: Defiant\nLevel: 50\nEVs: 32 HP / 32 Atk / 2 SpD\nAdamant Nature\n- Sucker Punch\n- Kowtow Cleave\n- Protect\n- Iron Head\n\nFloette-Mega @ Floettite\nAbility: Fairy Aura\nLevel: 50\nEVs: 2 HP / 32 SpA / 32 Spe\nTimid Nature\n- Protect\n- Dazzling Gleam\n- Moonblast\n- Light of Ruin\n\nIncineroar @ Sitrus Berry\nAbility: Intimidate\nLevel: 50\nEVs: 32 HP / 14 Def / 20 SpD\nCareful Nature\n- Fake Out\n- Parting Shot\n- Flare Blitz\n- Throat Chop"
  },
  {
   "rank": 6,
-  "name": "Mega Raichu Y Hyper Offense",
-  "tag": "Raichu-Mega-Y 9.1% at GCF Encore",
-  "src": "Grand Champions Festival Encore",
-  "paste": "Raichu-Mega-Y @ Raichunite Y\nAbility: No Guard\nLevel: 50\nEVs: 32 SpA / 32 Spe / 2 HP\nTimid Nature\n- Thunder\n- Volt Switch\n- Electroweb\n- Protect\n\nWhimsicott @ Focus Sash\nAbility: Prankster\nLevel: 50\nEVs: 32 SpA / 32 Spe / 2 HP\nTimid Nature\n- Tailwind\n- Moonblast\n- Encore\n- Protect\n\nSneasler @ Focus Sash\nAbility: Unburden\nLevel: 50\nEVs: 32 Atk / 32 Spe / 2 HP\nJolly Nature\n- Close Combat\n- Dire Claw\n- Fake Out\n- Protect\n\nGarchomp @ Life Orb\nAbility: Rough Skin\nLevel: 50\nEVs: 32 Atk / 32 Spe / 2 HP\nJolly Nature\n- Swords Dance\n- Earthquake\n- Scale Shot\n- Protect\n\nSinistcha @ Sitrus Berry\nAbility: Hospitality\nLevel: 50\nEVs: 32 HP / 32 SpA / 2 Def\nQuiet Nature\n- Matcha Gotcha\n- Shadow Ball\n- Trick Room\n- Life Dew\n\nAerodactyl-Mega @ Aerodactylite\nAbility: Tough Claws\nLevel: 50\nEVs: 32 Atk / 32 Spe / 2 HP\nJolly Nature\n- Rock Slide\n- Dual Wingbeat\n- Tailwind\n- Protect"
+  "name": "Screens Staraptor Offense",
+  "tag": "Prankster screens into Mega Staraptor — Grimmsnarl appears on 30.5% of its teams — with Nasty Plot Gholdengo cleanup",
+  "src": "July 2026 ladder · 1760+",
+  "paste": "Grimmsnarl @ Light Clay\nAbility: Prankster\nLevel: 50\nEVs: 32 HP / 19 Def / 15 SpD\nCareful Nature\n- Parting Shot\n- Reflect\n- Light Screen\n- Spirit Break\n\nStaraptor-Mega @ Staraptite\nAbility: Contrary\nLevel: 50\nEVs: 2 HP / 32 Atk / 32 Spe\nJolly Nature\n- Close Combat\n- Protect\n- Brave Bird\n- Roost\n\nSinistcha @ Kasib Berry\nAbility: Hospitality\nLevel: 50\nEVs: 32 HP / 14 Def / 20 SpD\nBold Nature\n- Matcha Gotcha\n- Rage Powder\n- Trick Room\n- Protect\n\nGholdengo @ Life Orb\nAbility: Good as Gold\nLevel: 50\nEVs: 2 HP / 32 SpA / 32 Spe\nModest Nature\n- Shadow Ball\n- Make It Rain\n- Protect\n- Nasty Plot\n\nGarchomp @ Choice Scarf\nAbility: Rough Skin\nLevel: 50\nEVs: 2 HP / 32 Atk / 32 Spe\nJolly Nature\n- Dragon Claw\n- Rock Slide\n- Earthquake\n- Protect\n\nWhimsicott @ Focus Sash\nAbility: Prankster\nLevel: 50\nEVs: 2 HP / 32 SpA / 32 Spe\nTimid Nature\n- Tailwind\n- Moonblast\n- Encore\n- Protect"
  },
  {
   "rank": 7,
-  "name": "Aero Screens",
-  "tag": "Mega Aerodactyl 10.6% at GCF Encore",
-  "src": "Grand Champions Festival Encore",
-  "paste": "Aerodactyl-Mega @ Aerodactylite\nAbility: Tough Claws\nLevel: 50\nEVs: 32 Atk / 32 Spe / 2 HP\nJolly Nature\n- Rock Slide\n- Dual Wingbeat\n- Tailwind\n- Protect\n\nGrimmsnarl @ Light Clay\nAbility: Prankster\nLevel: 50\nEVs: 32 HP / 32 SpD / 2 Def\nCareful Nature\n- Reflect\n- Light Screen\n- Spirit Break\n- Scary Face\n\nDragonite-Mega @ Dragoninite\nAbility: Multiscale\nLevel: 50\nEVs: 32 Atk / 32 HP / 2 Spe\nAdamant Nature\n- Extreme Speed\n- Ice Spinner\n- Earthquake\n- Protect\n\nSylveon @ Leftovers\nAbility: Pixilate\nLevel: 50\nEVs: 32 SpA / 32 HP / 2 SpD\nModest Nature\n- Hyper Voice\n- Moonblast\n- Helping Hand\n- Protect\n\nKingambit @ Focus Sash\nAbility: Defiant\nLevel: 50\nEVs: 32 Atk / 32 HP / 2 Def\nAdamant Nature\n- Swords Dance\n- Kowtow Cleave\n- Sucker Punch\n- Protect\n\nRotom-Wash @ Sitrus Berry\nAbility: Levitate\nLevel: 50\nEVs: 32 SpA / 32 HP / 2 SpD\nModest Nature\n- Hydro Pump\n- Thunderbolt\n- Will-O-Wisp\n- Protect"
+  "name": "Froslass Veil Offense",
+  "tag": "Snow Warning Aurora Veil into Kingambit (49.6% of Froslass teams) and Sneasler (42.5%)",
+  "src": "July 2026 ladder · 1760+",
+  "paste": "Froslass-Mega @ Froslassite\nAbility: Snow Warning\nLevel: 50\nEVs: 2 HP / 32 SpA / 32 Spe\nTimid Nature\n- Blizzard\n- Protect\n- Shadow Ball\n- Aurora Veil\n\nKingambit @ Black Glasses\nAbility: Defiant\nLevel: 50\nEVs: 32 HP / 32 Atk / 2 SpD\nAdamant Nature\n- Sucker Punch\n- Kowtow Cleave\n- Protect\n- Iron Head\n\nSneasler @ White Herb\nAbility: Unburden\nLevel: 50\nEVs: 2 HP / 32 Atk / 32 Spe\nJolly Nature\n- Close Combat\n- Fake Out\n- Dire Claw\n- Protect\n\nBasculegion-Male @ Choice Scarf\nAbility: Adaptability\nLevel: 50\nEVs: 2 HP / 32 Atk / 32 Spe\nJolly Nature\n- Last Respects\n- Aqua Jet\n- Wave Crash\n- Protect\n\nGarchomp @ Life Orb\nAbility: Rough Skin\nLevel: 50\nEVs: 2 HP / 32 Atk / 32 Spe\nJolly Nature\n- Dragon Claw\n- Rock Slide\n- Earthquake\n- Protect\n\nWhimsicott @ Focus Sash\nAbility: Prankster\nLevel: 50\nEVs: 2 HP / 32 SpA / 32 Spe\nTimid Nature\n- Tailwind\n- Moonblast\n- Encore\n- Protect"
  },
  {
   "rank": 8,
-  "name": "Glimmora Lead Control",
-  "tag": "Glimmora 18.4% at King of Champions",
-  "src": "Limitless community events",
-  "paste": "Glimmora @ Focus Sash\nAbility: Toxic Debris\nLevel: 50\nEVs: 32 SpA / 32 Spe / 2 HP\nTimid Nature\n- Meteor Beam\n- Sludge Bomb\n- Earth Power\n- Spiky Shield\n\nWhimsicott @ Focus Sash\nAbility: Prankster\nLevel: 50\nEVs: 32 SpA / 32 Spe / 2 HP\nTimid Nature\n- Tailwind\n- Moonblast\n- Encore\n- Protect\n\nGarchomp @ Choice Scarf\nAbility: Rough Skin\nLevel: 50\nEVs: 32 Atk / 32 Spe / 2 HP\nJolly Nature\n- Earthquake\n- Dragon Claw\n- Rock Slide\n- Stomping Tantrum\n\nSylveon @ Leftovers\nAbility: Pixilate\nLevel: 50\nEVs: 32 SpA / 32 HP / 2 SpD\nModest Nature\n- Hyper Voice\n- Moonblast\n- Helping Hand\n- Protect\n\nTalonflame @ Sharp Beak\nAbility: Gale Wings\nLevel: 50\nEVs: 32 Atk / 32 Spe / 2 HP\nJolly Nature\n- Brave Bird\n- Flare Blitz\n- Tailwind\n- Will-O-Wisp\n\nMetagross-Mega @ Metagrossite\nAbility: Tough Claws\nLevel: 50\nEVs: 32 Atk / 32 HP / 2 Def\nAdamant Nature\n- Iron Head\n- Zen Headbutt\n- Bullet Punch\n- Protect"
+  "name": "Gengar Perish Trap",
+  "tag": "Shadow Tag + Perish Song — Gengar’s top partners are Incineroar (73.8%) and Politoed (36.8%)",
+  "src": "July 2026 ladder · 1760+",
+  "paste": "Gengar-Mega @ Gengarite\nAbility: Shadow Tag\nLevel: 50\nEVs: 2 HP / 32 SpA / 32 Spe\nTimid Nature\n- Protect\n- Shadow Ball\n- Perish Song\n- Sludge Bomb\n\nPolitoed @ Sitrus Berry\nAbility: Drizzle\nLevel: 50\nEVs: 31 HP / 23 Def / 12 SpD\nCalm Nature\n- Protect\n- Weather Ball\n- Perish Song\n- Encore\n\nIncineroar @ Passho Berry\nAbility: Intimidate\nLevel: 50\nEVs: 32 HP / 14 Def / 20 SpD\nCareful Nature\n- Fake Out\n- Parting Shot\n- Flare Blitz\n- Throat Chop\n\nSinistcha @ Kasib Berry\nAbility: Hospitality\nLevel: 50\nEVs: 32 HP / 14 Def / 20 SpD\nBold Nature\n- Matcha Gotcha\n- Rage Powder\n- Trick Room\n- Protect\n\nArchaludon @ Leftovers\nAbility: Stamina\nLevel: 50\nEVs: 32 HP / 1 SpA / 29 SpD / 4 Spe\nModest Nature\n- Electro Shot\n- Protect\n- Flash Cannon\n- Dragon Pulse\n\nSwampert-Mega @ Swampertite\nAbility: Swift Swim\nLevel: 50\nEVs: 2 HP / 32 Atk / 32 Spe\nAdamant Nature\n- Protect\n- Wave Crash\n- Ice Punch\n- Earthquake"
  }
 ];
 
@@ -5423,7 +5504,16 @@ function TopTeamRow({t, id, open, setOpen, onLoadTeam, badge, extraTag, extraAct
 /* ---- Updates / changelog ----
    Every release adds a dated entry here, newest first. */
 const CHANGELOG = [
+  {date: 'August 7, 2026', items: [
+    {tag: 'General', text: 'Season M-5 is live (Aug 5 \u2013 Sep 9, still Regulation M-B \u2014 the roster holds through Worlds). The banner, News, and season labels are updated, and the live in-game ladder sections in the Competitive Pok\u00e9dex now track Season M-5 automatically as its data grows.'},
+    {tag: 'Data', text: 'Meta Threats and the Trending Teams archetypes remain built on the July 2026 Showdown ladder \u2014 the newest published statistics (August\u2019s publish at the start of September, and the tables will refresh then). Early-season M-5 in-game numbers are live per Pok\u00e9mon in the dex.'}
+  ]},
   {date: 'August 5, 2026', items: [
+    {tag: 'Pok\u00e9dex', text: 'Second move filter in the dex \u2014 stack two moves to find every Pok\u00e9mon whose Champions learnset contains both (Fake Out + Icy Wind, Tailwind + Encore\u2026).'},
+    {tag: 'Data', text: 'New Community Meta on Trending Teams: an aggregated, fully anonymous snapshot of what PokePanion users are facing on ladder \u2014 usage ranks with top items and moves, built from opponent logs contributed by players who opt in. Contribution is off by default; flip it on in the opponent log if you want to feed the snapshot. Battle counts are shown so small samples stay honest.'},
+    {tag: 'VGC', text: 'Team-sheet screenshots now open in a preview window instead of downloading straight away \u2014 look it over, then Copy image to the clipboard or Download PNG.'},
+    {tag: 'Data', text: 'Meta Threats rebuilt on real data: the top 20 now come straight from the baked July 2026 Smogon ladder usage (1.76M battles, 1760+ rating) with exact forms \u2014 Mega Charizard Y, Mega Raichu Y, and friends \u2014 instead of the old hand-picked snapshot.'},
+    {tag: 'Teams', text: 'Trending Teams refreshed for the current meta: all eight archetype teams rebuilt from June 2026 ladder statistics \u2014 every set uses that Pok\u00e9mon\u2019s most common alignment, stat spread, item, and moves on ladder, and each team\u2019s core reflects real teammate pairing rates.'},
     {tag: 'Teams', text: 'Removed the Content Creator Teams section and its placeholder entry \u2014 featured content is curated directly by the site now.'},
     {tag: 'Teams', text: 'Trending Teams is now fully curated by PokePanion \u2014 the page shows hand-picked squads with references, added, updated, and removed by the site. (Your personal saved teams still live in the VGC Companion\u2019s team library.)'},
     {tag: 'General', text: 'Added a site footer and an About & credits window: fan-project disclaimer, data credits, privacy note (this site collects nothing \u2014 all your data stays in your browser), and a contact address.'},
@@ -5474,7 +5564,7 @@ function AboutModal({onClose}){
           {' '}Sprites and artwork are served from the <a href="https://github.com/PokeAPI/sprites" target="_blank" rel="noopener noreferrer">PokeAPI sprites</a> collection.
         </p>
         <h3 className="about-h">Privacy</h3>
-        <p className="about-p">This site collects nothing. There are no accounts, no ads, no tracking cookies. Your squads, saved teams, opponent log, and settings live entirely in your own browser’s local storage and never leave your device. The Competitive Pokédex makes one kind of outbound request: fetching public battle statistics from championsbattledata.com.</p>
+        <p className="about-p">This site collects nothing. There are no accounts, no ads, no tracking cookies. Your squads, saved teams, opponent log, and settings live entirely in your own browser’s local storage and never leave your device. The Competitive Pokédex makes one kind of outbound request: fetching public battle statistics from championsbattledata.com. One optional exception: if you switch on “Contribute anonymous opponent data” in the opponent log, each battle you log also sends that opponent’s species, ability, item, nature, and moves — and nothing else, with no identity attached — to this site’s community meta.</p>
         <h3 className="about-h">Contact</h3>
         <p className="about-p">Questions, corrections, or takedown requests: <a href="mailto:contact@poke-panion.com">contact@poke-panion.com</a>. Requests from rights holders are honored promptly.</p>
       </div>
@@ -5508,6 +5598,15 @@ function TopTeamsPage({onLoadTeam}){
   const [featured, setFeatured] = useState(null);
   const CURATE = !!(window.location && /[?#&]curate/.test((window.location.search || '') + (window.location.hash || '')));
   const siteMode = !!(featured && featured.teams.length > 0);
+  const [cmeta, setCmeta] = useState(null);
+  useEffect(() => {
+    if(!(window.location && /^https?:/.test(window.location.protocol))) return;
+    let live = true;
+    fetch('/api/meta?days=30').then(r => r.ok ? r.json() : null)
+      .then(j => { if(live && j && Array.isArray(j.species)) setCmeta(j); })
+      .catch(() => {});
+    return () => { live = false; };
+  }, []);
   useEffect(() => {
     let live = true;
     fetch('trending.json', {cache: 'no-store'})
@@ -5623,6 +5722,26 @@ function TopTeamsPage({onLoadTeam}){
       ))}
       {!userTeams.length && <div className="tt-empty">No teams drafted yet — teams you add here become the site's Featured Teams once exported.</div>}
       </React.Fragment>}
+      {cmeta && cmeta.battles > 0 && (
+        <div className="tt-section" style={{marginTop: 26}}>
+          <h2 className="tt-section-title">Community Meta</h2>
+          <p className="sub">What PokePanion users are facing on ladder — {cmeta.battles} battle{cmeta.battles === 1 ? '' : 's'} logged in the last {cmeta.days} days by players who opted in. Small samples are noisy; treat this as a community snapshot, not gospel.</p>
+          {cmeta.species.slice(0, 20).map((sp, i) => {
+            const d = findMon(sp.species);
+            return (
+              <div className="cm-row" key={sp.species}>
+                <span className="cm-rank">{String(i + 1).padStart(2, '0')}</span>
+                {d && <img className="cm-sprite" src={SPRITE(d.id)} alt="" loading="lazy"/>}
+                <span className="cm-name">{sp.species}</span>
+                <span className="cm-pct">{sp.pct}%</span>
+                <span className="cm-tops">
+                  {sp.items[0] ? sp.items[0][0] : ''}{sp.moves.length ? ' · ' + sp.moves.slice(0, 3).map(x => x[0]).join(', ') : ''}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -5657,7 +5776,7 @@ function App(){
       <header className="topbar">
         <div className="topbar-inner">
           <span className="logo">Poke<b>Panion</b></span>
-          <span className="reg-chip">REG M-B · SEASON M-4</span>
+          <span className="reg-chip">REG M-B · SEASON M-5</span>
           <nav aria-label="Main">
             {[['vgc','VGC Companion'],['teams','Trending Teams'],['dex','Competitive Pokédex'],['updates','Updates']].map(([id,label]) => (
               <button key={id} className={'tab-btn' + (tab === id ? ' active' : '')} onClick={() => setTab(id)}>{label}</button>
