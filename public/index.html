@@ -3625,16 +3625,9 @@ const COLS = [
   {key:'bst', label:'BST', sortable:true},
 ];
 
-function DexPage({jumpSlug, onJumpDone}){
+function DexPage(){
   const [mode, setMode] = useState(() => lsGet('cc-dexmode-v1', 'comp') === 'complete' ? 'complete' : 'comp');    // complete | comp
   useEffect(() => lsSet('cc-dexmode-v1', mode), [mode]);
-  /* cross-tab jump from the Usage page */
-  useEffect(() => {
-    if(!jumpSlug) return;
-    const p = POKEDEX.find(x => x.slug === jumpSlug);
-    if(p){ if(mode !== 'comp') setMode('comp'); setSel(p); }
-    if(onJumpDone) onJumpDone();
-  }, [jumpSlug]);
   /* filters persist across page switches (cc-dexfilters-v1) */
   const df = lsGet('cc-dexfilters-v1', {}) || {};
   const [q, setQ] = useState(typeof df.q === 'string' ? df.q : '');
@@ -5632,7 +5625,7 @@ function TopTeamRow({t, id, open, setOpen, onLoadTeam, badge, extraTag, extraAct
    Every release adds a dated entry here, newest first. */
 const CHANGELOG = [
   {date: 'August 12, 2026', items: [
-    {tag: 'Data', text: 'New Usage tab: every ranked Regulation M-B Pok\u00e9mon in one sortable, searchable table \u2014 rank, usage share with bars, and one-click through to that Pok\u00e9mon\u2019s full competitive page in the dex. Built on the newest published ladder statistics.'},
+    {tag: 'Data', text: 'New Usage tab: every ranked Regulation M-B Pok\u00e9mon in one sortable, searchable table \u2014 rank, usage share with bars, and one click opens that Pok\u00e9mon\u2019s full competitive window right on the page. Built on the newest published ladder statistics.'},
     {tag: 'General', text: 'The Updates page is tucked away for now \u2014 release notes are still being kept and the page will return.'}
   ]},
   {date: 'August 8, 2026', items: [
@@ -5707,8 +5700,9 @@ function AboutModal({onClose}){
     </div>
   );
 }
-function UsagePage({onInspect}){
+function UsagePage(){
   const [q, setQ] = useState('');
+  const [sel, setSel] = useState(null);
   const rows = React.useMemo(() => {
     const list = Object.entries(LADDER.usage)
       .map(([slug, v]) => ({slug, rank: v[0], pct: v[1], dex: POKEDEX.find(p => p.slug === slug)}))
@@ -5721,7 +5715,7 @@ function UsagePage({onInspect}){
   return (
     <div className="page">
       <h1>Usage</h1>
-      <p className="sub">Every ranked Pokémon in Regulation M-B, ordered by ladder usage — {LADDER.month} Showdown ladder, {LADDER.cutoff}+ rating, {(LADDER.battles / 1e6).toFixed(2)}M battles (the newest published statistics). Click any Pokémon for its full competitive page — moves, items, spreads, teammates, and live in-game season data.</p>
+      <p className="sub">Every ranked Pokémon in Regulation M-B, ordered by ladder usage — {LADDER.month} Showdown ladder, {LADDER.cutoff}+ rating, {(LADDER.battles / 1e6).toFixed(2)}M battles (the newest published statistics). Click any Pokémon to open its full competitive window right here — moves, items, spreads, teammates, and live in-game season data.</p>
       <div className="us-bar">
         <input className="search" style={{width: 240}} placeholder="Search Pokémon…" value={q}
           onChange={e => setQ(e.target.value)} aria-label="Search usage table"/>
@@ -5729,8 +5723,8 @@ function UsagePage({onInspect}){
       </div>
       {rows.map(r => (
         <div className="us-row" key={r.slug} role="button" tabIndex={0}
-          onClick={() => onInspect(r.slug)}
-          onKeyDown={e => { if(e.key === 'Enter') onInspect(r.slug); }}>
+          onClick={() => setSel(r.dex)}
+          onKeyDown={e => { if(e.key === 'Enter') setSel(r.dex); }}>
           <span className="us-rank">{r.rank}</span>
           <img className="us-sprite" src={SPRITE(r.dex.id)} alt="" loading="lazy" onError={e => spriteFallback(e, r.dex)}/>
           <span className="us-name">{r.dex.name}</span>
@@ -5742,6 +5736,14 @@ function UsagePage({onInspect}){
         </div>
       ))}
       {!rows.length && <div className="tt-empty">No ranked Pokémon match that search.</div>}
+      {sel && (() => {
+        const idx = rows.findIndex(r => r.dex.id === sel.id);
+        return <MonDetail mon={sel}
+          onClose={() => setSel(null)}
+          onJump={setSel}
+          onPrev={idx > 0 ? () => setSel(rows[idx - 1].dex) : null}
+          onNext={idx !== -1 && idx < rows.length - 1 ? () => setSel(rows[idx + 1].dex) : null}/>;
+      })()}
     </div>
   );
 }
@@ -5942,7 +5944,6 @@ function TopTeamsPage({onLoadTeam}){
 /* ============ shell ============ */
 function App(){
   const [aboutOpen, setAboutOpen] = useState(false);
-  const [dexJump, setDexJump] = useState(null);
   const [tab, setTab] = useState(() => {
     const t = lsGet('cc-tab-v1', 'vgc');
     return ['vgc','teams','dex','usage'].includes(t) ? t : 'vgc';
@@ -5983,8 +5984,8 @@ function App(){
         </div>
       </header>
       <main className={'wrap' + (tab === 'vgc' ? ' wide' : '')}>
-        {tab === 'dex' && <DexPage jumpSlug={dexJump} onJumpDone={() => setDexJump(null)}/>}
-        {tab === 'usage' && <UsagePage onInspect={slug => { setDexJump(slug); setTab('dex'); }}/>}
+        {tab === 'dex' && <DexPage/>}
+        {tab === 'usage' && <UsagePage/>}
         {tab === 'vgc' && <VgcPage squad={squad} setSquad={setSquad} refs={refs} setRefs={setRefs}/>}
         {tab === 'teams' && <TopTeamsPage onLoadTeam={loadTopTeam}/>}
       </main>
