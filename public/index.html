@@ -535,6 +535,28 @@ a.tt-watch{text-decoration:none;display:inline-flex;align-items:center;gap:5px;c
 .cm-name{font-weight:700;font-size:13px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cm-pct{font-family:var(--disp);font-weight:800;font-size:13px;color:var(--gold);text-align:right}
 .cm-tops{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rl-sec{margin-bottom:26px}
+.rl-form{display:flex;gap:8px;margin:10px 0 8px;flex-wrap:wrap}
+.rl-input{width:240px;max-width:70vw;font-family:var(--disp);letter-spacing:.12em;text-transform:uppercase}
+.rl-ext{color:var(--gold);text-decoration:none}
+.tt-code{margin-left:8px;font-family:var(--disp);font-size:10px;font-weight:700;letter-spacing:.08em;padding:2px 8px;border-radius:5px;border:1px solid var(--gold-dim);background:none;color:var(--gold);cursor:pointer;vertical-align:1px}
+.tt-code.on{color:#8BD48B;border-color:#2E5B33}
+.rl-codein{width:170px;text-transform:uppercase}
+.us-bar{display:flex;align-items:center;gap:12px;margin:4px 0 12px}
+.us-count{font-size:11.5px;color:var(--muted)}
+.us-row{display:grid;grid-template-columns:38px 34px minmax(150px,230px) 150px 1fr 56px;gap:12px;align-items:center;padding:5px 10px;border:1px solid var(--line);border-radius:8px;margin-bottom:5px;background:var(--panel);cursor:pointer}
+.us-row:hover{border-color:var(--gold-dim)}
+.us-rank{font-family:var(--disp);font-weight:800;font-size:12.5px;color:var(--muted);text-align:right}
+.us-sprite{width:32px;height:32px;image-rendering:pixelated}
+.us-name{font-weight:700;font-size:13.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.us-types{flex-wrap:nowrap}
+.us-track{position:relative;height:7px;background:var(--panel2);border-radius:4px;overflow:hidden}
+.us-fill{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#8A6A1F,var(--gold));border-radius:4px}
+.us-pct{font-family:var(--disp);font-weight:800;font-size:12.5px;color:var(--gold);text-align:right}
+@media (max-width:760px){.us-row{grid-template-columns:30px 30px 1fr 56px}.us-types,.us-track{display:none}}
+.rl-ext:hover{text-decoration:underline}
+.rep-form{display:flex;gap:8px;margin:4px 0 10px;flex-wrap:wrap}
+.rep-input{width:260px;max-width:70vw;text-transform:uppercase;letter-spacing:.08em;font-family:var(--disp);font-weight:600}
 .freq-toggle{margin-top:8px;width:100%;justify-content:center;display:inline-flex}
 .theme-btn{font-size:16px}
 .sq-chip-click{cursor:pointer}
@@ -3603,9 +3625,16 @@ const COLS = [
   {key:'bst', label:'BST', sortable:true},
 ];
 
-function DexPage(){
+function DexPage({jumpSlug, onJumpDone}){
   const [mode, setMode] = useState(() => lsGet('cc-dexmode-v1', 'comp') === 'complete' ? 'complete' : 'comp');    // complete | comp
   useEffect(() => lsSet('cc-dexmode-v1', mode), [mode]);
+  /* cross-tab jump from the Usage page */
+  useEffect(() => {
+    if(!jumpSlug) return;
+    const p = POKEDEX.find(x => x.slug === jumpSlug);
+    if(p){ if(mode !== 'comp') setMode('comp'); setSel(p); }
+    if(onJumpDone) onJumpDone();
+  }, [jumpSlug]);
   /* filters persist across page switches (cc-dexfilters-v1) */
   const df = lsGet('cc-dexfilters-v1', {}) || {};
   const [q, setQ] = useState(typeof df.q === 'string' ? df.q : '');
@@ -5468,6 +5497,101 @@ function linkMeta(url){
   }catch(_){ return {Icon: ExtLinkIcon, label: 'Link'}; }
 }
 
+/* ---- Replica Team lookup ----
+   Resolves a 10-character in-game Team ID against (1) this site's featured/known
+   teams and (2) the /api/replica endpoint when a lookup source is configured. */
+function ReplicaLookup({featured, userTeams, onLoadTeam, open, setOpen}){
+  const [code, setCode] = useState('');
+  const [state, setState] = useState({status: 'idle'});
+  const online = !!(window.location && /^https?:/.test(window.location.protocol));
+  const known = c => {
+    const all = [];
+    if(featured && featured.teams) all.push(...featured.teams);
+    all.push(...userTeams);
+    TOP_TEAMS.forEach(t => all.push(t));
+    return all.find(t => (t.code && String(t.code).toUpperCase() === c) || (t.name || '').toUpperCase().includes(c));
+  };
+  const lookup = async () => {
+    const c = code.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if(!/^[A-Z0-9]{8,12}$/.test(c)){
+      setState({status: 'err', msg: 'Team IDs are the 10-character codes shown on replica teams in-game.'});
+      return;
+    }
+    const hit = known(c);
+    if(hit){ setState({status: 'ok', team: hit, src: 'library'}); return; }
+    if(!online){ setState({status: 'miss', code: c, offline: true}); return; }
+    let cache = {};
+    try{ cache = JSON.parse(localStorage.getItem('cc-replica-v1') || '{}'); }catch(_){}
+    const cached = cache[c];
+    if(cached && Date.now() - cached.at < 24 * 60 * 60 * 1000){
+      setState({status: 'ok', src: 'live', team: cached.team});
+      return;
+    }
+    setState({status: 'loading'});
+    try{
+      const r = await fetch('/api/replica/' + c);
+      const j = await r.json();
+      let paste = '';
+      if(r.ok && j){
+        if(typeof j.paste === 'string') paste = j.paste;
+        else if(Array.isArray(j.mons) && j.mons.length) paste = replicaPaste(c, j.mons);
+      }
+      if(!paste || !parsePaste(paste).length){ setState({status: 'miss', code: c}); return; }
+      const team = {id: 'rl-' + c, name: (j.name || 'Replica team'), code: c, paste,
+        url: j.url || '', tag: 'Replica lookup \u00b7 ' + parsePaste(paste).length + ' Pok\u00e9mon'};
+      try{ cache[c] = {at: Date.now(), team}; localStorage.setItem('cc-replica-v1', JSON.stringify(cache)); }catch(_){}
+      setState({status: 'ok', src: 'live', team});
+    }catch(_){
+      setState({status: 'miss', code: c});
+    }
+  };
+  return (
+    <div className="tt-section rl-sec">
+      <h2 className="tt-section-title">Replica Lookup</h2>
+      <p className="sub">Enter an in-game Team ID to view that replica team here — then load it straight into your squad or reference side.</p>
+      <div className="rl-form">
+        <input className="f-input rl-input" placeholder="Team ID (e.g. SKSRLTBYV8)" value={code} maxLength={12}
+          onChange={e => setCode(e.target.value.toUpperCase())}
+          onKeyDown={e => { if(e.key === 'Enter') lookup(); }}
+          aria-label="Replica Team ID"/>
+        <button className="btn primary" onClick={lookup} disabled={state.status === 'loading'}>
+          {state.status === 'loading' ? 'Looking up…' : 'Look up'}
+        </button>
+      </div>
+      {state.status === 'err' && <div className="cbd-note">{state.msg}</div>}
+      {state.status === 'miss' && (
+        <div className="cbd-note">
+          「{state.code}」 isn't in PokePanion's team library{state.offline ? ' (and live lookup needs an internet connection)' : ' and the live lookup couldn\u2019t resolve it'}.
+          You can still pull it in-game (Training → Replicated Teams), or try the{' '}
+          <a className="rl-ext" href="https://champions.karthikb.dev/replica" target="_blank" rel="noopener noreferrer">Replica Team Viewer</a> by KarthikVGC.
+        </div>
+      )}
+      {state.status === 'ok' && (
+        <React.Fragment>
+          {state.src === 'library' && <div className="cbd-note">Found in this site's team library.</div>}
+          <TopTeamRow id="replica-result" t={state.team} open={open} setOpen={setOpen}
+            onLoadTeam={onLoadTeam} badge="ID"/>
+        </React.Fragment>
+      )}
+    </div>
+  );
+}
+
+function CodeChip({code}){
+  const [done, setDone] = useState(false);
+  return (
+    <Tip text={done ? 'Copied!' : 'Replica Team ID — click to copy, then enter it in-game to pull this exact team'}>
+      <button type="button" className={'tt-code' + (done ? ' on' : '')}
+        onClick={e => {
+          e.stopPropagation();
+          try{ navigator.clipboard.writeText(code); }catch(_){}
+          setDone(true); setTimeout(() => setDone(false), 1400);
+        }}>
+        {done ? '✓ Copied' : 'ID: ' + code}
+      </button>
+    </Tip>
+  );
+}
 function TopTeamRow({t, id, open, setOpen, onLoadTeam, badge, extraTag, extraActions}){
   const mons = parsePaste(t.paste);
   const isOpen = !!open[id];
@@ -5477,7 +5601,7 @@ function TopTeamRow({t, id, open, setOpen, onLoadTeam, badge, extraTag, extraAct
       <div className="tt-head" onClick={() => setOpen(o => ({...o, [id]: !o[id]}))}>
         <span className="tt-rank">{badge}</span>
         <div style={{minWidth:0}}>
-          <div className="tt-name">{t.name}</div>
+          <div className="tt-name">{t.name}{t.code ? <CodeChip code={t.code}/> : null}</div>
           <div className="tt-tag">{t.tag}{extraTag ? <React.Fragment> · <span className="tt-src">{extraTag}</span></React.Fragment> : null}</div>
         </div>
         <div className="tt-sprites">
@@ -5507,6 +5631,13 @@ function TopTeamRow({t, id, open, setOpen, onLoadTeam, badge, extraTag, extraAct
 /* ---- Updates / changelog ----
    Every release adds a dated entry here, newest first. */
 const CHANGELOG = [
+  {date: 'August 12, 2026', items: [
+    {tag: 'Data', text: 'New Usage tab: every ranked Regulation M-B Pok\u00e9mon in one sortable, searchable table \u2014 rank, usage share with bars, and one-click through to that Pok\u00e9mon\u2019s full competitive page in the dex. Built on the newest published ladder statistics.'},
+    {tag: 'General', text: 'The Updates page is tucked away for now \u2014 release notes are still being kept and the page will return.'}
+  ]},
+  {date: 'August 8, 2026', items: [
+    {tag: 'Teams', text: 'New Replica Lookup at the top of Trending Teams \u2014 enter any in-game Team ID: teams in PokePanion\u2019s library resolve instantly with full sets and \u2192 Squad / \u2192 Reference loading, and other IDs try the live lookup service. Featured teams now wear their Replica ID as a gold chip \u2014 click to copy it for use in-game.'},
+  ]},
   {date: 'August 7, 2026', items: [
     {tag: 'Teams', text: 'Cleaned up Trending Teams rows \u2014 every row now keeps the same layout: title and description on the left, the six sprites and the \u2192 Squad / \u2192 Reference buttons aligned on the right, regardless of description length.'},
     {tag: 'General', text: 'Season M-5 is live (Aug 5 \u2013 Sep 9, still Regulation M-B \u2014 the roster holds through Worlds). The banner, News, and season labels are updated, and the live in-game ladder sections in the Competitive Pok\u00e9dex now track Season M-5 automatically as its data grows.'},
@@ -5566,12 +5697,51 @@ function AboutModal({onClose}){
           {' '}Ladder usage statistics are derived from <a href="https://www.smogon.com/stats/" target="_blank" rel="noopener noreferrer">Smogon’s public usage data</a>.
           {' '}Game data is built on the open-source <a href="https://github.com/smogon/pokemon-showdown" target="_blank" rel="noopener noreferrer">Pokémon Showdown</a> project.
           {' '}Sprites and artwork are served from the <a href="https://github.com/PokeAPI/sprites" target="_blank" rel="noopener noreferrer">PokeAPI sprites</a> collection.
+          {' '}Replica Team ID lookups are powered by the <a href="https://champions.karthikb.dev/replica" target="_blank" rel="noopener noreferrer">Replica Team Viewer</a> by Karthik Bandagonda.
         </p>
         <h3 className="about-h">Privacy</h3>
         <p className="about-p">This site collects nothing. There are no accounts, no ads, no tracking cookies. Your squads, saved teams, opponent log, and settings live entirely in your own browser’s local storage and never leave your device. The Competitive Pokédex makes one kind of outbound request: fetching public battle statistics from championsbattledata.com. One optional exception: if you switch on “Contribute anonymous opponent data” in the opponent log, each battle you log also sends that opponent’s species, ability, item, nature, and moves — and nothing else, with no identity attached — to this site’s community meta.</p>
         <h3 className="about-h">Contact</h3>
         <p className="about-p">Questions, corrections, or takedown requests: <a href="mailto:contact@poke-panion.com">contact@poke-panion.com</a>. Requests from rights holders are honored promptly.</p>
       </div>
+    </div>
+  );
+}
+function UsagePage({onInspect}){
+  const [q, setQ] = useState('');
+  const rows = React.useMemo(() => {
+    const list = Object.entries(LADDER.usage)
+      .map(([slug, v]) => ({slug, rank: v[0], pct: v[1], dex: POKEDEX.find(p => p.slug === slug)}))
+      .filter(r => r.dex)
+      .sort((a, b) => a.rank - b.rank);
+    const n = q.trim().toLowerCase();
+    return n ? list.filter(r => r.dex.name.toLowerCase().includes(n) || r.slug.includes(n)) : list;
+  }, [q]);
+  const maxPct = rows.length ? Math.max(...rows.map(r => r.pct)) : 1;
+  return (
+    <div className="page">
+      <h1>Usage</h1>
+      <p className="sub">Every ranked Pokémon in Regulation M-B, ordered by ladder usage — {LADDER.month} Showdown ladder, {LADDER.cutoff}+ rating, {(LADDER.battles / 1e6).toFixed(2)}M battles (the newest published statistics). Click any Pokémon for its full competitive page — moves, items, spreads, teammates, and live in-game season data.</p>
+      <div className="us-bar">
+        <input className="search" style={{width: 240}} placeholder="Search Pokémon…" value={q}
+          onChange={e => setQ(e.target.value)} aria-label="Search usage table"/>
+        <span className="us-count">{rows.length} shown</span>
+      </div>
+      {rows.map(r => (
+        <div className="us-row" key={r.slug} role="button" tabIndex={0}
+          onClick={() => onInspect(r.slug)}
+          onKeyDown={e => { if(e.key === 'Enter') onInspect(r.slug); }}>
+          <span className="us-rank">{r.rank}</span>
+          <img className="us-sprite" src={SPRITE(r.dex.id)} alt="" loading="lazy" onError={e => spriteFallback(e, r.dex)}/>
+          <span className="us-name">{r.dex.name}</span>
+          <span className="type-badges us-types">
+            {r.dex.types.map(t => <span key={t} className="tb" style={{background: TYPE_COLORS[t]}}>{t}</span>)}
+          </span>
+          <span className="us-track"><span className="us-fill" style={{width: Math.max(2, 100 * r.pct / maxPct) + '%'}}/></span>
+          <span className="us-pct">{r.pct}%</span>
+        </div>
+      ))}
+      {!rows.length && <div className="tt-empty">No ranked Pokémon match that search.</div>}
     </div>
   );
 }
@@ -5595,6 +5765,21 @@ function UpdatesPage(){
   );
 }
 
+const EV_ORDER = [['hp','HP'],['atk','Atk'],['def','Def'],['spa','SpA'],['spd','SpD'],['spe','Spe']];
+function replicaPaste(code, mons){
+  return mons.map(m => {
+    const lines = [m.item ? m.species + ' @ ' + m.item : m.species];
+    if(m.ability) lines.push('Ability: ' + m.ability);
+    lines.push('Level: 50');
+    if(m.evs){
+      const ev = EV_ORDER.filter(([k]) => m.evs[k]).map(([k, lbl]) => m.evs[k] + ' ' + lbl).join(' / ');
+      if(ev) lines.push('EVs: ' + ev);
+    }
+    if(m.nature) lines.push(m.nature + ' Nature');
+    (m.moves || []).forEach(mv => lines.push('- ' + mv));
+    return lines.join('\n');
+  }).join('\n\n');
+}
 function TopTeamsPage({onLoadTeam}){
   const [open, setOpen] = useState({});   // id -> expanded (multiple rows can stay open)
   /* user-added trending teams — persisted locally, editable in place */
@@ -5619,7 +5804,7 @@ function TopTeamsPage({onLoadTeam}){
         if(!live || !j || !Array.isArray(j.teams)) return;
         const ok = j.teams.filter(t => t && typeof t.name === 'string' && typeof t.paste === 'string' && parsePaste(t.paste).length);
         setFeatured({updated: j.updated || '', teams: ok.map((t, i) => ({
-          id: 'ft' + i, name: t.name, paste: t.paste, url: t.url || '',
+          id: 'ft' + i, name: t.name, paste: t.paste, url: t.url || '', code: (t.code || '').toUpperCase(),
           tag: 'Featured \u00b7 ' + parsePaste(t.paste).length + ' Pok\u00e9mon'
         }))});
       })
@@ -5630,9 +5815,10 @@ function TopTeamsPage({onLoadTeam}){
   const [fName, setFName] = useState('');
   const [fPaste, setFPaste] = useState('');
   const [fLink, setFLink] = useState('');
+  const [fCode, setFCode] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [formErr, setFormErr] = useState('');
-  const resetForm = () => { setFName(''); setFPaste(''); setFLink(''); setEditingId(null); setFormErr(''); };
+  const resetForm = () => { setFName(''); setFPaste(''); setFLink(''); setFCode(''); setEditingId(null); setFormErr(''); };
   const saveUserTeam = () => {
     const name = fName.trim();
     if(!name || !fPaste.trim()) return;
@@ -5640,11 +5826,11 @@ function TopTeamsPage({onLoadTeam}){
     if(!parsed.length){ setFormErr('That paste didn\u2019t parse \u2014 use PokéPaste / Showdown format.'); return; }
     let url = fLink.trim();
     if(url && !/^https?:\/\//i.test(url)) url = 'https://' + url;
-    const entry = {id: editingId || 'u' + Date.now(), name, tag: 'Your team \u00b7 ' + parsed.length + ' Pok\u00e9mon', paste: fPaste.trim(), ...(url ? {url} : {})};
+    const entry = {id: editingId || 'u' + Date.now(), name, tag: 'Your team \u00b7 ' + parsed.length + ' Pok\u00e9mon', paste: fPaste.trim(), ...(url ? {url} : {}), code: fCode.trim().toUpperCase()};
     setUserTeams(ts => editingId ? ts.map(t => t.id === editingId ? entry : t) : [...ts, entry]);
     resetForm();
   };
-  const editUserTeam = t => { setEditingId(t.id); setFName(t.name); setFPaste(t.paste); setFLink(t.url || ''); setFormErr(''); };
+  const editUserTeam = t => { setEditingId(t.id); setFName(t.name); setFPaste(t.paste); setFLink(t.url || ''); setFCode(t.code || ''); setFormErr(''); };
   const deleteUserTeam = t => {
     if(!window.confirm(`Delete "${t.name}"?`)) return;
     if(editingId === t.id) resetForm();
@@ -5660,6 +5846,7 @@ function TopTeamsPage({onLoadTeam}){
         <TopTeamRow key={'t' + t.rank} id={'t' + t.rank} t={t} open={open} setOpen={setOpen}
           onLoadTeam={onLoadTeam} badge={String(t.rank).padStart(2,'0')} extraTag={t.src}/>
       ))}
+      <ReplicaLookup featured={featured} userTeams={userTeams} onLoadTeam={onLoadTeam} open={open} setOpen={setOpen}/>
       {(CURATE || (featured && featured.teams.length > 0)) && <div className="tt-section">
         {featured && featured.teams.length > 0 && (
           <React.Fragment>
@@ -5681,6 +5868,8 @@ function TopTeamsPage({onLoadTeam}){
       <div className="ut-form">
         <input className="f-input" placeholder="Team title" value={fName} maxLength={60}
           onChange={e => setFName(e.target.value)}/>
+        <input className="f-input rl-codein" placeholder="Replica ID (optional)" value={fCode} maxLength={12}
+          onChange={e => setFCode(e.target.value.toUpperCase())} aria-label="Replica Team ID (optional)"/>
         <input className="f-input" placeholder="Reference link (optional) — YouTube video, X post, article…" value={fLink} maxLength={300}
           onChange={e => setFLink(e.target.value)}/>
         <textarea className="f-input ut-paste" placeholder="Paste the team here (PokéPaste / Showdown format)&#10;&#10;Garchomp @ Choice Scarf&#10;Ability: Rough Skin&#10;..." value={fPaste}
@@ -5705,7 +5894,7 @@ function TopTeamsPage({onLoadTeam}){
           {userTeams.length > 0 && <Tip text="Site owners: downloads trending.json built from the teams below \u2014 put it in your site's public/ folder and every visitor will see them as Featured Teams (read-only)">
             <button className="btn" onClick={() => {
               const out = {updated: new Date().toISOString().slice(0, 10),
-                teams: userTeams.map(t => ({name: t.name, paste: t.paste, url: t.url || ''}))};
+                teams: userTeams.map(t => ({name: t.name, paste: t.paste, url: t.url || '', code: t.code || ''}))};
               const blob = new Blob([JSON.stringify(out, null, 2)], {type: 'application/json'});
               const a = document.createElement('a');
               a.href = URL.createObjectURL(blob); a.download = 'trending.json';
@@ -5753,9 +5942,10 @@ function TopTeamsPage({onLoadTeam}){
 /* ============ shell ============ */
 function App(){
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [dexJump, setDexJump] = useState(null);
   const [tab, setTab] = useState(() => {
     const t = lsGet('cc-tab-v1', 'vgc');
-    return ['vgc','teams','dex','updates'].includes(t) ? t : 'vgc';
+    return ['vgc','teams','dex','usage'].includes(t) ? t : 'vgc';
   });
   const [squad, setSquad] = useState(() => lsArr('cc-squad-v1'));
   const [refs, setRefs] = useState(() => lsArr('cc-refs-v1'));
@@ -5782,7 +5972,7 @@ function App(){
           <span className="logo">Poke<b>Panion</b></span>
           <span className="reg-chip">REG M-B · SEASON M-5</span>
           <nav aria-label="Main">
-            {[['vgc','VGC Companion'],['teams','Trending Teams'],['dex','Competitive Pokédex'],['updates','Updates']].map(([id,label]) => (
+            {[['vgc','VGC Companion'],['teams','Trending Teams'],['dex','Competitive Pokédex'],['usage','Usage']].map(([id,label]) => (
               <button key={id} className={'tab-btn' + (tab === id ? ' active' : '')} onClick={() => setTab(id)}>{label}</button>
             ))}
             <Tip text={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
@@ -5793,8 +5983,8 @@ function App(){
         </div>
       </header>
       <main className={'wrap' + (tab === 'vgc' ? ' wide' : '')}>
-        {tab === 'dex' && <DexPage/>}
-        {tab === 'updates' && <UpdatesPage/>}
+        {tab === 'dex' && <DexPage jumpSlug={dexJump} onJumpDone={() => setDexJump(null)}/>}
+        {tab === 'usage' && <UsagePage onInspect={slug => { setDexJump(slug); setTab('dex'); }}/>}
         {tab === 'vgc' && <VgcPage squad={squad} setSquad={setSquad} refs={refs} setRefs={setRefs}/>}
         {tab === 'teams' && <TopTeamsPage onLoadTeam={loadTopTeam}/>}
       </main>
