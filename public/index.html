@@ -542,6 +542,14 @@ a.tt-watch{text-decoration:none;display:inline-flex;align-items:center;gap:5px;c
 .tt-code{margin-left:8px;font-family:var(--disp);font-size:10px;font-weight:700;letter-spacing:.08em;padding:2px 8px;border-radius:5px;border:1px solid var(--gold-dim);background:none;color:var(--gold);cursor:pointer;vertical-align:1px}
 .tt-code.on{color:#8BD48B;border-color:#2E5B33}
 .rl-codein{width:170px;text-transform:uppercase}
+.cp-row{display:grid;grid-template-columns:34px 1fr auto;gap:12px;align-items:center;padding:10px 14px;border:1px solid var(--line);border-radius:10px;margin-bottom:6px;background:var(--panel);text-decoration:none}
+.cp-row:hover{border-color:var(--gold-dim)}
+.cp-badge{font-size:16px;color:var(--gold);text-align:center}
+.cp-main{display:flex;flex-direction:column;gap:2px;min-width:0}
+.cp-title{font-family:var(--disp);font-weight:700;font-size:14px;color:var(--ink)}
+.cp-meta{font-size:11px;color:var(--muted);letter-spacing:.03em}
+.cp-blurb{font-size:12.5px;color:var(--muted);line-height:1.5}
+.cp-ext{font-family:var(--disp);font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--gold);white-space:nowrap}
 .us-bar{display:flex;align-items:center;gap:12px;margin:4px 0 12px}
 .us-count{font-size:11.5px;color:var(--muted)}
 .us-row{display:grid;grid-template-columns:38px 34px minmax(150px,230px) 150px 1fr 56px;gap:12px;align-items:center;padding:5px 10px;border:1px solid var(--line);border-radius:8px;margin-bottom:5px;background:var(--panel);cursor:pointer}
@@ -5625,6 +5633,7 @@ function TopTeamRow({t, id, open, setOpen, onLoadTeam, badge, extraTag, extraAct
    Every release adds a dated entry here, newest first. */
 const CHANGELOG = [
   {date: 'August 12, 2026', items: [
+    {tag: 'Teams', text: 'Trending Teams gains a Community Posts section \u2014 hand-picked reports and roundups from around the Champions community, opening on their authors\u2019 sites with full credit. First up: Liberty Note\u2019s Season M-4 Doubles final Top 100 roundup.'},
     {tag: 'Data', text: 'New Usage tab: every ranked Regulation M-B Pok\u00e9mon in one sortable, searchable table \u2014 rank, usage share with bars, and one click opens that Pok\u00e9mon\u2019s full competitive window right on the page. Built on the newest published ladder statistics.'},
     {tag: 'General', text: 'The Updates page is tucked away for now \u2014 release notes are still being kept and the page will return.'}
   ]},
@@ -5805,7 +5814,8 @@ function TopTeamsPage({onLoadTeam}){
       .then(j => {
         if(!live || !j || !Array.isArray(j.teams)) return;
         const ok = j.teams.filter(t => t && typeof t.name === 'string' && typeof t.paste === 'string' && parsePaste(t.paste).length);
-        setFeatured({updated: j.updated || '', teams: ok.map((t, i) => ({
+        const posts = Array.isArray(j.posts) ? j.posts.filter(p => p && p.title && p.url) : [];
+        setFeatured({updated: j.updated || '', posts, teams: ok.map((t, i) => ({
           id: 'ft' + i, name: t.name, paste: t.paste, url: t.url || '', code: (t.code || '').toUpperCase(),
           tag: 'Featured \u00b7 ' + parsePaste(t.paste).length + ' Pok\u00e9mon'
         }))});
@@ -5861,6 +5871,24 @@ function TopTeamsPage({onLoadTeam}){
             <div style={{height: 18}}/>
           </React.Fragment>
         )}
+        {featured && featured.posts && featured.posts.length > 0 && (
+          <React.Fragment>
+            <h2 className="tt-section-title">Community Posts</h2>
+            <p className="sub">Hand-picked reports and roundups from the wider Champions community — these open on their authors' sites.</p>
+            {featured.posts.map((p, i) => (
+              <a className="cp-row" key={i} href={p.url} target="_blank" rel="noopener noreferrer">
+                <span className="cp-badge">✦</span>
+                <span className="cp-main">
+                  <span className="cp-title">{p.title}</span>
+                  <span className="cp-meta">{p.source}{p.date ? ' · ' + p.date : ''}{p.lang ? ' · ' + p.lang : ''}</span>
+                  {p.blurb && <span className="cp-blurb">{p.blurb}</span>}
+                </span>
+                <span className="cp-ext">Read ↗</span>
+              </a>
+            ))}
+            <div style={{height: 18}}/>
+          </React.Fragment>
+        )}
         {CURATE && <React.Fragment>
           <h2 className="tt-section-title">Curate Featured Teams</h2>
           <p className="sub">Site-owner mode. Build the featured list here — title, PokéPaste, optional reference link. When it looks right, click Export site file and drop the downloaded trending.json into your site's public folder. Once that file has teams, it becomes the whole page for visitors — the built-in Tournament and Creator lists disappear, so use Import bundled teams first if you want to keep any of them.</p>
@@ -5896,6 +5924,7 @@ function TopTeamsPage({onLoadTeam}){
           {userTeams.length > 0 && <Tip text="Site owners: downloads trending.json built from the teams below \u2014 put it in your site's public/ folder and every visitor will see them as Featured Teams (read-only)">
             <button className="btn" onClick={() => {
               const out = {updated: new Date().toISOString().slice(0, 10),
+                posts: (featured && featured.posts) || [],
                 teams: userTeams.map(t => ({name: t.name, paste: t.paste, url: t.url || '', code: t.code || ''}))};
               const blob = new Blob([JSON.stringify(out, null, 2)], {type: 'application/json'});
               const a = document.createElement('a');
