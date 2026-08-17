@@ -2709,7 +2709,7 @@ const TYPE_COLORS = {normal:'#9BA0A8',fire:'#E8613C',water:'#3E8EE0',electric:'#
 ice:'#6FC9C9',fighting:'#C4443F',poison:'#9A50A0',ground:'#CBA34A',flying:'#8FA3DE',psychic:'#E06388',
 bug:'#9AAB33',rock:'#B0A05A',ghost:'#6A5C9E',dragon:'#6A55DF',dark:'#5C544C',steel:'#9BA6B5',fairy:'#DE8FDE'};
 const TYPES = Object.keys(TYPE_COLORS);
-const BUILD_STAMP = '2026-08-17b';
+const BUILD_STAMP = '2026-08-17c';
 const STAT_KEYS = ['HP','Atk','Def','SpA','SpD','Spe'];
 const SPRITE = id => `img/sprite/${id}.png`;
 const ART = id => `img/art/${id}.png`;
@@ -2958,18 +2958,133 @@ function shotChip(ctx, x, y, text, filled){
   ctx.fillStyle = filled ? SHOT.ink : SHOT.muted;
   ctx.fillText(t, x + 8, y + 14);
 }
-async function makeSquadShot(squad, teamName, statMode){
-  const mons = squad.filter(Boolean).slice(0, 6);
-  if(!mons.length) return false;
-  const arts = await Promise.all(mons.map(async m => {
+/* ---- team-sheet renderer: geometry + per-card painters ---- */
+const SHOT_GEO = {CW: 452, CH: 306, GAP: 14, M: 14};
+
+function shotLayout(count){
+  const {CW, CH, GAP, M} = SHOT_GEO;
+  const cols = Math.min(2, count), rows = Math.ceil(count / 2);
+  return {cols, rows, W: M * 2 + CW * cols + GAP * (cols - 1), H: M * 2 + CH * rows + GAP * (rows - 1)};
+}
+
+function shotCardShell(ctx, cx, cy){
+  const {CW, CH} = SHOT_GEO;
+  ctx.fillStyle = SHOT.panel;
+  shotRR(ctx, cx, cy, CW, CH, 12); ctx.fill();
+  ctx.strokeStyle = SHOT.goldDim; ctx.lineWidth = 1.5;
+  shotRR(ctx, cx, cy, CW, CH, 12); ctx.stroke();
+}
+
+function shotArt(ctx, art, cx, cy){
+  if(art){
+    ctx.save(); shotRR(ctx, cx + 14, cy + 14, 106, 106, 10); ctx.clip();
+    ctx.drawImage(art, cx + 14, cy + 14, 106, 106); ctx.restore();
+  } else {
+    ctx.fillStyle = SHOT.panel2; shotRR(ctx, cx + 14, cy + 14, 106, 106, 10); ctx.fill();
+  }
+}
+
+function shotNameAndTypes(ctx, mon, view, cx, cy, tx, movesX){
+  ctx.fillStyle = SHOT.ink;
+  ctx.font = "700 16px 'Chakra Petch', system-ui, sans-serif";
+  const nm0 = mon.nickname ? mon.nickname + ' (' + mon.species + ')' : mon.species;
+  const nm = shotFit(ctx, nm0, movesX - tx - 8 - (mon.shiny ? 18 : 0));
+  ctx.fillText(nm, tx, cy + 32);
+  if(mon.shiny){
+    const w0 = ctx.measureText(nm).width;
+    ctx.fillStyle = SHOT.gold; ctx.font = '13px system-ui';
+    ctx.fillText('✦', tx + w0 + 7, cy + 31);
+  }
+  let px = tx;
+  (view ? view.types : []).forEach(t => {
+    ctx.font = '700 9.5px system-ui, sans-serif';
+    const label = t.toUpperCase(), w = ctx.measureText(label).width + 14;
+    ctx.fillStyle = TYPE_COLORS[t]; shotRR(ctx, px, cy + 41, w, 17, 4); ctx.fill();
+    ctx.fillStyle = '#FFFFFF'; ctx.fillText(label, px + 7, cy + 53);
+    px += w + 5;
+  });
+}
+
+function shotChipStack(ctx, mon, view, tx, cy){
+  const stone = view && MEGA_STONES[view.slug];
+  shotChip(ctx, tx, cy + 66,  mon.ability || 'No Ability', !!mon.ability);
+  shotChip(ctx, tx, cy + 90,  stone ? (mon.item || stone) : (mon.item || 'No Item'), !!(mon.item || stone));
+  shotChip(ctx, tx, cy + 114, mon.nature || 'No Nature', !!mon.nature);
+}
+
+function shotMoves(ctx, mon, movesX, cy){
+  for(let mi = 0; mi < 4; mi++){
+    const mv = (mon.moves || [])[mi];
+    const my = cy + 34 + mi * 28;
+    const md = mv ? MOVE_BY_NAME[mv] : null;
+    ctx.save();
+    ctx.translate(movesX + 7, my - 4); ctx.rotate(Math.PI / 4);
+    ctx.fillStyle = mv ? (md ? TYPE_COLORS[md.type] : SHOT.muted) : SHOT.panel2;
+    ctx.fillRect(-4.5, -4.5, 9, 9);
+    ctx.restore();
+    ctx.fillStyle = mv ? SHOT.ink : SHOT.muted;
+    ctx.font = '600 13px system-ui, sans-serif';
+    ctx.fillText(mv ? shotFit(ctx, mv, 148) : '—', movesX + 20, my);
+  }
+}
+
+function shotStatRows(ctx, mon, view, statMode, cx, cy){
+  const {CW} = SHOT_GEO;
+  const nmod = (mon.nature && NATURE_MODS[mon.nature]) || {};
+  const vals = view ? (statMode === 'actual' ? finalStats(view, mon) : view.stats) : [0,0,0,0,0,0];
+  const scale = statMode === 'actual' ? 2.6 : 2;
+  const sy0 = cy + 152, step = 24;
+  const trackX = cx + 128, trackW = CW - 128 - 18;
+  for(let i = 0; i < 6; i++){
+    const key = STAT_KEYS[i], v = vals[i], ry = sy0 + i * step;
+    if(nmod.up === key || nmod.down === key){
+      ctx.fillStyle = nmod.up === key ? SHOT.up : SHOT.down;
+      ctx.font = '9px system-ui';
+      ctx.fillText(nmod.up === key ? '▲' : '▼', cx + 16, ry);
+    }
+    ctx.fillStyle = SHOT.muted;
+    ctx.font = "700 9.5px 'Chakra Petch', system-ui, sans-serif";
+    ctx.fillText(key.toUpperCase(), cx + 30, ry);
+    ctx.fillStyle = SHOT.ink;
+    ctx.font = '700 12.5px system-ui, sans-serif';
+    const vs = String(v);
+    ctx.fillText(vs, cx + 118 - ctx.measureText(vs).width, ry);
+    ctx.fillStyle = SHOT.panel2;
+    shotRR(ctx, trackX, ry - 8, trackW, 5, 2.5); ctx.fill();
+    const frac = Math.min(100, v / scale) / 100;
+    if(frac > 0){
+      ctx.fillStyle = TIER_COLORS[statTier(statMode === 'actual' ? Math.round(v / 1.35) : v)];
+      shotRR(ctx, trackX, ry - 8, Math.max(4, trackW * frac), 5, 2.5); ctx.fill();
+    }
+  }
+}
+
+function shotDrawCard(ctx, mon, art, statMode, cx, cy){
+  const {CW} = SHOT_GEO;
+  const view = findMon(mon.species);
+  shotCardShell(ctx, cx, cy);
+  shotArt(ctx, art, cx, cy);
+  const tx = cx + 134, movesX = cx + CW - 168;
+  shotNameAndTypes(ctx, mon, view, cx, cy, tx, movesX);
+  shotChipStack(ctx, mon, view, tx, cy);
+  shotMoves(ctx, mon, movesX, cy);
+  shotStatRows(ctx, mon, view, statMode, cx, cy);
+}
+
+async function shotLoadArts(mons){
+  return Promise.all(mons.map(async m => {
     const d = findMon(m.species);
     if(!d) return null;
     return (await shotImg(m.shiny ? ART_SHINY(d.id) : ART(d.id))) || (await shotImg(SPRITE(d.id)));
   }));
-  const CW = 452, CH = 306, GAP = 14, M = 14;
-  const cols = Math.min(2, mons.length), rows = Math.ceil(mons.length / 2);
-  const W = M * 2 + CW * cols + GAP * (cols - 1);
-  const H = M * 2 + CH * rows + GAP * (rows - 1);
+}
+
+async function makeSquadShot(squad, teamName, statMode){
+  const mons = squad.filter(Boolean).slice(0, 6);
+  if(!mons.length) return false;
+  const arts = await shotLoadArts(mons);
+  const {CW, CH, GAP, M} = SHOT_GEO;
+  const {W, H} = shotLayout(mons.length);
   const canvas = document.createElement('canvas');
   canvas.width = W * 2; canvas.height = H * 2;
   const ctx = canvas.getContext('2d');
@@ -2977,89 +3092,8 @@ async function makeSquadShot(squad, teamName, statMode){
   ctx.textBaseline = 'alphabetic';
   ctx.fillStyle = SHOT.bg; ctx.fillRect(0, 0, W, H);
   mons.forEach((mon, idx) => {
-    const view = findMon(mon.species);
     const cx = M + (idx % 2) * (CW + GAP), cy = M + Math.floor(idx / 2) * (CH + GAP);
-    /* card shell — gold "mine" border like on-screen */
-    ctx.fillStyle = SHOT.panel;
-    shotRR(ctx, cx, cy, CW, CH, 12); ctx.fill();
-    ctx.strokeStyle = SHOT.goldDim; ctx.lineWidth = 1.5;
-    shotRR(ctx, cx, cy, CW, CH, 12); ctx.stroke();
-    /* art */
-    const art = arts[idx];
-    if(art){
-      ctx.save(); shotRR(ctx, cx + 14, cy + 14, 106, 106, 10); ctx.clip();
-      ctx.drawImage(art, cx + 14, cy + 14, 106, 106); ctx.restore();
-    } else {
-      ctx.fillStyle = SHOT.panel2; shotRR(ctx, cx + 14, cy + 14, 106, 106, 10); ctx.fill();
-    }
-    const tx = cx + 134, movesX = cx + CW - 168;
-    /* name + shiny */
-    ctx.fillStyle = SHOT.ink;
-    ctx.font = "700 16px 'Chakra Petch', system-ui, sans-serif";
-    const nm0 = mon.nickname ? mon.nickname + ' (' + mon.species + ')' : mon.species;
-    const nm = shotFit(ctx, nm0, movesX - tx - 8 - (mon.shiny ? 18 : 0));
-    ctx.fillText(nm, tx, cy + 32);
-    if(mon.shiny){
-      const w0 = ctx.measureText(nm).width;
-      ctx.fillStyle = SHOT.gold; ctx.font = '13px system-ui';
-      ctx.fillText('✦', tx + w0 + 7, cy + 31);
-    }
-    /* type pills */
-    let px = tx;
-    (view ? view.types : []).forEach(t => {
-      ctx.font = '700 9.5px system-ui, sans-serif';
-      const label = t.toUpperCase(), w = ctx.measureText(label).width + 14;
-      ctx.fillStyle = TYPE_COLORS[t]; shotRR(ctx, px, cy + 41, w, 17, 4); ctx.fill();
-      ctx.fillStyle = '#FFFFFF'; ctx.fillText(label, px + 7, cy + 53);
-      px += w + 5;
-    });
-    /* chip stack: ability / item (stone lock like the card) / nature */
-    const stone = view && MEGA_STONES[view.slug];
-    shotChip(ctx, tx, cy + 66,  mon.ability || 'No Ability', !!mon.ability);
-    shotChip(ctx, tx, cy + 90,  stone ? (mon.item || stone) : (mon.item || 'No Item'), !!(mon.item || stone));
-    shotChip(ctx, tx, cy + 114, mon.nature || 'No Nature', !!mon.nature);
-    /* moves with type diamonds */
-    for(let mi = 0; mi < 4; mi++){
-      const mv = (mon.moves || [])[mi];
-      const my = cy + 34 + mi * 28;
-      const md = mv ? MOVE_BY_NAME[mv] : null;
-      ctx.save();
-      ctx.translate(movesX + 7, my - 4); ctx.rotate(Math.PI / 4);
-      ctx.fillStyle = mv ? (md ? TYPE_COLORS[md.type] : SHOT.muted) : SHOT.panel2;
-      ctx.fillRect(-4.5, -4.5, 9, 9);
-      ctx.restore();
-      ctx.fillStyle = mv ? SHOT.ink : SHOT.muted;
-      ctx.font = '600 13px system-ui, sans-serif';
-      ctx.fillText(mv ? shotFit(ctx, mv, 148) : '—', movesX + 20, my);
-    }
-    /* stat rows — same math as the on-screen card */
-    const nmod = (mon.nature && NATURE_MODS[mon.nature]) || {};
-    const vals = view ? (statMode === 'actual' ? finalStats(view, mon) : view.stats) : [0,0,0,0,0,0];
-    const scale = statMode === 'actual' ? 2.6 : 2;
-    const sy0 = cy + 152, step = 24;
-    const trackX = cx + 128, trackW = CW - 128 - 18;
-    for(let i = 0; i < 6; i++){
-      const key = STAT_KEYS[i], v = vals[i], ry = sy0 + i * step;
-      if(nmod.up === key || nmod.down === key){
-        ctx.fillStyle = nmod.up === key ? SHOT.up : SHOT.down;
-        ctx.font = '9px system-ui';
-        ctx.fillText(nmod.up === key ? '▲' : '▼', cx + 16, ry);
-      }
-      ctx.fillStyle = SHOT.muted;
-      ctx.font = "700 9.5px 'Chakra Petch', system-ui, sans-serif";
-      ctx.fillText(key.toUpperCase(), cx + 30, ry);
-      ctx.fillStyle = SHOT.ink;
-      ctx.font = '700 12.5px system-ui, sans-serif';
-      const vs = String(v);
-      ctx.fillText(vs, cx + 118 - ctx.measureText(vs).width, ry);
-      ctx.fillStyle = SHOT.panel2;
-      shotRR(ctx, trackX, ry - 8, trackW, 5, 2.5); ctx.fill();
-      const frac = Math.min(100, v / scale) / 100;
-      if(frac > 0){
-        ctx.fillStyle = TIER_COLORS[statTier(statMode === 'actual' ? Math.round(v / 1.35) : v)];
-        shotRR(ctx, trackX, ry - 8, Math.max(4, trackW * frac), 5, 2.5); ctx.fill();
-      }
-    }
+    shotDrawCard(ctx, mon, arts[idx], statMode, cx, cy);
   });
   /* hand the finished image back for previewing */
   return await new Promise(res => canvas.toBlob(res, 'image/png'));
@@ -3484,6 +3518,135 @@ function CompIntel({mon, onJump}){
   );
 }
 
+/* ---- mon detail: form helpers + section renderers ---- */
+function detailFormLabel(s){
+  const base = POKEDEX.find(x => x.dex === s.dex && x.default);
+  const baseName = base ? base.name : '';
+  if(s.name === baseName) return baseName;
+  const suffix = baseName && s.name.startsWith(baseName) ? s.name.slice(baseName.length).replace(/^-/, '') : s.name;
+  return suffix || s.name;
+}
+
+function detailVariantChips(mon, varIdx, setVarIdx){
+  if(!(mon.variants && mon.variants.length > 1)) return null;
+  return (
+    <div className="form-chips" aria-label="Appearance">
+      {mon.variants.map((v, i) => (
+        <button key={v.id} className={'fchip' + (i === varIdx ? ' on' : '')}
+          onClick={() => setVarIdx(i)}>{v.name.startsWith(mon.name + '-') ? v.name.slice(mon.name.length + 1) : (v.name === mon.name ? 'Base' : v.name)}</button>
+      ))}
+    </div>
+  );
+}
+
+function detailFormChips(mon, siblings, onJump){
+  const others = siblings.filter(s => !/-mega/.test(s.slug) && !(/-mega/.test(mon.slug) && s.default));
+  return others.length > 0 && siblings.length <= 8 && (
+    <div className="form-chips" aria-label="Other forms">
+      {others.map(s => (
+        <button key={s.id} className="fchip" onClick={() => onJump(s)}>{detailFormLabel(s)}</button>
+      ))}
+    </div>
+  );
+}
+
+function detailMegaButton(mon, onJump){
+  const base = POKEDEX.find(x => x.dex === mon.dex && x.default);
+  const megas = POKEDEX.filter(x => x.dex === mon.dex && /-mega/.test(x.slug))
+    .sort((a,b) => a.slug.localeCompare(b.slug));   // X before Y
+  if(!megas.length || !base) return null;
+  const family = [base, ...megas];
+  const i = family.findIndex(f => f.id === mon.id);
+  const target = family[(i + 1) % family.length] || megas[0];
+  if(!target || target.id === mon.id) return null;
+  const xy = (target.slug.match(/-mega-([xy])$/) || [])[1];
+  return (
+    <Tip text={'Go to ' + target.name}>
+      <button className="close-x sq-ico" onClick={() => onJump(target)} aria-label={target.name}>
+        <MegaIcon/>{xy ? <span className="mega-xy">{xy.toUpperCase()}</span> : null}
+      </button>
+    </Tip>
+  );
+}
+
+function detailHead(ctx){
+  const {mon, onClose, onJump, shiny, setShiny, varIdx, setVarIdx, artId, siblings} = ctx;
+  return (
+    <div className="detail-head">
+      <img className="detail-art" key={(shiny ? 's' : 'n') + artId} src={shiny ? ART_SHINY(artId) : ART(artId)} alt=""
+        onError={e => {
+          if(shiny && !e.target.dataset.sf){ e.target.dataset.sf = '1'; e.target.src = ART(artId); return; }
+          if(!e.target.dataset.fb){ e.target.dataset.fb = 'a'; e.target.src = SPRITE(artId); } else spriteFallback(e, mon);
+        }}/>
+      <div>
+        <div className="row-dexno">#{String(mon.dex).padStart(4,'0')} · Gen {mon.gen}
+          {REG.legal.has(mon.dex) && <span style={{color:'var(--gold)'}}> · {REG.id} legal</span>}</div>
+        {ladderOf(mon) && <div className="usage-line">Ladder #{ladderOf(mon)[0]} · {ladderOf(mon)[1]}% usage
+          <span className="usage-meta"> — {LADDER.fmt} · {LADDER.month} · {LADDER.cutoff}+</span></div>}
+        <h2>{mon.name}</h2>
+        <div className="type-badges" style={{marginTop:6}}>
+          {mon.types.map(t => <span key={t} className="tb" style={{background:TYPE_COLORS[t]}}>{t}</span>)}
+        </div>
+        {detailVariantChips(mon, varIdx, setVarIdx)}
+        {detailFormChips(mon, siblings, onJump)}
+      </div>
+      <div className="hdr-icons">
+        <button className="close-x" onClick={onClose} aria-label="Close">✕</button>
+        <Tip text={shiny ? 'Showing shiny' : 'Show shiny artwork'}>
+          <button className={'close-x sq-ico' + (shiny ? ' gold' : '')} onClick={() => setShiny(s => !s)} aria-label="Shiny"><ShinyIcon size={13}/></button>
+        </Tip>
+        {detailMegaButton(mon, onJump)}
+      </div>
+    </div>
+  );
+}
+
+function detailStats(mon){
+  return (
+    <React.Fragment>
+      {mon.stats.map((v,i) => (
+        <div className="stat-row" key={i}>
+          <span className="stat-name">{STAT_KEYS[i]}</span>
+          <span className="stat-val sv plain">{v}</span>
+          <div className="stat-bar-track">
+            <div className="stat-bar" style={{width:`${Math.min(100, v/2)}%`, background:TIER_COLORS[statTier(v)]}}/>
+          </div>
+        </div>
+      ))}
+      <div className="stat-row"><span className="stat-name">BST</span><span className="stat-val sv plain">{mon.bst}</span><div/></div>
+    </React.Fragment>
+  );
+}
+
+function detailDefenses(mon, mults, modAbilities, abilMod, setAbilMod){
+  const typeRows = [TYPES.slice(0,9), TYPES.slice(9)];
+  return (
+    <div className="detail-section">
+      <div className="detail-label">Defenses</div>
+      {modAbilities.length > 0 && (
+        <div className="abil-toggle">
+          {modAbilities.map(a => (
+            <Tip key={a} text={ABIL_DESC[a]}>
+              <button className={'chip' + (abilMod === a ? ' on' : '')}
+                onClick={() => setAbilMod(abilMod === a ? null : a)}>{a}</button>
+            </Tip>
+          ))}
+        </div>
+      )}
+      {typeRows.map((row,ri) => (
+        <div className="eff-grid" key={ri}>
+          {row.map(t => <div key={t} className="eff-head" style={{background:TYPE_COLORS[t]}}>{TYPE_ABBR[t]}</div>)}
+          {row.map(t => {
+            const m = mults[t];
+            const cls = m === 0 ? ' imm' : m > 1 ? ' up' : m < 1 ? ' down' : '';
+            return <div key={t} className={'eff-cell' + cls}>{m === 1 ? '' : fmtMult(m)}</div>;
+          })}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function MonDetail({mon, onClose, onPrev, onNext, onJump}){
   const allAbilities = [...mon.abilities, ...(mon.hiddenAbility ? [mon.hiddenAbility] : [])];
   const modAbilities = allAbilities.filter(a => ABILITY_MODS[a]);
@@ -3500,125 +3663,24 @@ function MonDetail({mon, onClose, onPrev, onNext, onJump}){
     return () => window.removeEventListener('keydown', h);
   }, [onPrev, onNext]);
   const mults = typeMults(mon.types, abilMod ? ABILITY_MODS[abilMod] : null);
-  const typeRows = [TYPES.slice(0,9), TYPES.slice(9)];
   const [varIdx, setVarIdx] = useState(0);
   const [shiny, setShiny] = useState(false);
   useEffect(() => { setVarIdx(0); setShiny(false); }, [mon.id]);
   const artId = mon.variants ? mon.variants[varIdx].id : mon.id;
   const siblings = POKEDEX.filter(x => x.dex === mon.dex && x.id !== mon.id);
-  const stripBase = n => {
-    const cut = n.replace(mon.name, '').replace(/^-/, '');
-    return cut || n;
-  };
-  const formLabel = s => {
-    const base = POKEDEX.find(x => x.dex === s.dex && x.default);
-    const baseName = base ? base.name : '';
-    if(s.name === baseName) return baseName;
-    const suffix = baseName && s.name.startsWith(baseName) ? s.name.slice(baseName.length).replace(/^-/, '') : s.name;
-    return suffix || s.name;
-  };
   const isComp = !!(LEARN[mon.id] && LEARN[mon.id].length);
   return (
     <div className="overlay" onClick={e => { if(e.target === e.currentTarget) onClose(); }}>
       <div className={'detail' + (isComp ? ' detail-wide' : '')} role="dialog" aria-modal="true" aria-label={mon.name}>
         <div className={isComp ? 'detail-cols' : ''}>
         <div className="dd-left">
-        <div className="detail-head">
-          <img className="detail-art" key={(shiny ? 's' : 'n') + artId} src={shiny ? ART_SHINY(artId) : ART(artId)} alt=""
-            onError={e => {
-              if(shiny && !e.target.dataset.sf){ e.target.dataset.sf = '1'; e.target.src = ART(artId); return; }
-              if(!e.target.dataset.fb){ e.target.dataset.fb = 'a'; e.target.src = SPRITE(artId); } else spriteFallback(e, mon);
-            }}/>
-          <div>
-            <div className="row-dexno">#{String(mon.dex).padStart(4,'0')} · Gen {mon.gen}
-              {REG.legal.has(mon.dex) && <span style={{color:'var(--gold)'}}> · {REG.id} legal</span>}</div>
-            {ladderOf(mon) && <div className="usage-line">Ladder #{ladderOf(mon)[0]} · {ladderOf(mon)[1]}% usage
-              <span className="usage-meta"> — {LADDER.fmt} · {LADDER.month} · {LADDER.cutoff}+</span></div>}
-            <h2>{mon.name}</h2>
-            <div className="type-badges" style={{marginTop:6}}>
-              {mon.types.map(t => <span key={t} className="tb" style={{background:TYPE_COLORS[t]}}>{t}</span>)}
-            </div>
-            {mon.variants && mon.variants.length > 1 && (
-              <div className="form-chips" aria-label="Appearance">
-                {mon.variants.map((v, i) => (
-                  <button key={v.id} className={'fchip' + (i === varIdx ? ' on' : '')}
-                    onClick={() => setVarIdx(i)}>{v.name.startsWith(mon.name + '-') ? v.name.slice(mon.name.length + 1) : (v.name === mon.name ? 'Base' : v.name)}</button>
-                ))}
-              </div>
-            )}
-            {(() => {
-              const others = siblings.filter(s => !/-mega/.test(s.slug) && !(/-mega/.test(mon.slug) && s.default));
-              return others.length > 0 && siblings.length <= 8 && (
-                <div className="form-chips" aria-label="Other forms">
-                  {others.map(s => (
-                    <button key={s.id} className="fchip" onClick={() => onJump(s)}>{formLabel(s)}</button>
-                  ))}
-                </div>
-              );
-            })()}
-          </div>
-          <div className="hdr-icons">
-            <button className="close-x" onClick={onClose} aria-label="Close">✕</button>
-            <Tip text={shiny ? 'Showing shiny' : 'Show shiny artwork'}>
-              <button className={'close-x sq-ico' + (shiny ? ' gold' : '')} onClick={() => setShiny(s => !s)} aria-label="Shiny"><ShinyIcon size={13}/></button>
-            </Tip>
-            {(() => {
-              const base = POKEDEX.find(x => x.dex === mon.dex && x.default);
-              const megas = POKEDEX.filter(x => x.dex === mon.dex && /-mega/.test(x.slug))
-                .sort((a,b) => a.slug.localeCompare(b.slug));   // X before Y
-              if(!megas.length || !base) return null;
-              const family = [base, ...megas];
-              const i = family.findIndex(f => f.id === mon.id);
-              const target = family[(i + 1) % family.length] || megas[0];
-              if(!target || target.id === mon.id) return null;
-              const xy = (target.slug.match(/-mega-([xy])$/) || [])[1];
-              return (
-                <Tip text={'Go to ' + target.name}>
-                  <button className="close-x sq-ico" onClick={() => onJump(target)} aria-label={target.name}>
-                    <MegaIcon/>{xy ? <span className="mega-xy">{xy.toUpperCase()}</span> : null}
-                  </button>
-                </Tip>
-              );
-            })()}
-          </div>
-        </div>
-        {mon.stats.map((v,i) => (
-          <div className="stat-row" key={i}>
-            <span className="stat-name">{STAT_KEYS[i]}</span>
-            <span className="stat-val sv plain">{v}</span>
-            <div className="stat-bar-track">
-              <div className="stat-bar" style={{width:`${Math.min(100, v/2)}%`, background:TIER_COLORS[statTier(v)]}}/>
-            </div>
-          </div>
-        ))}
-        <div className="stat-row"><span className="stat-name">BST</span><span className="stat-val sv plain">{mon.bst}</span><div/></div>
+        {detailHead({mon, onClose, onJump, shiny, setShiny, varIdx, setVarIdx, artId, siblings})}
+        {detailStats(mon)}
         <div className="detail-section">
           <div className="detail-label">Abilities</div>
           {allAbilities.map(a => <Tip key={a} className="abil" text={ABIL_DESC[a]}>{a}</Tip>)}
         </div>
-        <div className="detail-section">
-          <div className="detail-label">Defenses</div>
-          {modAbilities.length > 0 && (
-            <div className="abil-toggle">
-              {modAbilities.map(a => (
-                <Tip key={a} text={ABIL_DESC[a]}>
-                  <button className={'chip' + (abilMod === a ? ' on' : '')}
-                    onClick={() => setAbilMod(abilMod === a ? null : a)}>{a}</button>
-                </Tip>
-              ))}
-            </div>
-          )}
-          {typeRows.map((row,ri) => (
-            <div className="eff-grid" key={ri}>
-              {row.map(t => <div key={t} className="eff-head" style={{background:TYPE_COLORS[t]}}>{TYPE_ABBR[t]}</div>)}
-              {row.map(t => {
-                const m = mults[t];
-                const cls = m === 0 ? ' imm' : m > 1 ? ' up' : m < 1 ? ' down' : '';
-                return <div key={t} className={'eff-cell' + cls}>{m === 1 ? '' : fmtMult(m)}</div>;
-              })}
-            </div>
-          ))}
-        </div>
+        {detailDefenses(mon, mults, modAbilities, abilMod, setAbilMod)}
         <div className="detail-section">
           <div className="detail-label">Learnable moves · Champions</div>
           <MovesPanel mon={mon}/>
@@ -3651,9 +3713,8 @@ const COLS = [
   {key:'bst', label:'BST', sortable:true},
 ];
 
-function DexPage(){
-  const [mode, setMode] = useState(() => lsGet('cc-dexmode-v1', 'comp') === 'complete' ? 'complete' : 'comp');    // complete | comp
-  useEffect(() => lsSet('cc-dexmode-v1', mode), [mode]);
+/* ---- dex page: persisted-filter hook, pure filter/sort pipeline, renderers ---- */
+function useDexFilters(){
   /* filters persist across page switches (cc-dexfilters-v1) */
   const df = lsGet('cc-dexfilters-v1', {}) || {};
   const [q, setQ] = useState(typeof df.q === 'string' ? df.q : '');
@@ -3665,51 +3726,126 @@ function DexPage(){
   const [sortKey, setSortKey] = useState(typeof df.sortKey === 'string' ? df.sortKey : 'dex');
   const [sortDir, setSortDir] = useState(df.sortDir === -1 ? -1 : 1);
   const [forms, setForms] = useState(df.forms === false ? false : true);
-  const [limit, setLimit] = useState(100);
-  const [sel, setSel] = useState(null);
-  const sentinelRef = React.useRef(null);
   useEffect(() => lsSet('cc-dexfilters-v1', {q, abilQ, moveQ, moveQ2, types, gen, sortKey, sortDir, forms}),
     [q, abilQ, moveQ, moveQ2, types, gen, sortKey, sortDir, forms]);
+  return {q, setQ, abilQ, setAbilQ, moveQ, setMoveQ, moveQ2, setMoveQ2, types, setTypes,
+          gen, setGen, sortKey, setSortKey, sortDir, setSortDir, forms, setForms};
+}
 
-  const toggleType = t => setTypes(ts => ts.includes(t) ? ts.filter(x => x !== t) : [...ts, t]);
-  const setSort = key => {
-    if(sortKey === key){ setSortDir(-sortDir); return; }
-    setSortKey(key);
-    setSortDir(key === 'dex' || key === 'name' ? 1 : -1);
-  };
+function dexFilterSort({mode, q, abilQ, moveQ, moveQ2, types, gen, sortKey, sortDir, forms}){
+  let list = POKEDEX;
+  if(mode === 'comp') list = list.filter(p => REG.legal.has(p.dex) && !COMP_EXCLUDE.test(p.slug));
+  else if(!forms) list = list.filter(p => p.default);
+  if(q){ const n = norm(q); list = list.filter(p => p.slug.includes(n) || norm(p.name).includes(n)); }
+  [moveQ, moveQ2].forEach(mv => {
+    if(!mv.trim()) return;
+    const mq = mv.trim().toLowerCase();
+    const hit = new Set();
+    MOVES.forEach((m, i) => { if(m.name.toLowerCase().includes(mq)) hit.add(i); });
+    list = list.filter(p => (LEARN[p.id] || []).some(i => hit.has(i)));
+  });
+  if(abilQ){ const a = abilQ.toLowerCase();
+    list = list.filter(p => p.abilities.some(x => x.toLowerCase().includes(a)) ||
+                            (p.hiddenAbility && p.hiddenAbility.toLowerCase().includes(a))); }
+  if(types.length) list = list.filter(p => types.every(t => p.types.includes(t)));
+  if(gen) list = list.filter(p => p.gen === gen);
+  const col = COLS.find(c => c.key === sortKey);
+  return [...list].sort((a,b) => {
+    if(sortKey === 'name') return sortDir * a.name.localeCompare(b.name);
+    let va, vb;
+    if(sortKey === 'dex'){ va = a.dex * 1000000 + a.id; vb = b.dex * 1000000 + b.id; }
+    else if(sortKey === 'usage'){ va = ladderOf(a) ? -ladderOf(a)[0] : -99999; vb = ladderOf(b) ? -ladderOf(b)[0] : -99999; }
+    else if(sortKey === 'bst'){ va = a.bst; vb = b.bst; }
+    else { va = a.stats[col.stat]; vb = b.stats[col.stat]; }
+    return sortDir * (va - vb) || a.id - b.id;
+  });
+}
 
-  const filtered = useMemo(() => {
-    let list = POKEDEX;
-    if(mode === 'comp') list = list.filter(p => REG.legal.has(p.dex) && !COMP_EXCLUDE.test(p.slug));
-    else if(!forms) list = list.filter(p => p.default);
-    if(q){ const n = norm(q); list = list.filter(p => p.slug.includes(n) || norm(p.name).includes(n)); }
-    [moveQ, moveQ2].forEach(mv => {
-      if(!mv.trim()) return;
-      const mq = mv.trim().toLowerCase();
-      const hit = new Set();
-      MOVES.forEach((m, i) => { if(m.name.toLowerCase().includes(mq)) hit.add(i); });
-      list = list.filter(p => (LEARN[p.id] || []).some(i => hit.has(i)));
-    });
-    if(abilQ){ const a = abilQ.toLowerCase();
-      list = list.filter(p => p.abilities.some(x => x.toLowerCase().includes(a)) ||
-                              (p.hiddenAbility && p.hiddenAbility.toLowerCase().includes(a))); }
-    if(types.length) list = list.filter(p => types.every(t => p.types.includes(t)));
-    if(gen) list = list.filter(p => p.gen === gen);
-    const col = COLS.find(c => c.key === sortKey);
-    list = [...list].sort((a,b) => {
-      if(sortKey === 'name') return sortDir * a.name.localeCompare(b.name);
-      let va, vb;
-      if(sortKey === 'dex'){ va = a.dex * 1000000 + a.id; vb = b.dex * 1000000 + b.id; }
-      else if(sortKey === 'usage'){ va = ladderOf(a) ? -ladderOf(a)[0] : -99999; vb = ladderOf(b) ? -ladderOf(b)[0] : -99999; }
-      else if(sortKey === 'bst'){ va = a.bst; vb = b.bst; }
-      else { va = a.stats[col.stat]; vb = b.stats[col.stat]; }
-      return sortDir * (va - vb) || a.id - b.id;
-    });
-    return list;
-  }, [mode, q, abilQ, moveQ, moveQ2, types, gen, sortKey, sortDir, forms]);
+function dexToolbars(f, mode, filteredCount){
+  const toggleType = t => f.setTypes(ts => ts.includes(t) ? ts.filter(x => x !== t) : [...ts, t]);
+  return (
+    <React.Fragment>
+      <div className="dex-toolbar">
+        <input className="search" placeholder="Search Pokémon…" value={f.q} onChange={e => f.setQ(e.target.value)} aria-label="Search Pokémon"/>
+        {TYPES.map(t => (
+          <button key={t} className={'tchip' + (f.types.includes(t) ? ' on' : '')}
+            style={f.types.includes(t) ? {background:TYPE_COLORS[t], borderColor:TYPE_COLORS[t]} : {color:TYPE_COLORS[t], borderColor:TYPE_COLORS[t] + '66'}}
+            onClick={() => toggleType(t)} aria-pressed={f.types.includes(t)}>{TYPE_ABBR[t]}</button>
+        ))}
+      </div>
+      <div className="dex-toolbar">
+        <input className="search" style={{width:180}} placeholder="Filter by ability…" value={f.abilQ} onChange={e => f.setAbilQ(e.target.value)} aria-label="Filter by ability"/>
+        <input className="search" style={{width:180}} placeholder="Filter by move…" value={f.moveQ} onChange={e => f.setMoveQ(e.target.value)} aria-label="Filter by move"/>
+        <input className="search" style={{width:180}} placeholder="+ second move…" value={f.moveQ2} onChange={e => f.setMoveQ2(e.target.value)} aria-label="Filter by second move"/>
+        <select className="ctl" value={f.gen} onChange={e => f.setGen(+e.target.value)} aria-label="Generation">
+          <option value={0}>All gens</option>
+          {[1,2,3,4,5,6,7,8,9].map(g => <option key={g} value={g}>Gen {g}</option>)}
+        </select>
+        {mode === 'complete' &&
+          <button className={'chip' + (f.forms ? ' on' : '')} onClick={() => f.setForms(!f.forms)}>Forms</button>}
+        <span className="shown-count">{filteredCount} shown</span>
+      </div>
+    </React.Fragment>
+  );
+}
 
-  useEffect(() => { setLimit(100); setSel(null); }, [mode, q, abilQ, moveQ, moveQ2, types, gen, sortKey, sortDir, forms]);
+function dexTableHead(sortKey, sortDir, setSort){
+  return (
+    <thead>
+      <tr>
+        {COLS.map(c => (
+          <th key={c.key}
+              className={(c.sortable ? 'sortable ' : '') + (sortKey === c.key ? 'sorted' : '')}
+              onClick={c.sortable ? () => setSort(c.key) : undefined}
+              aria-sort={sortKey === c.key ? (sortDir === 1 ? 'ascending' : 'descending') : undefined}>
+            {c.label}{sortKey === c.key ? (sortDir === 1 ? ' ▲' : ' ▼') : ''}
+          </th>
+        ))}
+      </tr>
+    </thead>
+  );
+}
 
+function dexUsageCell(p){
+  const u = ladderOf(p);
+  return u ? <Tip text={`#${u[0]} · ${u[1]}% usage — ${LADDER.fmt} ladder, ${LADDER.month} (${LADDER.cutoff}+)`}>
+    <span className="usage-chip">#{u[0]}</span></Tip> : <span className="usage-none">—</span>;
+}
+
+function dexRow(p, setSel){
+  return (
+    <tr key={p.id} onClick={() => setSel(p)}>
+      <td className="row-dexno">{String(p.dex).padStart(3,'0')}</td>
+      <td className="cell-usage">{dexUsageCell(p)}</td>
+      <td>
+        <div className="cell-mon">
+          <img className="row-sprite" loading="lazy" src={SPRITE(p.id)} alt="" onError={e => spriteFallback(e, p)}/>
+          <div className="mon-stack">
+            <div className="row-name">{p.name}</div>
+            <div className="mini-badges">
+              {p.types.map(t => <span key={t} className="tbm" style={{background:TYPE_COLORS[t]}}>{TYPE_ABBR[t]}</span>)}
+            </div>
+          </div>
+        </div>
+      </td>
+      <td className="cell-abil">
+        {[...p.abilities, ...(p.hiddenAbility ? [p.hiddenAbility] : [])].map((a,ai,arr) => (
+          <React.Fragment key={a}>
+            <Tip text={ABIL_DESC[a]}>{a}</Tip>{ai < arr.length - 1 ? ' / ' : ''}
+          </React.Fragment>
+        ))}
+      </td>
+      {p.stats.map((v,i) => <td key={i}><span className={'sv ' + statTier(v)}>{v}</span></td>)}
+      <td><span className="sv bst">{p.bst}</span></td>
+    </tr>
+  );
+}
+
+/* infinite scroll: page size grows as the sentinel enters view; resets with the filters */
+function useInfiniteLimit(filtered, resetDeps){
+  const [limit, setLimit] = useState(100);
+  const sentinelRef = React.useRef(null);
+  useEffect(() => { setLimit(100); }, resetDeps);
   useEffect(() => {
     const el = sentinelRef.current;
     if(!el) return;
@@ -3719,6 +3855,37 @@ function DexPage(){
     obs.observe(el);
     return () => obs.disconnect();
   }, [filtered, limit]);
+  return {limit, sentinelRef};
+}
+
+function dexDetailMount(filtered, sel, setSel){
+  if(!sel) return null;
+  const idx = filtered.findIndex(p => p.id === sel.id);
+  return <MonDetail mon={sel}
+    onClose={() => setSel(null)}
+    onJump={setSel}
+    onPrev={idx > 0 ? () => setSel(filtered[idx - 1]) : null}
+    onNext={idx !== -1 && idx < filtered.length - 1 ? () => setSel(filtered[idx + 1]) : null}/>;
+}
+
+function DexPage(){
+  const [mode, setMode] = useState(() => lsGet('cc-dexmode-v1', 'comp') === 'complete' ? 'complete' : 'comp');    // complete | comp
+  useEffect(() => lsSet('cc-dexmode-v1', mode), [mode]);
+  const f = useDexFilters();
+  const {q, abilQ, moveQ, moveQ2, types, gen, sortKey, sortDir, forms} = f;
+  const [sel, setSel] = useState(null);
+
+  const setSort = key => {
+    if(sortKey === key){ f.setSortDir(-sortDir); return; }
+    f.setSortKey(key);
+    f.setSortDir(key === 'dex' || key === 'name' ? 1 : -1);
+  };
+
+  const filtered = useMemo(() => dexFilterSort({mode, q, abilQ, moveQ, moveQ2, types, gen, sortKey, sortDir, forms}),
+    [mode, q, abilQ, moveQ, moveQ2, types, gen, sortKey, sortDir, forms]);
+
+  useEffect(() => { setSel(null); }, [mode, q, abilQ, moveQ, moveQ2, types, gen, sortKey, sortDir, forms]);
+  const {limit, sentinelRef} = useInfiniteLimit(filtered, [mode, q, abilQ, moveQ, moveQ2, types, gen, sortKey, sortDir, forms]);
 
   return (
     <div>
@@ -3729,82 +3896,18 @@ function DexPage(){
         <button className={'mode-btn' + (mode === 'complete' ? ' on' : '')} onClick={() => setMode('complete')}>Complete Pokédex</button>
         <button className={'mode-btn' + (mode === 'comp' ? ' on' : '')} onClick={() => setMode('comp')}>Competitive · {REG.id}</button>
       </div>
-      <div className="dex-toolbar">
-        <input className="search" placeholder="Search Pokémon…" value={q} onChange={e => setQ(e.target.value)} aria-label="Search Pokémon"/>
-        {TYPES.map(t => (
-          <button key={t} className={'tchip' + (types.includes(t) ? ' on' : '')}
-            style={types.includes(t) ? {background:TYPE_COLORS[t], borderColor:TYPE_COLORS[t]} : {color:TYPE_COLORS[t], borderColor:TYPE_COLORS[t] + '66'}}
-            onClick={() => toggleType(t)} aria-pressed={types.includes(t)}>{TYPE_ABBR[t]}</button>
-        ))}
-      </div>
-      <div className="dex-toolbar">
-        <input className="search" style={{width:180}} placeholder="Filter by ability…" value={abilQ} onChange={e => setAbilQ(e.target.value)} aria-label="Filter by ability"/>
-        <input className="search" style={{width:180}} placeholder="Filter by move…" value={moveQ} onChange={e => setMoveQ(e.target.value)} aria-label="Filter by move"/>
-        <input className="search" style={{width:180}} placeholder="+ second move…" value={moveQ2} onChange={e => setMoveQ2(e.target.value)} aria-label="Filter by second move"/>
-        <select className="ctl" value={gen} onChange={e => setGen(+e.target.value)} aria-label="Generation">
-          <option value={0}>All gens</option>
-          {[1,2,3,4,5,6,7,8,9].map(g => <option key={g} value={g}>Gen {g}</option>)}
-        </select>
-        {mode === 'complete' &&
-          <button className={'chip' + (forms ? ' on' : '')} onClick={() => setForms(!forms)}>Forms</button>}
-        <span className="shown-count">{filtered.length} shown</span>
-      </div>
+      {dexToolbars(f, mode, filtered.length)}
       <div className="table-wrap">
         <table className="dex">
-          <thead>
-            <tr>
-              {COLS.map(c => (
-                <th key={c.key}
-                    className={(c.sortable ? 'sortable ' : '') + (sortKey === c.key ? 'sorted' : '')}
-                    onClick={c.sortable ? () => setSort(c.key) : undefined}
-                    aria-sort={sortKey === c.key ? (sortDir === 1 ? 'ascending' : 'descending') : undefined}>
-                  {c.label}{sortKey === c.key ? (sortDir === 1 ? ' ▲' : ' ▼') : ''}
-                </th>
-              ))}
-            </tr>
-          </thead>
+          {dexTableHead(sortKey, sortDir, setSort)}
           <tbody>
-            {filtered.slice(0, limit).map((p, i) => (
-              <tr key={p.id} onClick={() => setSel(p)}>
-                <td className="row-dexno">{String(p.dex).padStart(3,'0')}</td>
-                <td className="cell-usage">{(() => { const u = ladderOf(p);
-                  return u ? <Tip text={`#${u[0]} · ${u[1]}% usage — ${LADDER.fmt} ladder, ${LADDER.month} (${LADDER.cutoff}+)`}>
-                    <span className="usage-chip">#{u[0]}</span></Tip> : <span className="usage-none">—</span>; })()}</td>
-                <td>
-                  <div className="cell-mon">
-                    <img className="row-sprite" loading="lazy" src={SPRITE(p.id)} alt="" onError={e => spriteFallback(e, p)}/>
-                    <div className="mon-stack">
-                      <div className="row-name">{p.name}</div>
-                      <div className="mini-badges">
-                        {p.types.map(t => <span key={t} className="tbm" style={{background:TYPE_COLORS[t]}}>{TYPE_ABBR[t]}</span>)}
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td className="cell-abil">
-                  {[...p.abilities, ...(p.hiddenAbility ? [p.hiddenAbility] : [])].map((a,ai,arr) => (
-                    <React.Fragment key={a}>
-                      <Tip text={ABIL_DESC[a]}>{a}</Tip>{ai < arr.length - 1 ? ' / ' : ''}
-                    </React.Fragment>
-                  ))}
-                </td>
-                {p.stats.map((v,i) => <td key={i}><span className={'sv ' + statTier(v)}>{v}</span></td>)}
-                <td><span className="sv bst">{p.bst}</span></td>
-              </tr>
-            ))}
+            {filtered.slice(0, limit).map(p => dexRow(p, setSel))}
           </tbody>
         </table>
       </div>
       {filtered.length > limit &&
         <div className="sentinel" ref={sentinelRef}>Loading more…</div>}
-      {sel && (() => {
-        const idx = filtered.findIndex(p => p.id === sel.id);
-        return <MonDetail mon={sel}
-          onClose={() => setSel(null)}
-          onJump={setSel}
-          onPrev={idx > 0 ? () => setSel(filtered[idx - 1]) : null}
-          onNext={idx !== -1 && idx < filtered.length - 1 ? () => setSel(filtered[idx + 1]) : null}/>;
-      })()}
+      {dexDetailMount(filtered, sel, setSel)}
     </div>
   );
 }
@@ -3915,6 +4018,146 @@ const teamDmgMoves = list => resolveTeam(list).flatMap(({mon, dex}) =>
     .map(md => ({...md, stab: dex.types.includes(md.type)})));
 const fmtX = m => m === 0.5 ? '½×' : m === 0.25 ? '¼×' : m + '×';
 
+/* ---- squad card: form helpers + section renderers ---- */
+function cardMegaInfo(dex){
+  const isMega = dex ? /-mega(-[a-z])?$/.test(dex.slug) : false;
+  const baseForm = dex ? (isMega ? (POKEDEX.find(x => x.slug === dex.slug.replace(/-mega(-[a-z])?$/, '')) || dex) : dex) : null;
+  const megas = baseForm ? POKEDEX.filter(x => x.slug === baseForm.slug + '-mega' || x.slug.startsWith(baseForm.slug + '-mega-')) : [];
+  return {isMega, baseForm, megas};
+}
+
+function cardIconBar(ctx){
+  const {dex, shiny, setShinyMon, isMega, megas, cycleMega, onRemove, onLead, onBrought, lead, brought} = ctx;
+  return (
+    <div className="sq-icons" onClick={e => e.stopPropagation()}>
+      <button className="icon-btn" onClick={onRemove} aria-label="Remove">✕</button>
+      {dex && <Tip text="Toggle shiny artwork">
+        <button className={'icon-btn' + (shiny ? ' gold' : '')} onClick={setShinyMon} aria-label="Shiny"><ShinyIcon/></button>
+      </Tip>}
+      {megas.length > 0 && <Tip text={isMega ? 'Showing ' + dex.name + ' — click to cycle back' : (megas.length > 1 ? 'Mega Evolve (cycles forms)' : 'Mega Evolve')}>
+        <button className={'icon-btn' + (isMega ? ' gold' : '')} onClick={cycleMega} aria-label="Mega form">
+          <MegaIcon/>
+        </button>
+      </Tip>}
+      {onLead && <Tip text={lead ? 'Led this battle — click to unmark' : 'Mark as a lead'}>
+        <button className={'icon-btn' + (lead ? ' blue' : '')} onClick={onLead} aria-label="Battle lead"><FlagIcon/></button>
+      </Tip>}
+      {onBrought && <Tip text={brought ? 'Brought to the battle — click to unmark' : 'Mark as brought to the battle'}>
+        <button className={'icon-btn' + (brought ? ' green' : '')} onClick={onBrought} aria-label="Brought to battle"><CheckIcon/></button>
+      </Tip>}
+    </div>
+  );
+}
+
+function cardChipStack(ctx){
+  const {mon, view, nm, onUpdate, abilEdit, setAbilEdit, itemEdit, setItemEdit, natEdit, setNatEdit} = ctx;
+  return (
+    <div className="sq-chipstack">
+      {abilEdit && view
+        ? <ChipMenu anchorLabel={mon.ability || 'No Ability'} value={mon.ability}
+            options={[...view.abilities.map(a => ({value:a, label:a})),
+                      ...(view.hiddenAbility ? [{value:view.hiddenAbility, label:view.hiddenAbility, note:'Hidden'}] : [])]}
+            onPick={a => onUpdate({ability: a})} onClose={() => setAbilEdit(false)}/>
+        : <Tip text={mon.ability ? ABIL_DESC[mon.ability] : 'Click to set the ability'}>
+            <span className={'sq-chip' + (view ? ' sq-chip-click' : '') + (!mon.ability ? ' mutedc' : '')} role="button"
+              onClick={view ? e => { e.stopPropagation(); setAbilEdit(true); } : undefined}>{mon.ability || 'No Ability'}</span>
+          </Tip>}
+      {itemEdit
+        ? <CardItemEditor value={mon.item} onDone={v => { setItemEdit(false); if(v !== null) onUpdate({item: v.trim()}); }}/>
+        : (view && MEGA_STONES[view.slug])
+          ? <Tip text={(ITEM_DESC[mon.item || MEGA_STONES[view.slug]] || 'Mega Stone') + ' — locked while in Mega form'}><span className="sq-chip">{mon.item || MEGA_STONES[view.slug]}</span></Tip>
+          : <Tip text={mon.item && ITEM_DESC[mon.item] ? ITEM_DESC[mon.item] + ' — click to change' : 'Click to change the held item'}>
+              <span className={'sq-chip sq-chip-click' + (!mon.item ? ' mutedc' : '')} role="button"
+                onClick={e => { e.stopPropagation(); setItemEdit(true); }}>{mon.item || 'No Item'}</span>
+            </Tip>}
+      {natEdit
+        ? <span className="sq-nat-edit" onClick={e => e.stopPropagation()}>
+            <NatureSelect compact startOpen value={mon.nature} placeholder="Nature"
+              onChange={v => { onUpdate({nature: v}); setNatEdit(false); }}
+              onClose={() => setNatEdit(false)}/>
+          </span>
+        : <Tip text={mon.nature ? (nm.up ? `+${nm.up} / −${nm.down}` : 'Neutral nature') : 'Click to set the nature'}>
+            <span className={'sq-chip sq-chip-click' + (!mon.nature ? ' mutedc' : '')} role="button"
+              onClick={e => { e.stopPropagation(); setNatEdit(true); }}>{mon.nature || 'No Nature'}</span>
+          </Tip>}
+    </div>
+  );
+}
+
+function cardMoveList(ctx){
+  const {mon, view, onUpdate, addIdx, setAddIdx} = ctx;
+  return (
+    <div className="sq-moves">
+      {[0,1,2,3].map(i => {
+        const mv = mon.moves[i];
+        if(mv && addIdx !== i){
+          const md = MOVE_BY_NAME[mv];
+          return (
+            <div className="mvl-row mvl-click" key={i} role="button"
+              onClick={e => { e.stopPropagation(); setAddIdx(i); }}>
+              <span className="mvl-dia" style={{background: md ? TYPE_COLORS[md.type] : 'var(--muted)'}}/>
+              <Tip text={md ? md.desc : null}><span className="mv-txt">{mv}</span></Tip>
+            </div>
+          );
+        }
+        if(addIdx === i){
+          const learnIds = view && LEARN[view.id] ? LEARN[view.id] : [];
+          return (
+            <div className="mvl-row" key={i} onClick={e => e.stopPropagation()}
+              draggable onDragStart={e => { e.preventDefault(); e.stopPropagation(); }}>
+              <MoveInput value={mv || ''} learnIds={learnIds} autoFocus
+                placeholder={mv ? 'Change move…' : 'Add move…'}
+                onCommit={name => {
+                  const arr = [...mon.moves];
+                  while(arr.length < 4) arr.push('');
+                  arr[i] = name;
+                  onUpdate({moves: arr});
+                  const nxt = arr.findIndex((m, xi) => xi > i && !m);
+                  setAddIdx(nxt === -1 ? null : nxt);
+                }}
+                onClear={() => {
+                  const arr = [...mon.moves];
+                  while(arr.length < 4) arr.push('');
+                  arr[i] = '';
+                  onUpdate({moves: arr});
+                  setAddIdx(null);
+                }}
+                onCancel={() => setAddIdx(cur => cur === i ? null : cur)}/>
+            </div>
+          );
+        }
+        return (
+          <button className="mvl-row mvl-empty" key={i} onClick={e => { e.stopPropagation(); setAddIdx(i); }} aria-label="Add move">
+            <span className="mvl-o"/><span>—</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function cardStatRows(mon, view, nm, statMode){
+  return (
+    <div className="sq-stats">
+      {(statMode === 'actual' ? finalStats(view, mon) : view.stats).map((v,i) => {
+        const key = STAT_KEYS[i];
+        const scale = statMode === 'actual' ? 2.6 : 2;
+        return (
+          <div className="sq-srow" key={i}>
+            <span className={'sq-arrow' + (nm.up === key ? ' up' : nm.down === key ? ' down' : '')}>
+              {nm.up === key ? '▲' : nm.down === key ? '▼' : ''}
+            </span>
+            <span className="sq-sname">{key}</span>
+            <span className="sq-sval sv plain">{v}</span>
+            <div className="sq-track"><div className="sq-bar" style={{width:`${Math.min(100, v/scale)}%`, background:TIER_COLORS[statTier(statMode === 'actual' ? Math.round(v/1.35) : v)]}}/></div>
+          </div>
+        );
+      })}
+      {!inMB(view) && <div style={{color:'var(--warn)',fontSize:11.5,marginTop:4}}>⚠ Not legal in {REG.id}</div>}
+    </div>
+  );
+}
+
 function SquadCard({mon, mine, side, onEdit, onRemove, onUpdate, statMode, dragProps, dragging, dropover, brought, lead, onBrought, onLead}){
   const cardKeys = e => {
     if(e.key === 'Tab'){
@@ -3937,9 +4180,7 @@ function SquadCard({mon, mine, side, onEdit, onRemove, onUpdate, statMode, dragP
   const nm = NATURE_MODS[mon.nature] || {};
   const shiny = !!mon.shiny;
   const setShinyMon = () => onUpdate({shiny: !mon.shiny});
-  const isMega = dex ? /-mega(-[a-z])?$/.test(dex.slug) : false;
-  const baseForm = dex ? (isMega ? (POKEDEX.find(x => x.slug === dex.slug.replace(/-mega(-[a-z])?$/, '')) || dex) : dex) : null;
-  const megas = baseForm ? POKEDEX.filter(x => x.slug === baseForm.slug + '-mega' || x.slug.startsWith(baseForm.slug + '-mega-')) : [];
+  const {isMega, baseForm, megas} = cardMegaInfo(dex);
   const view = dex;
   const cycleMega = () => {
     const cycle = [baseForm, ...megas];
@@ -3957,26 +4198,11 @@ function SquadCard({mon, mine, side, onEdit, onRemove, onUpdate, statMode, dragP
     if(shiny && !e.target.dataset.sf){ e.target.dataset.sf = '1'; e.target.src = ART(view.id); return; }
     spriteFallback(e, view);
   };
+  const chipCtx = {mon, view, nm, onUpdate, abilEdit, setAbilEdit, itemEdit, setItemEdit, natEdit, setNatEdit};
   return (
     <div className={'sq-card clickable' + (mine ? ' mine' : '') + (dragging ? ' dragging' : '') + (dropover ? ' dropover' : '') + (brought ? ' wasbrought' : '') + (lead ? ' wasled' : '')}
       tabIndex={0} data-side={side} onKeyDown={cardKeys} onClick={onEdit} {...(dragProps || {})}>
-      <div className="sq-icons" onClick={e => e.stopPropagation()}>
-        <button className="icon-btn" onClick={onRemove} aria-label="Remove">✕</button>
-        {dex && <Tip text="Toggle shiny artwork">
-          <button className={'icon-btn' + (shiny ? ' gold' : '')} onClick={setShinyMon} aria-label="Shiny"><ShinyIcon/></button>
-        </Tip>}
-        {megas.length > 0 && <Tip text={isMega ? 'Showing ' + dex.name + ' — click to cycle back' : (megas.length > 1 ? 'Mega Evolve (cycles forms)' : 'Mega Evolve')}>
-          <button className={'icon-btn' + (isMega ? ' gold' : '')} onClick={cycleMega} aria-label="Mega form">
-            <MegaIcon/>
-          </button>
-        </Tip>}
-        {onLead && <Tip text={lead ? 'Led this battle — click to unmark' : 'Mark as a lead'}>
-          <button className={'icon-btn' + (lead ? ' blue' : '')} onClick={onLead} aria-label="Battle lead"><FlagIcon/></button>
-        </Tip>}
-        {onBrought && <Tip text={brought ? 'Brought to the battle — click to unmark' : 'Mark as brought to the battle'}>
-          <button className={'icon-btn' + (brought ? ' green' : '')} onClick={onBrought} aria-label="Brought to battle"><CheckIcon/></button>
-        </Tip>}
-      </div>
+      {cardIconBar({dex, shiny, setShinyMon, isMega, megas, cycleMega, onRemove, onLead, onBrought, lead, brought})}
       <div className="sq-main">
         <div className="sq-artcell">
           {view
@@ -3988,102 +4214,11 @@ function SquadCard({mon, mine, side, onEdit, onRemove, onUpdate, statMode, dragP
           {view && <div className="type-badges" style={{marginTop:4}}>
             {view.types.map(t => <span key={t} className="tb" style={{background:TYPE_COLORS[t]}}>{t}</span>)}
           </div>}
-          <div className="sq-chipstack">
-            {abilEdit && view
-              ? <ChipMenu anchorLabel={mon.ability || 'No Ability'} value={mon.ability}
-                  options={[...view.abilities.map(a => ({value:a, label:a})),
-                            ...(view.hiddenAbility ? [{value:view.hiddenAbility, label:view.hiddenAbility, note:'Hidden'}] : [])]}
-                  onPick={a => onUpdate({ability: a})} onClose={() => setAbilEdit(false)}/>
-              : <Tip text={mon.ability ? ABIL_DESC[mon.ability] : 'Click to set the ability'}>
-                  <span className={'sq-chip' + (view ? ' sq-chip-click' : '') + (!mon.ability ? ' mutedc' : '')} role="button"
-                    onClick={view ? e => { e.stopPropagation(); setAbilEdit(true); } : undefined}>{mon.ability || 'No Ability'}</span>
-                </Tip>}
-            {itemEdit
-              ? <CardItemEditor value={mon.item} onDone={v => { setItemEdit(false); if(v !== null) onUpdate({item: v.trim()}); }}/>
-              : (view && MEGA_STONES[view.slug])
-                ? <Tip text={(ITEM_DESC[mon.item || MEGA_STONES[view.slug]] || 'Mega Stone') + ' — locked while in Mega form'}><span className="sq-chip">{mon.item || MEGA_STONES[view.slug]}</span></Tip>
-                : <Tip text={mon.item && ITEM_DESC[mon.item] ? ITEM_DESC[mon.item] + ' — click to change' : 'Click to change the held item'}>
-                    <span className={'sq-chip sq-chip-click' + (!mon.item ? ' mutedc' : '')} role="button"
-                      onClick={e => { e.stopPropagation(); setItemEdit(true); }}>{mon.item || 'No Item'}</span>
-                  </Tip>}
-            {natEdit
-              ? <span className="sq-nat-edit" onClick={e => e.stopPropagation()}>
-                  <NatureSelect compact startOpen value={mon.nature} placeholder="Nature"
-                    onChange={v => { onUpdate({nature: v}); setNatEdit(false); }}
-                    onClose={() => setNatEdit(false)}/>
-                </span>
-              : <Tip text={mon.nature ? (nm.up ? `+${nm.up} / −${nm.down}` : 'Neutral nature') : 'Click to set the nature'}>
-                  <span className={'sq-chip sq-chip-click' + (!mon.nature ? ' mutedc' : '')} role="button"
-                    onClick={e => { e.stopPropagation(); setNatEdit(true); }}>{mon.nature || 'No Nature'}</span>
-                </Tip>}
-          </div>
+          {cardChipStack(chipCtx)}
         </div>
-        <div className="sq-moves">
-          {[0,1,2,3].map(i => {
-            const mv = mon.moves[i];
-            if(mv && addIdx !== i){
-              const md = MOVE_BY_NAME[mv];
-              return (
-                <div className="mvl-row mvl-click" key={i} role="button"
-                  onClick={e => { e.stopPropagation(); setAddIdx(i); }}>
-                  <span className="mvl-dia" style={{background: md ? TYPE_COLORS[md.type] : 'var(--muted)'}}/>
-                  <Tip text={md ? md.desc : null}><span className="mv-txt">{mv}</span></Tip>
-                </div>
-              );
-            }
-            if(addIdx === i){
-              const learnIds = view && LEARN[view.id] ? LEARN[view.id] : [];
-              return (
-                <div className="mvl-row" key={i} onClick={e => e.stopPropagation()}
-                  draggable onDragStart={e => { e.preventDefault(); e.stopPropagation(); }}>
-                  <MoveInput value={mv || ''} learnIds={learnIds} autoFocus
-                    placeholder={mv ? 'Change move…' : 'Add move…'}
-                    onCommit={name => {
-                      const arr = [...mon.moves];
-                      while(arr.length < 4) arr.push('');
-                      arr[i] = name;
-                      onUpdate({moves: arr});
-                      const nxt = arr.findIndex((m, xi) => xi > i && !m);
-                      setAddIdx(nxt === -1 ? null : nxt);
-                    }}
-                    onClear={() => {
-                      const arr = [...mon.moves];
-                      while(arr.length < 4) arr.push('');
-                      arr[i] = '';
-                      onUpdate({moves: arr});
-                      setAddIdx(null);
-                    }}
-                    onCancel={() => setAddIdx(cur => cur === i ? null : cur)}/>
-                </div>
-              );
-            }
-            return (
-              <button className="mvl-row mvl-empty" key={i} onClick={e => { e.stopPropagation(); setAddIdx(i); }} aria-label="Add move">
-                <span className="mvl-o"/><span>—</span>
-              </button>
-            );
-          })}
-        </div>
+        {cardMoveList({mon, view, onUpdate, addIdx, setAddIdx})}
       </div>
-      {view && (
-        <div className="sq-stats">
-          {(statMode === 'actual' ? finalStats(view, mon) : view.stats).map((v,i) => {
-            const key = STAT_KEYS[i];
-            const scale = statMode === 'actual' ? 2.6 : 2;
-            return (
-              <div className="sq-srow" key={i}>
-                <span className={'sq-arrow' + (nm.up === key ? ' up' : nm.down === key ? ' down' : '')}>
-                  {nm.up === key ? '▲' : nm.down === key ? '▼' : ''}
-                </span>
-                <span className="sq-sname">{key}</span>
-                <span className="sq-sval sv plain">{v}</span>
-                <div className="sq-track"><div className="sq-bar" style={{width:`${Math.min(100, v/scale)}%`, background:TIER_COLORS[statTier(statMode === 'actual' ? Math.round(v/1.35) : v)]}}/></div>
-              </div>
-            );
-          })}
-          {!inMB(view) && <div style={{color:'var(--warn)',fontSize:11.5,marginTop:4}}>⚠ Not legal in {REG.id}</div>}
-        </div>
-      )}
+      {view && cardStatRows(mon, view, nm, statMode)}
       {!dex && <div style={{color:'var(--warn)',fontSize:12,marginTop:8}}>⚠ Species not recognized — edit to fix.</div>}
     </div>
   );
@@ -4482,6 +4617,144 @@ function SPEditor({dexMon, sp, setSp, nature}){
   );
 }
 
+/* ---- builder modal: species picker, move editor, defense grid, stat column ---- */
+/* selecting a species: lock its stone, keep only still-valid ability/moves */
+function builderApplyPick(p, s){
+  s.setDexMon(p); s.setQ(p.name); s.setAcOpen(false);
+  if(MEGA_STONES[p.slug]) s.setItem(MEGA_STONES[p.slug]);
+  else if(s.item && Object.values(MEGA_STONES).includes(s.item)) s.setItem('');
+  const abils = [...p.abilities, ...(p.hiddenAbility ? [p.hiddenAbility] : [])];
+  if(!abils.includes(s.ability)) s.setAbility(abils.length === 1 ? abils[0] : '');
+  s.setMoves(ms => ms.map(mv => mv && LEARN[p.id] && LEARN[p.id].some(i => MOVES[i].name === mv) ? mv : (mv ? '' : mv)));
+}
+
+function builderHead(ctx){
+  const {dexMon, initial, slot, shiny, setShiny, onClose, bldIsMega, bldMegas, bldCycleMega} = ctx;
+  return (
+    <div className="bx-head">
+      {dexMon && <img className="bx-art" key={(shiny ? 's' : 'n') + dexMon.id}
+        src={shiny ? ART_SHINY(dexMon.id) : ART(dexMon.id)} alt=""
+        onError={e => { if(shiny && !e.target.dataset.sf){ e.target.dataset.sf = '1'; e.target.src = ART(dexMon.id); } else spriteFallback(e, dexMon); }}/>}
+      <div>
+        <h3 style={{marginBottom:2}}>{dexMon ? dexMon.name : (initial ? 'Edit Pokémon' : 'Add Pokémon')}</h3>
+        {dexMon && <div className="row-dexno">#{String(dexMon.dex).padStart(4,'0')}{slot ? ` · Slot ${slot}` : ''}</div>}
+        {dexMon && <div className="type-badges" style={{marginTop:4}}>
+          {dexMon.types.map(t => <span key={t} className="tb" style={{background:TYPE_COLORS[t]}}>{t}</span>)}
+        </div>}
+      </div>
+      <div className="bld-icons">
+        <button className="close-x" onClick={onClose} aria-label="Close">✕</button>
+        {dexMon && <Tip text="Toggle shiny artwork">
+          <button type="button" className={'bld-ico' + (shiny ? ' gold' : '')} onClick={() => setShiny(s => !s)} aria-label="Shiny"><ShinyIcon/></button>
+        </Tip>}
+        {dexMon && bldMegas.length > 0 && <Tip text={bldIsMega ? 'Showing ' + dexMon.name + ' — click to cycle back' : (bldMegas.length > 1 ? 'Mega Evolve (cycles forms)' : 'Mega Evolve')}>
+          <button type="button" className={'bld-ico' + (bldIsMega ? ' gold' : '')} onClick={bldCycleMega} aria-label="Mega form"><MegaIcon/></button>
+        </Tip>}
+      </div>
+    </div>
+  );
+}
+
+function builderSpeciesPicker(ctx){
+  const {q, setQ, setDexMon, dexMon, acOpen, setAcOpen, acIdx, setAcIdx, suggestions, pick} = ctx;
+  return (
+    <React.Fragment>
+      <div className="f-label">Species · {REG.id} pool</div>
+      <div className="ns-wrap">
+        <input className="f-input" value={q} autoFocus
+          onChange={e => { setQ(e.target.value); setDexMon(null); setAcOpen(true); }}
+          onFocus={() => setAcOpen(true)}
+          onKeyDown={e => {
+            if(!acOpen || !suggestions.length){
+              if(e.key === 'ArrowDown' && suggestions.length) setAcOpen(true);
+              return;
+            }
+            if(e.key === 'ArrowDown'){ e.preventDefault(); setAcIdx(i => Math.min(suggestions.length - 1, i + 1)); }
+            else if(e.key === 'ArrowUp'){ e.preventDefault(); setAcIdx(i => Math.max(0, i - 1)); }
+            else if(e.key === 'Enter'){ e.preventDefault(); pick(suggestions[acIdx]); }
+            else if(e.key === 'Escape'){ e.stopPropagation(); setAcOpen(false); }
+          }}
+          placeholder="Start typing a name…" role="combobox" aria-expanded={acOpen && suggestions.length > 0}/>
+        {acOpen && suggestions.length > 0 && (
+          <div className="ac-panel" role="listbox">
+            {suggestions.map((p,i) => (
+              <button type="button" key={p.id} role="option" aria-selected={i === acIdx}
+                className={'ac-opt' + (i === acIdx ? ' hi' : '')}
+                onMouseEnter={() => setAcIdx(i)} onClick={() => pick(p)}>
+                <img className="ac-sprite" src={ART(p.id)} alt="" onError={e => spriteFallback(e, p)}/>
+                <span>{p.name}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+      {!dexMon && <div className="ac-hint">↑ ↓ to browse · Enter to select</div>}
+    </React.Fragment>
+  );
+}
+
+function builderMoveRows(ctx){
+  const {moves, setMoves, dexMon, dragIdx, setDragIdx, focusIdx, setFocusIdx} = ctx;
+  return moves.map((mv,i) => {
+    const md = MOVE_BY_NAME[mv];
+    return (
+      <div className={'bx-move' + (dragIdx === i ? ' dragging' : '')} key={i}
+        draggable onDragStart={() => setDragIdx(i)}
+        onDragOver={e => e.preventDefault()}
+        onDrop={() => { if(dragIdx !== null && dragIdx !== i) setMoves(ms => { const n = [...ms]; [n[dragIdx], n[i]] = [n[i], n[dragIdx]]; return n; }); setDragIdx(null); }}
+        onDragEnd={() => setDragIdx(null)}>
+        <span className="bx-grip" aria-hidden="true">⋮⋮</span>
+        <MoveInput value={mv} learnIds={LEARN[dexMon.id] || []} placeholder="Search a move…"
+          autoFocus={focusIdx === i}
+          onCommit={name => { setMoves(ms => ms.map((x,xi) => xi === i ? name : x)); setFocusIdx(i < 3 ? i + 1 : null); }}
+          onCancel={() => setFocusIdx(null)}/>
+        <Tip text={md && md.desc}>
+          <span className="bx-mvmeta">
+            {md && <span className="tbm" style={{background:TYPE_COLORS[md.type]}}>{TYPE_ABBR[md.type]}</span>}
+            <span className="mv-num bx-pw">{md ? (md.cat === 'STA' ? '—' : (md.pow || '—')) : ''}</span>
+          </span>
+        </Tip>
+        <button type="button" className="icon-btn" style={!mv ? {visibility:'hidden'} : null}
+          onClick={() => setMoves(ms => ms.map((x,xi) => xi === i ? '' : x))} aria-label="Clear move">✕</button>
+      </div>
+    );
+  });
+}
+
+function builderDefenseGrid(mults){
+  const typeRows = [TYPES.slice(0,9), TYPES.slice(9)];
+  return typeRows.map((row,ri) => (
+    <div className="eff-grid" key={ri}>
+      {row.map(t => <div key={t} className="eff-head" style={{background:TYPE_COLORS[t]}}>{TYPE_ABBR[t]}</div>)}
+      {row.map(t => {
+        const m = mults[t];
+        const cls = m === 0 ? ' imm' : m > 1 ? ' up' : m < 1 ? ' down' : '';
+        return <div key={t} className={'eff-cell' + cls}>{m === 1 ? '' : fmtMult(m)}</div>;
+      })}
+    </div>
+  ));
+}
+
+function builderStatColumn(ctx){
+  const {dexMon, nature, setNature, sp, setSp, finals} = ctx;
+  return (
+    <div>
+      <div className="f-label" style={{marginTop:0}}>Stat alignment</div>
+      <NatureSelect value={nature} onChange={setNature}/>
+      <div className="f-label">Stat points · {SP_TOTAL} total · {SP_CAP} cap</div>
+      <SPEditor dexMon={dexMon} sp={sp} setSp={setSp} nature={nature}/>
+      <div className="f-label">Final stats @ Lv {LV}</div>
+      {finals.map((v,i) => (
+        <div className="sp-final" key={i}>
+          <span className="sp-name">{STAT_KEYS[i]}</span>
+          <div className="sq-track"><div className="sq-bar" style={{width:`${Math.min(100, v/2.6)}%`, background:TIER_COLORS[statTier(dexMon.stats[i])]}}/></div>
+          <span className="sp-fval">{v}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function BuilderModal({initial, slot, onSave, onClose, onCycle}){
   const [q, setQ] = useState(initial ? initial.species : '');
   const [dexMon, setDexMon] = useState(initial ? findMon(initial.species) : null);
@@ -4506,19 +4779,11 @@ function BuilderModal({initial, slot, onSave, onClose, onCycle}){
     return compPool().filter(p => p.slug.includes(n) || norm(p.name).includes(n)).slice(0, 8);
   }, [q, dexMon]);
   useEffect(() => setAcIdx(0), [q]);
-  const pick = p => {
-    setDexMon(p); setQ(p.name); setAcOpen(false);
-    if(MEGA_STONES[p.slug]) setItem(MEGA_STONES[p.slug]);
-    else if(item && Object.values(MEGA_STONES).includes(item)) setItem('');
-    const abils = [...p.abilities, ...(p.hiddenAbility ? [p.hiddenAbility] : [])];
-    if(!abils.includes(ability)) setAbility(abils.length === 1 ? abils[0] : '');
-    setMoves(ms => ms.map(mv => mv && LEARN[p.id] && LEARN[p.id].some(i => MOVES[i].name === mv) ? mv : (mv ? '' : mv)));
-  };
+  const pick = p => builderApplyPick(p, {setDexMon, setQ, setAcOpen, item, setItem, ability, setAbility, setMoves});
   const abils = dexMon ? [...dexMon.abilities, ...(dexMon.hiddenAbility ? [dexMon.hiddenAbility] : [])] : [];
   const learnable = dexMon && LEARN[dexMon.id] ? LEARN[dexMon.id].map(i => MOVES[i].name) : [];
   const finals = dexMon ? finalStats(dexMon, {evs: sp, nature}) : null;
   const mults = dexMon ? typeMults(dexMon.types, ABILITY_MODS[ability] || null) : null;
-  const typeRows = [TYPES.slice(0,9), TYPES.slice(9)];
   const buildCurrent = () => dexMon
     ? {species: dexMon.name, nickname:'', gender:'', item, ability, nature,
        level:'50', shiny, teraType:'', evs: {...sp}, ivs:{},
@@ -4548,59 +4813,10 @@ function BuilderModal({initial, slot, onSave, onClose, onCycle}){
   return (
     <div className="overlay" onClick={e => { if(e.target === e.currentTarget) onClose(); }}>
       <div className="builder xl" role="dialog" aria-modal="true" aria-label="Pokémon builder" onKeyDown={handleTab}>
-        <div className="bx-head">
-          {dexMon && <img className="bx-art" key={(shiny ? 's' : 'n') + dexMon.id}
-            src={shiny ? ART_SHINY(dexMon.id) : ART(dexMon.id)} alt=""
-            onError={e => { if(shiny && !e.target.dataset.sf){ e.target.dataset.sf = '1'; e.target.src = ART(dexMon.id); } else spriteFallback(e, dexMon); }}/>}
-          <div>
-            <h3 style={{marginBottom:2}}>{dexMon ? dexMon.name : (initial ? 'Edit Pokémon' : 'Add Pokémon')}</h3>
-            {dexMon && <div className="row-dexno">#{String(dexMon.dex).padStart(4,'0')}{slot ? ` · Slot ${slot}` : ''}</div>}
-            {dexMon && <div className="type-badges" style={{marginTop:4}}>
-              {dexMon.types.map(t => <span key={t} className="tb" style={{background:TYPE_COLORS[t]}}>{t}</span>)}
-            </div>}
-          </div>
-          <div className="bld-icons">
-            <button className="close-x" onClick={onClose} aria-label="Close">✕</button>
-            {dexMon && <Tip text="Toggle shiny artwork">
-              <button type="button" className={'bld-ico' + (shiny ? ' gold' : '')} onClick={() => setShiny(s => !s)} aria-label="Shiny"><ShinyIcon/></button>
-            </Tip>}
-            {dexMon && bldMegas.length > 0 && <Tip text={bldIsMega ? 'Showing ' + dexMon.name + ' — click to cycle back' : (bldMegas.length > 1 ? 'Mega Evolve (cycles forms)' : 'Mega Evolve')}>
-              <button type="button" className={'bld-ico' + (bldIsMega ? ' gold' : '')} onClick={bldCycleMega} aria-label="Mega form"><MegaIcon/></button>
-            </Tip>}
-          </div>
-        </div>
+        {builderHead({dexMon, initial, slot, shiny, setShiny, onClose, bldIsMega, bldMegas, bldCycleMega})}
         <div className={dexMon ? 'bx-cols' : null}>
           <div>
-            <div className="f-label">Species · {REG.id} pool</div>
-            <div className="ns-wrap">
-              <input className="f-input" value={q} autoFocus
-                onChange={e => { setQ(e.target.value); setDexMon(null); setAcOpen(true); }}
-                onFocus={() => setAcOpen(true)}
-                onKeyDown={e => {
-                  if(!acOpen || !suggestions.length){
-                    if(e.key === 'ArrowDown' && suggestions.length) setAcOpen(true);
-                    return;
-                  }
-                  if(e.key === 'ArrowDown'){ e.preventDefault(); setAcIdx(i => Math.min(suggestions.length - 1, i + 1)); }
-                  else if(e.key === 'ArrowUp'){ e.preventDefault(); setAcIdx(i => Math.max(0, i - 1)); }
-                  else if(e.key === 'Enter'){ e.preventDefault(); pick(suggestions[acIdx]); }
-                  else if(e.key === 'Escape'){ e.stopPropagation(); setAcOpen(false); }
-                }}
-                placeholder="Start typing a name…" role="combobox" aria-expanded={acOpen && suggestions.length > 0}/>
-              {acOpen && suggestions.length > 0 && (
-                <div className="ac-panel" role="listbox">
-                  {suggestions.map((p,i) => (
-                    <button type="button" key={p.id} role="option" aria-selected={i === acIdx}
-                      className={'ac-opt' + (i === acIdx ? ' hi' : '')}
-                      onMouseEnter={() => setAcIdx(i)} onClick={() => pick(p)}>
-                      <img className="ac-sprite" src={ART(p.id)} alt="" onError={e => spriteFallback(e, p)}/>
-                      <span>{p.name}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-            {!dexMon && <div className="ac-hint">↑ ↓ to browse · Enter to select</div>}
+            {builderSpeciesPicker({q, setQ, setDexMon, dexMon, acOpen, setAcOpen, acIdx, setAcIdx, suggestions, pick})}
             {dexMon && (
               <React.Fragment>
                 <div className="f-label">Ability</div>
@@ -4617,60 +4833,13 @@ function BuilderModal({initial, slot, onSave, onClose, onCycle}){
                     style={MEGA_STONES[dexMon.slug] ? {color:'var(--gold)',cursor:'default'} : null}/>
                 </Tip>
                                 <div className="f-label">Moves · {learnable.length} learnable</div>
-                {moves.map((mv,i) => {
-                  const md = MOVE_BY_NAME[mv];
-                  return (
-                    <div className={'bx-move' + (dragIdx === i ? ' dragging' : '')} key={i}
-                      draggable onDragStart={() => setDragIdx(i)}
-                      onDragOver={e => e.preventDefault()}
-                      onDrop={() => { if(dragIdx !== null && dragIdx !== i) setMoves(ms => { const n = [...ms]; [n[dragIdx], n[i]] = [n[i], n[dragIdx]]; return n; }); setDragIdx(null); }}
-                      onDragEnd={() => setDragIdx(null)}>
-                      <span className="bx-grip" aria-hidden="true">⋮⋮</span>
-                      <MoveInput value={mv} learnIds={LEARN[dexMon.id] || []} placeholder="Search a move…"
-                        autoFocus={focusIdx === i}
-                        onCommit={name => { setMoves(ms => ms.map((x,xi) => xi === i ? name : x)); setFocusIdx(i < 3 ? i + 1 : null); }}
-                        onCancel={() => setFocusIdx(null)}/>
-                      <Tip text={md && md.desc}>
-                        <span className="bx-mvmeta">
-                          {md && <span className="tbm" style={{background:TYPE_COLORS[md.type]}}>{TYPE_ABBR[md.type]}</span>}
-                          <span className="mv-num bx-pw">{md ? (md.cat === 'STA' ? '—' : (md.pow || '—')) : ''}</span>
-                        </span>
-                      </Tip>
-                      <button type="button" className="icon-btn" style={!mv ? {visibility:'hidden'} : null}
-                        onClick={() => setMoves(ms => ms.map((x,xi) => xi === i ? '' : x))} aria-label="Clear move">✕</button>
-                    </div>
-                  );
-                })}
+                {builderMoveRows({moves, setMoves, dexMon, dragIdx, setDragIdx, focusIdx, setFocusIdx})}
                                 <div className="f-label">Type defenses{ability && ABILITY_MODS[ability] ? ` · with ${ability}` : ''}</div>
-                {typeRows.map((row,ri) => (
-                  <div className="eff-grid" key={ri}>
-                    {row.map(t => <div key={t} className="eff-head" style={{background:TYPE_COLORS[t]}}>{TYPE_ABBR[t]}</div>)}
-                    {row.map(t => {
-                      const m = mults[t];
-                      const cls = m === 0 ? ' imm' : m > 1 ? ' up' : m < 1 ? ' down' : '';
-                      return <div key={t} className={'eff-cell' + cls}>{m === 1 ? '' : fmtMult(m)}</div>;
-                    })}
-                  </div>
-                ))}
+                {builderDefenseGrid(mults)}
               </React.Fragment>
             )}
           </div>
-          {dexMon && (
-            <div>
-              <div className="f-label" style={{marginTop:0}}>Stat alignment</div>
-              <NatureSelect value={nature} onChange={setNature}/>
-              <div className="f-label">Stat points · {SP_TOTAL} total · {SP_CAP} cap</div>
-              <SPEditor dexMon={dexMon} sp={sp} setSp={setSp} nature={nature}/>
-              <div className="f-label">Final stats @ Lv {LV}</div>
-              {finals.map((v,i) => (
-                <div className="sp-final" key={i}>
-                  <span className="sp-name">{STAT_KEYS[i]}</span>
-                  <div className="sq-track"><div className="sq-bar" style={{width:`${Math.min(100, v/2.6)}%`, background:TIER_COLORS[statTier(dexMon.stats[i])]}}/></div>
-                  <span className="sp-fval">{v}</span>
-                </div>
-              ))}
-            </div>
-          )}
+          {dexMon && builderStatColumn({dexMon, nature, setNature, sp, setSp, finals})}
         </div>
         <div className="col-actions" style={{marginTop:18,marginLeft:0,justifyContent:'flex-end'}}>
           <button className="btn" onClick={onClose}>Cancel</button>
@@ -4806,12 +4975,8 @@ function TeamAnalysis({squad}){
 }
 
 const speedTierColor = v => TIER_COLORS[v >= 180 ? 'top' : v >= 130 ? 'hi' : v >= 90 ? 'mid' : 'lo'];
-function SpeedTiers({squad, setSquad, refs, setRefs}){
-  const [mods, setMods] = useState({});
-  const toggle = (k, f) => setMods(m => ({...m, [k]: {...m[k], [f]: !(m[k] && m[k][f])}}));
-  const setStage = (k, v) => setMods(m => ({...m, [k]: {...m[k], stg: v}}));
-  const setRefMon = (i, patch) => setRefs(refs.map((m, xi) => xi === i ? {...m, ...patch} : m));
-  const setSquadMon = (mon, patch) => setSquad(squad.map(m => m === mon ? {...m, ...patch} : m));
+/* ---- speed tiers: row building + row/header renderers ---- */
+function buildSpeedRows(squad, refs, mods){
   const rows = [];
   resolveTeam(squad).forEach(({mon, dex}, i) => {
     const k = 'sq' + i, md = mods[k] || {};
@@ -4827,140 +4992,164 @@ function SpeedTiers({squad, setSquad, refs, setRefs}){
       spe: finalSpeed(dex, mon, md.scarf, md.tw, md.stg)});
   });
   rows.sort((a, b) => b.spe - a.spe);
+  return rows;
+}
+
+const speedBarColor = r =>
+  r.kind === 'ref' ? 'linear-gradient(90deg,#8A2F2A,#E06858)' :
+  'linear-gradient(90deg,#2C5C9E,#5A9BE8)';
+const speedRowSuffix = r => (r.kind === 'ref' ? ' · Ref' : '') + (r.scarf ? ' · Scarf' : '') + (r.tw ? ' · TW' : '') + (r.stage ? ' · ' + (r.stage > 0 ? '+' : '') + r.stage : '');
+
+function speedTierHeader(rows, setMods){
+  const twSide = kind => {
+    const side = rows.filter(r => r.kind === kind);
+    const allOn = side.length > 0 && side.every(r => r.tw);
+    return {
+      any: side.length > 0,
+      on: allOn,
+      flip: () => setMods(m => {
+        const next = {...m};
+        side.forEach(r => { next[r.key] = {...next[r.key], tw: !allOn}; });
+        return next;
+      })
+    };
+  };
+  const sq = twSide('squad'), rf = twSide('ref');
+  return (
+    <div className="spd-icons" style={{marginLeft:0}}>
+      <Tip text="Choice Scarf ×1.5" className="spd-sym">
+        <img src="img/items/choice-scarf.png" alt="Choice Scarf"/>
+      </Tip>
+      <Tip text="Tailwind ×2" className="spd-sym">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <path d="M2 8h13a3 3 0 1 0-3-3M2 13h17a3 3 0 1 1-3 3M2 18h9a2.5 2.5 0 1 1-2.5 2.5" fill="none" stroke="#3FC8C8" strokeWidth="2" strokeLinecap="round"/>
+        </svg>
+      </Tip>
+      <span/>
+      <span className="spd-collbl">Alignment</span>
+      <span className="spd-collbl">EVs</span>
+      <span className="spd-collbl">Stage</span>
+      <span className="spd-twall">
+        {sq.any && <Tip text={sq.on ? 'Turn Tailwind off for your squad rows' : 'Turn Tailwind on for every squad row (×2)'}>
+          <button type="button" className={'btn' + (sq.on ? ' primary' : '')} style={{padding:'4px 10px', fontSize:10}} onClick={sq.flip}>
+            Tailwind Squad
+          </button>
+        </Tip>}
+        {rf.any && <Tip text={rf.on ? 'Turn Tailwind off for the reference rows' : 'Turn Tailwind on for every reference row (×2)'}>
+          <button type="button" className={'btn' + (rf.on ? ' primary' : '')} style={{padding:'4px 10px', fontSize:10}} onClick={rf.flip}>
+            Tailwind Reference
+          </button>
+        </Tip>}
+      </span>
+      <span/>
+    </div>
+  );
+}
+
+function speedRowEditors(r, patchMon, setStage){
+  return (
+    <React.Fragment>
+      <span className="spd-inline-edit" onClick={e => e.stopPropagation()} style={{minWidth:0}}>
+        <NatureSelect compact placeholder="Alignment?" value={r.mon.nature || ''}
+          onChange={n => patchMon({nature: n})}/>
+      </span>
+      <Tip text="Speed Stat Points (0–32)">
+        <span className="spd-inline-edit"><NumStep small value={(r.mon.evs && r.mon.evs.Spe) || 0} min={0} max={SP_CAP} ariaLabel="Speed SP"
+          onChange={v => {
+            if(r.kind === 'squad'){
+              const others = STAT_KEYS.reduce((a, k) => a + (k !== 'Spe' ? ((r.mon.evs && r.mon.evs[k]) || 0) : 0), 0);
+              v = Math.min(v, Math.max(0, SP_TOTAL - others));
+            }
+            patchMon({evs: {...r.mon.evs, Spe: v}});
+          }}/></span>
+      </Tip>
+      <Tip text="Speed stages (−6 to +6) — from moves like Tailwind aside: Icy Wind, Dragon Dance, Electroweb…">
+        <span className="spd-inline-edit" onClick={e => e.stopPropagation()}>
+          <select className="mini-sel spd-stage" value={r.stage} aria-label="Speed stages"
+            onChange={e => setStage(r.key, Number(e.target.value))}>
+            {[6,5,4,3,2,1,0,-1,-2,-3,-4,-5,-6].map(n => (
+              <option key={n} value={n}>{n > 0 ? '+' + n : String(n)}</option>
+            ))}
+          </select>
+        </span>
+      </Tip>
+    </React.Fragment>
+  );
+}
+
+function speedTierRow(r, max, {toggle, setStage, patchMon}){
+  return (
+    <div className="spd-row wide" key={r.key}>
+      <input type="checkbox" className="spd-check" checked={r.scarf} onChange={() => toggle(r.key, 'scarf')} aria-label="Choice Scarf"/>
+      <input type="checkbox" className="spd-check tw" checked={r.tw} onChange={() => toggle(r.key, 'tw')} aria-label="Tailwind"/>
+      <img className="spd-sprite" src={SPRITE(r.dex.id)} alt="" onError={e => spriteFallback(e, r.dex)}/>
+      {speedRowEditors(r, patchMon, setStage)}
+      <div className="spd-track">
+        <div className={'spd-bar' + (r.kind === 'ref' ? ' ref' : '')} style={{width:`${Math.max(8, (r.spe / max) * 100)}%`, background: speedBarColor(r)}}>
+          <span>{r.name}{speedRowSuffix(r)}</span>
+        </div>
+      </div>
+      <span className="spd-val">{r.spe}</span>
+    </div>
+  );
+}
+
+function SpeedTiers({squad, setSquad, refs, setRefs}){
+  const [mods, setMods] = useState({});
+  const toggle = (k, f) => setMods(m => ({...m, [k]: {...m[k], [f]: !(m[k] && m[k][f])}}));
+  const setStage = (k, v) => setMods(m => ({...m, [k]: {...m[k], stg: v}}));
+  const setRefMon = (i, patch) => setRefs(refs.map((m, xi) => xi === i ? {...m, ...patch} : m));
+  const setSquadMon = (mon, patch) => setSquad(squad.map(m => m === mon ? {...m, ...patch} : m));
+  const rows = buildSpeedRows(squad, refs, mods);
   const max = Math.max(1, ...rows.map(r => r.spe));
-  /* bars: squad blue, reference red — Scarf/Tailwind only change the math, not the color */
-  const barColor = r =>
-    r.kind === 'ref' ? 'linear-gradient(90deg,#8A2F2A,#E06858)' :
-    'linear-gradient(90deg,#2C5C9E,#5A9BE8)';
-  const suffix = r => (r.kind === 'ref' ? ' · Ref' : '') + (r.scarf ? ' · Scarf' : '') + (r.tw ? ' · TW' : '') + (r.stage ? ' · ' + (r.stage > 0 ? '+' : '') + r.stage : '');
   return (
     <section className="pane spd-pane">
       <h4>Speed tiers</h4>
       <p className="blurb">Final Speed at Lv {LV} from each set's Stat Alignment and Speed SP. Blue bars are your squad, red bars are Reference benchmarks. Every row's Stat Alignment and Speed SP are editable inline — squad edits sync back to your squad cards. Toggle Choice Scarf (×1.5) and Tailwind (×2) per row to adjust the final Speed.</p>
-      {rows.length > 0 && (() => {
-        const twSide = kind => {
-          const side = rows.filter(r => r.kind === kind);
-          const allOn = side.length > 0 && side.every(r => r.tw);
-          return {
-            any: side.length > 0,
-            on: allOn,
-            flip: () => setMods(m => {
-              const next = {...m};
-              side.forEach(r => { next[r.key] = {...next[r.key], tw: !allOn}; });
-              return next;
-            })
-          };
-        };
-        const sq = twSide('squad'), rf = twSide('ref');
-        return (
-          <div className="spd-icons" style={{marginLeft:0}}>
-            <Tip text="Choice Scarf ×1.5" className="spd-sym">
-              <img src="img/items/choice-scarf.png" alt="Choice Scarf"/>
-            </Tip>
-            <Tip text="Tailwind ×2" className="spd-sym">
-              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-                <path d="M2 8h13a3 3 0 1 0-3-3M2 13h17a3 3 0 1 1-3 3M2 18h9a2.5 2.5 0 1 1-2.5 2.5" fill="none" stroke="#3FC8C8" strokeWidth="2" strokeLinecap="round"/>
-              </svg>
-            </Tip>
-            <span/>
-            <span className="spd-collbl">Alignment</span>
-            <span className="spd-collbl">EVs</span>
-            <span className="spd-collbl">Stage</span>
-            <span className="spd-twall">
-              {sq.any && <Tip text={sq.on ? 'Turn Tailwind off for your squad rows' : 'Turn Tailwind on for every squad row (×2)'}>
-                <button type="button" className={'btn' + (sq.on ? ' primary' : '')} style={{padding:'4px 10px', fontSize:10}} onClick={sq.flip}>
-                  Tailwind Squad
-                </button>
-              </Tip>}
-              {rf.any && <Tip text={rf.on ? 'Turn Tailwind off for the reference rows' : 'Turn Tailwind on for every reference row (×2)'}>
-                <button type="button" className={'btn' + (rf.on ? ' primary' : '')} style={{padding:'4px 10px', fontSize:10}} onClick={rf.flip}>
-                  Tailwind Reference
-                </button>
-              </Tip>}
-            </span>
-            <span/>
-          </div>
-        );
-      })()}
-      {rows.map(r => (
-        <div className="spd-row wide" key={r.key}>
-          <input type="checkbox" className="spd-check" checked={r.scarf} onChange={() => toggle(r.key, 'scarf')} aria-label="Choice Scarf"/>
-          <input type="checkbox" className="spd-check tw" checked={r.tw} onChange={() => toggle(r.key, 'tw')} aria-label="Tailwind"/>
-          <img className="spd-sprite" src={SPRITE(r.dex.id)} alt="" onError={e => spriteFallback(e, r.dex)}/>
-          {(() => {
-            const patchMon = r.kind === 'ref'
-              ? patch => setRefMon(r.refIdx, patch)
-              : patch => setSquadMon(r.mon, patch);
-            return (
-              <React.Fragment>
-                <span className="spd-inline-edit" onClick={e => e.stopPropagation()} style={{minWidth:0}}>
-                  <NatureSelect compact placeholder="Alignment?" value={r.mon.nature || ''}
-                    onChange={n => patchMon({nature: n})}/>
-                </span>
-                <Tip text="Speed Stat Points (0–32)">
-                  <span className="spd-inline-edit"><NumStep small value={(r.mon.evs && r.mon.evs.Spe) || 0} min={0} max={SP_CAP} ariaLabel="Speed SP"
-                    onChange={v => {
-                      if(r.kind === 'squad'){
-                        const others = STAT_KEYS.reduce((a, k) => a + (k !== 'Spe' ? ((r.mon.evs && r.mon.evs[k]) || 0) : 0), 0);
-                        v = Math.min(v, Math.max(0, SP_TOTAL - others));
-                      }
-                      patchMon({evs: {...r.mon.evs, Spe: v}});
-                    }}/></span>
-                </Tip>
-                <Tip text="Speed stages (−6 to +6) — from moves like Tailwind aside: Icy Wind, Dragon Dance, Electroweb…">
-                  <span className="spd-inline-edit" onClick={e => e.stopPropagation()}>
-                    <select className="mini-sel spd-stage" value={r.stage} aria-label="Speed stages"
-                      onChange={e => setStage(r.key, Number(e.target.value))}>
-                      {[6,5,4,3,2,1,0,-1,-2,-3,-4,-5,-6].map(n => (
-                        <option key={n} value={n}>{n > 0 ? '+' + n : String(n)}</option>
-                      ))}
-                    </select>
-                  </span>
-                </Tip>
-              </React.Fragment>
-            );
-          })()}
-          <div className="spd-track">
-            <div className={'spd-bar' + (r.kind === 'ref' ? ' ref' : '')} style={{width:`${Math.max(8, (r.spe / max) * 100)}%`, background: barColor(r)}}>
-              <span>{r.name}{suffix(r)}</span>
-            </div>
-          </div>
-          <span className="spd-val">{r.spe}</span>
-        </div>
-      ))}
+      {rows.length > 0 && speedTierHeader(rows, setMods)}
+      {rows.map(r => speedTierRow(r, max, {
+        toggle, setStage,
+        patchMon: r.kind === 'ref' ? (patch => setRefMon(r.refIdx, patch)) : (patch => setSquadMon(r.mon, patch))
+      }))}
       {rows.length === 0 && <div className="empty" style={{marginTop:4}}>Add squad or reference Pokémon to compare Speed tiers.</div>}
     </section>
   );
 }
 
 /* ============ opponent log ============ */
-function OpponentLog({oppLog, refs, onResult, onExclude, onDelete, onClear, onLoad}){
-  const [showAllFreq, setShowAllFreq] = useState(false);
-  const [contrib, setContribState] = useState(() => contribOn());
-  const flipContrib = () => { setContrib(!contrib); setContribState(!contrib); };
-  /* Excluded battles (forfeits, bad data) skip the Pokémon stats; their W/L still counts. */
+/* ---- opponent log: pure stat derivations + section renderers ---- */
+const oppSpriteOf = sp => { const d = findMon(sp); return d ? SPRITE(d.id) : null; };
+const oppFmtDate = ts => {
+  try{
+    const d = new Date(ts);
+    return d.toLocaleDateString(undefined, {month:'short', day:'numeric'}) + ' · ' +
+      d.toLocaleTimeString(undefined, {hour:'numeric', minute:'2-digit'});
+  }catch(_){ return ''; }
+};
+const oppPct = v => Math.round(v * 100) + '%';
+const oppBringWord = r => r >= 0.8 ? 'almost always brought' : r >= 0.55 ? 'usually brought' : r >= 0.3 ? 'sometimes brought' : 'rarely brought';
+
+function oppLogStats(oppLog){
   const counted = oppLog.filter(o => !o.excluded);
-  const omitted = oppLog.length - counted.length;
   const freq = {};
   counted.forEach(o => (o.mons || []).forEach(m => {
     const e = freq[m.species] || (freq[m.species] = {species:m.species, seen:0, brought:0, led:0});
     e.seen++; if(m.brought) e.brought++; if(m.lead) e.led++;
   }));
   const ranked = Object.values(freq).sort((a,b) => b.seen - a.seen || a.species.localeCompare(b.species));
-  const totalMons = counted.reduce((s,o) => s + (o.mons || []).length, 0);
-  const maxSeen = ranked.length ? ranked[0].seen : 1;
-  const wins = oppLog.filter(o => o.result === 'win').length;
-  const losses = oppLog.filter(o => o.result === 'loss').length;
-  const spriteOf = sp => { const d = findMon(sp); return d ? SPRITE(d.id) : null; };
-  const fmtDate = ts => {
-    try{
-      const d = new Date(ts);
-      return d.toLocaleDateString(undefined, {month:'short', day:'numeric'}) + ' · ' +
-        d.toLocaleTimeString(undefined, {hour:'numeric', minute:'2-digit'});
-    }catch(_){ return ''; }
+  return {
+    counted,
+    omitted: oppLog.length - counted.length,
+    freq, ranked,
+    totalMons: counted.reduce((s,o) => s + (o.mons || []).length, 0),
+    maxSeen: ranked.length ? ranked[0].seen : 1,
+    wins: oppLog.filter(o => o.result === 'win').length,
+    losses: oppLog.filter(o => o.result === 'loss').length
   };
+}
 
-  /* Lead & bring rates — scoped to the current Reference mons when any are set. */
+/* Lead & bring rates — scoped to the current Reference mons when any are set. */
+function oppLeadRates(freq, refs){
   const refNames = refs.filter(Boolean).map(m => m.species);
   const scoped = refNames.length > 0;
   const pool = scoped
@@ -4969,9 +5158,10 @@ function OpponentLog({oppLog, refs, onResult, onExclude, onDelete, onClear, onLo
   const rows = pool.map(e => ({...e, bring: e.seen ? e.brought / e.seen : 0, leadR: e.seen ? e.led / e.seen : 0}))
     .sort((a,b) => b.bring - a.bring || b.leadR - a.leadR || a.species.localeCompare(b.species))
     .slice(0, scoped ? 6 : 8);
-  const withData = rows.filter(e => e.seen > 0);
-  const pct = v => Math.round(v * 100) + '%';
-  const bringWord = r => r >= 0.8 ? 'almost always brought' : r >= 0.55 ? 'usually brought' : r >= 0.3 ? 'sometimes brought' : 'rarely brought';
+  return {scoped, rows, withData: rows.filter(e => e.seen > 0)};
+}
+
+function oppLeadBullets(counted, scoped, rows, withData){
   const bullets = [];
   if(counted.length === 0){
     bullets.push('No counted battles yet — mark leads and brought mons on the Reference cards, then hit "Log opponent".');
@@ -4983,36 +5173,137 @@ function OpponentLog({oppLog, refs, onResult, onExclude, onDelete, onClear, onLo
     const topBring = anyBrought ? byBring.filter(e => e.bring > 0).slice(0, 2) : [];
     if(topBring.length){
       bullets.push(topBring.map(e => e.species).join(' and ') + (topBring.length > 1 ? ' are ' : ' is ') +
-        bringWord(topBring[0].bring) + ' (' + topBring.map(e => pct(e.bring)).join(', ') + ')');
+        oppBringWord(topBring[0].bring) + ' (' + topBring.map(e => oppPct(e.bring)).join(', ') + ')');
     }
     const byLead = [...withData].sort((a,b) => b.leadR - a.leadR).filter(e => e.leadR > 0).slice(0, 2);
     if(byLead.length){
       bullets.push(byLead.map(e => e.species).join(' and ') + (byLead.length > 1 ? ' are the likeliest leads' : ' is the likeliest lead') +
-        ' (' + byLead.map(e => pct(e.leadR)).join(', ') + ')');
+        ' (' + byLead.map(e => oppPct(e.leadR)).join(', ') + ')');
     } else if(anyBrought){
       bullets.push('No lead data yet for these Pokémon.');
     }
     const unseen = rows.filter(e => !e.seen).length;
     if(scoped && unseen) bullets.push(unseen + " of these you've never faced before.");
   }
+  return bullets;
+}
 
+function oppFreqPane(stats, showAllFreq, setShowAllFreq){
+  const {counted, ranked, maxSeen} = stats;
+  return (
+    <section className="pane">
+      <h4>Most encountered</h4>
+      <p className="blurb">Across {counted.length} counted team{counted.length === 1 ? '' : 's'}. Full bar = seen on the opponent's team; green = actually brought into battle. Forms count separately.</p>
+      {(showAllFreq ? ranked : ranked.slice(0, 9)).map(f => (
+        <div className="freqrow" key={f.species}>
+          {oppSpriteOf(f.species)
+            ? <img src={oppSpriteOf(f.species)} alt="" loading="lazy"/>
+            : <span className="leadph"/>}
+          <span className="freqname">{f.species}</span>
+          <div className="freqtrack">
+            <div className="freqfill" style={{width: Math.min(100, Math.max(4, f.seen / maxSeen * 100)) + '%'}}/>
+            <div className="freqbrought" style={{width: Math.min(100, f.brought / maxSeen * 100) + '%'}}/>
+          </div>
+          <span className="freqcount"><b>{f.seen}</b>{f.brought} brought</span>
+        </div>
+      ))}
+      {ranked.length > 9 && (
+        <button className="btn tsm freq-toggle" onClick={() => setShowAllFreq(v => !v)}>
+          {showAllFreq ? 'Show less ▲' : `Show all ${ranked.length} ▼`}
+        </button>
+      )}
+    </section>
+  );
+}
+
+function oppLeadPane(scoped, rows, withData, bullets){
+  return (
+    <section className="pane">
+      <h4>Lead &amp; bring rates <span className="log-meta" style={{marginLeft:8}}>{scoped ? 'current reference' : 'whole log'}</span></h4>
+      <ul className="leadbullets">{bullets.map((b,i) => <li key={i}>{b}</li>)}</ul>
+      {withData.length > 0 && rows.map(e => (
+        <div className={'leadrow' + (e.seen ? '' : ' none')} key={e.species}>
+          {oppSpriteOf(e.species) ? <img src={oppSpriteOf(e.species)} alt="" loading="lazy"/> : <span className="leadph"/>}
+          <div className="leadmid">
+            <span className="leadname">{e.species}</span>
+            <div className="leadmeter">
+              <span className="lmk">BRING</span>
+              <div className="leadtrack"><div className="leadfill bring" style={{width: (e.seen ? Math.max(e.bring * 100, 2) : 0) + '%'}}/></div>
+              <span className="lmv">{e.seen ? oppPct(e.bring) : '—'}</span>
+            </div>
+            <div className="leadmeter">
+              <span className="lmk">LEAD</span>
+              <div className="leadtrack"><div className="leadfill" style={{width: (e.seen ? Math.max(e.leadR * 100, 2) : 0) + '%'}}/></div>
+              <span className="lmv">{e.seen ? oppPct(e.leadR) : '—'}</span>
+            </div>
+          </div>
+        </div>
+      ))}
+    </section>
+  );
+}
+
+function oppTeamRow(o, {onResult, onExclude, onDelete, onLoad}){
+  return (
+    <div className={'logteam' + (o.result ? ' ' + o.result : '') + (o.excluded ? ' omitted' : '')} key={o.id}>
+      <div className="logdate">{oppFmtDate(o.ts)}</div>
+      <div className="logmons">
+        {(o.mons || []).map((m,i) => (
+          <div className={'logmon' + (m.brought ? ' wasbrought' : '') + (m.lead ? ' wasled' : '')} key={i}
+            title={m.species + (m.lead ? ' — led' : m.brought ? ' — brought' : '')}>
+            {oppSpriteOf(m.species) ? <img src={oppSpriteOf(m.species)} alt="" loading="lazy"/> : <span className="leadph"/>}
+            <span>{m.species}</span>
+          </div>
+        ))}
+      </div>
+      <div className="logacts">
+        <div className="wl">
+          <button className={'wlbtn w' + (o.result === 'win' ? ' on' : '')} onClick={() => onResult(o.id, 'win')} title="Mark as a win">W</button>
+          <button className={'wlbtn l' + (o.result === 'loss' ? ' on' : '')} onClick={() => onResult(o.id, 'loss')} title="Mark as a loss">L</button>
+        </div>
+        <button className={'btn tsm'} onClick={() => onExclude(o.id)}
+          title={o.excluded ? 'Excluded from Pokémon stats — click to count it again' : 'Omit from Pokémon stats (win/loss still counts)'}>
+          {o.excluded ? 'Omitted' : 'Omit'}
+        </button>
+        <button className="btn tsm" onClick={() => onLoad(o)} title="Load this team back into the Reference slots">→ Reference</button>
+        <button className="btn tsm" onClick={() => onDelete(o.id)}>Delete</button>
+      </div>
+    </div>
+  );
+}
+
+function oppLogHeader(stats, oppLog, contrib, flipContrib, onClear){
+  const {totalMons, wins, losses, omitted} = stats;
+  return (
+    <div className="ana-head">
+      <span className="col-title"><span className="idx">04</span>Opponent Log</span>
+      <label className="contrib-row" onClick={e => e.stopPropagation()}>
+        <input type="checkbox" checked={contrib} onChange={flipContrib}/>
+        <span>Contribute anonymous opponent data to the community meta</span>
+        <Tip text="When on, each battle you log also sends the opponent's species, ability, item, nature, and moves — nothing else, no identity — to the community snapshot on Trending Teams. Off by default.">
+          <span className="contrib-q">?</span>
+        </Tip>
+      </label>
+      {oppLog.length > 0 && <span className="log-meta" style={{marginLeft:'auto'}}>
+        {oppLog.length} team{oppLog.length === 1 ? '' : 's'} · {totalMons} mons faced
+        {wins + losses ? ` · ${wins}W–${losses}L` : ''}{omitted ? ` · ${omitted} omitted` : ''}
+      </span>}
+      {oppLog.length > 0 && <button className="btn tsm" style={oppLog.length ? null : {marginLeft:'auto'}} onClick={onClear}>Clear log</button>}
+    </div>
+  );
+}
+
+function OpponentLog({oppLog, refs, onResult, onExclude, onDelete, onClear, onLoad}){
+  const [showAllFreq, setShowAllFreq] = useState(false);
+  const [contrib, setContribState] = useState(() => contribOn());
+  const flipContrib = () => { setContrib(!contrib); setContribState(!contrib); };
+  /* Excluded battles (forfeits, bad data) skip the Pokémon stats; their W/L still counts. */
+  const stats = oppLogStats(oppLog);
+  const {scoped, rows, withData} = oppLeadRates(stats.freq, refs);
+  const bullets = oppLeadBullets(stats.counted, scoped, rows, withData);
   return (
     <React.Fragment>
-      <div className="ana-head">
-        <span className="col-title"><span className="idx">04</span>Opponent Log</span>
-        <label className="contrib-row" onClick={e => e.stopPropagation()}>
-          <input type="checkbox" checked={contrib} onChange={flipContrib}/>
-          <span>Contribute anonymous opponent data to the community meta</span>
-          <Tip text="When on, each battle you log also sends the opponent's species, ability, item, nature, and moves — nothing else, no identity — to the community snapshot on Trending Teams. Off by default.">
-            <span className="contrib-q">?</span>
-          </Tip>
-        </label>
-        {oppLog.length > 0 && <span className="log-meta" style={{marginLeft:'auto'}}>
-          {oppLog.length} team{oppLog.length === 1 ? '' : 's'} · {totalMons} mons faced
-          {wins + losses ? ` · ${wins}W–${losses}L` : ''}{omitted ? ` · ${omitted} omitted` : ''}
-        </span>}
-        {oppLog.length > 0 && <button className="btn tsm" style={oppLog.length ? null : {marginLeft:'auto'}} onClick={onClear}>Clear log</button>}
-      </div>
+      {oppLogHeader(stats, oppLog, contrib, flipContrib, onClear)}
       {oppLog.length === 0 ? (
         <section className="pane">
           <p className="blurb" style={{margin:0}}>No battles logged yet. Record the mons you face in the Reference slots, mark who was brought (✓) and who led (flag) on their cards, then hit "Log opponent".</p>
@@ -5020,78 +5311,11 @@ function OpponentLog({oppLog, refs, onResult, onExclude, onDelete, onClear, onLo
       ) : (
         <React.Fragment>
           <div className="log-grid">
-            <section className="pane">
-              <h4>Most encountered</h4>
-              <p className="blurb">Across {counted.length} counted team{counted.length === 1 ? '' : 's'}. Full bar = seen on the opponent's team; green = actually brought into battle. Forms count separately.</p>
-              {(showAllFreq ? ranked : ranked.slice(0, 9)).map(f => (
-                <div className="freqrow" key={f.species}>
-                  {spriteOf(f.species)
-                    ? <img src={spriteOf(f.species)} alt="" loading="lazy"/>
-                    : <span className="leadph"/>}
-                  <span className="freqname">{f.species}</span>
-                  <div className="freqtrack">
-                    <div className="freqfill" style={{width: Math.min(100, Math.max(4, f.seen / maxSeen * 100)) + '%'}}/>
-                    <div className="freqbrought" style={{width: Math.min(100, f.brought / maxSeen * 100) + '%'}}/>
-                  </div>
-                  <span className="freqcount"><b>{f.seen}</b>{f.brought} brought</span>
-                </div>
-              ))}
-              {ranked.length > 9 && (
-                <button className="btn tsm freq-toggle" onClick={() => setShowAllFreq(v => !v)}>
-                  {showAllFreq ? 'Show less ▲' : `Show all ${ranked.length} ▼`}
-                </button>
-              )}
-            </section>
-            <section className="pane">
-              <h4>Lead &amp; bring rates <span className="log-meta" style={{marginLeft:8}}>{scoped ? 'current reference' : 'whole log'}</span></h4>
-              <ul className="leadbullets">{bullets.map((b,i) => <li key={i}>{b}</li>)}</ul>
-              {withData.length > 0 && rows.map(e => (
-                <div className={'leadrow' + (e.seen ? '' : ' none')} key={e.species}>
-                  {spriteOf(e.species) ? <img src={spriteOf(e.species)} alt="" loading="lazy"/> : <span className="leadph"/>}
-                  <div className="leadmid">
-                    <span className="leadname">{e.species}</span>
-                    <div className="leadmeter">
-                      <span className="lmk">BRING</span>
-                      <div className="leadtrack"><div className="leadfill bring" style={{width: (e.seen ? Math.max(e.bring * 100, 2) : 0) + '%'}}/></div>
-                      <span className="lmv">{e.seen ? pct(e.bring) : '—'}</span>
-                    </div>
-                    <div className="leadmeter">
-                      <span className="lmk">LEAD</span>
-                      <div className="leadtrack"><div className="leadfill" style={{width: (e.seen ? Math.max(e.leadR * 100, 2) : 0) + '%'}}/></div>
-                      <span className="lmv">{e.seen ? pct(e.leadR) : '—'}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </section>
+            {oppFreqPane(stats, showAllFreq, setShowAllFreq)}
+            {oppLeadPane(scoped, rows, withData, bullets)}
           </div>
           <div className="logteams">
-            {oppLog.map(o => (
-              <div className={'logteam' + (o.result ? ' ' + o.result : '') + (o.excluded ? ' omitted' : '')} key={o.id}>
-                <div className="logdate">{fmtDate(o.ts)}</div>
-                <div className="logmons">
-                  {(o.mons || []).map((m,i) => (
-                    <div className={'logmon' + (m.brought ? ' wasbrought' : '') + (m.lead ? ' wasled' : '')} key={i}
-                      title={m.species + (m.lead ? ' — led' : m.brought ? ' — brought' : '')}>
-                      {spriteOf(m.species) ? <img src={spriteOf(m.species)} alt="" loading="lazy"/> : <span className="leadph"/>}
-                      <span>{m.species}</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="logacts">
-                  <div className="wl">
-                    <button className={'wlbtn w' + (o.result === 'win' ? ' on' : '')} onClick={() => onResult(o.id, 'win')} title="Mark as a win">W</button>
-                    <button className={'wlbtn l' + (o.result === 'loss' ? ' on' : '')} onClick={() => onResult(o.id, 'loss')} title="Mark as a loss">L</button>
-                  </div>
-                  <button className={'btn tsm'} onClick={() => onExclude(o.id)}
-                    title={o.excluded ? 'Excluded from Pokémon stats — click to count it again' : 'Omit from Pokémon stats (win/loss still counts)'}>
-                    {o.excluded ? 'Omitted' : 'Omit'}
-                  </button>
-                  <button className="btn tsm" onClick={() => onLoad(o)} title="Load this team back into the Reference slots">→ Reference</button>
-                  <button className="btn tsm" onClick={() => onDelete(o.id)}>Delete</button>
-                </div>
-              </div>
-            ))}
+            {oppLog.map(o => oppTeamRow(o, {onResult, onExclude, onDelete, onLoad}))}
           </div>
         </React.Fragment>
       )}
@@ -5099,12 +5323,11 @@ function OpponentLog({oppLog, refs, onResult, onExclude, onDelete, onClear, onLo
   );
 }
 
-function VgcPage({squad, setSquad, refs, setRefs}){
-  const [builder, setBuilder] = useState(null);   // {side:'squad'|'ref', index:number|null}
-  const [ioFor, setIoFor] = useState(null); // 'squad' | 'ref'
-  const [note, setNote] = useState('');
-  const [statMode, setStatMode] = useState(() => lsGet('cc-statmode-v1', 'base') === 'actual' ? 'actual' : 'base');
-  useEffect(() => lsSet('cc-statmode-v1', statMode), [statMode]);
+/* ---- VGC page: hooks for saved teams, battle log, screenshots, drag&drop,
+        plus toolbar / column renderers ---- */
+const padSlots = list => { const a = [...list]; while(a.length < 6) a.push(null); return a; };
+
+function useSavedTeams(squad, setSquad, setNote){
   const [teams, setTeams] = useState(() => teamStore.read());
   const [teamName, setTeamName] = useState(() => lsGet('cc-teamname-v1', '') || '');
   useEffect(() => lsSet('cc-teamname-v1', teamName), [teamName]);
@@ -5129,31 +5352,16 @@ function VgcPage({squad, setSquad, refs, setRefs}){
     if(!name) return;
     persistTeams(teams.filter(t => t.name !== name));
   };
+  return {teams, teamName, setTeamName, saveTeam, loadTeam, deleteTeam};
+}
 
-  const sideState = side => side === 'squad' ? [squad, setSquad] : [refs, setRefs];
-  const padSlots = list => { const a = [...list]; while(a.length < 6) a.push(null); return a; };
-
+function useBattleLog(refs, setRefs){
   /* battle marks on Reference slots: brought (✓) and lead (flag, implies brought) */
   const [marks, setMarks] = useState(() => { const m = lsGet('cc-marks-v1', {}); return m && typeof m === 'object' ? m : {}; });
   useEffect(() => lsSet('cc-marks-v1', marks), [marks]);
   const [oppLog, setOppLog] = useState(() => oppStore.read());
   const persistLog = list => { setOppLog(list); oppStore.write(list); };
   const [loggedFlash, setLoggedFlash] = useState(false);
-  const [shotBusy, setShotBusy] = useState(false);
-  const [shot, setShot] = useState(null);
-  const takeShot = async () => {
-    if(shotBusy) return;
-    setShotBusy(true);
-    try{
-      const blob = await makeSquadShot(squad, teamName.trim(), statMode);
-      if(blob) setShot({blob, url: URL.createObjectURL(blob)});
-    }catch(_){}
-    setShotBusy(false);
-  };
-  const closeShot = () => {
-    if(shot) setTimeout(() => URL.revokeObjectURL(shot.url), 1000);
-    setShot(null);
-  };
   const toggleBrought = i => setMarks(m => {
     const c = m[i] || {};
     const on = !c.brought;
@@ -5189,6 +5397,146 @@ function VgcPage({squad, setSquad, refs, setRefs}){
     setMarks(mk);
     try{ window.scrollTo({top:0, behavior:'smooth'}); }catch(_){}
   };
+  return {marks, setMarks, oppLog, loggedFlash, toggleBrought, toggleLead, logOpponent,
+          setLogResult, toggleLogExcluded, deleteLogEntry, clearLog, loadLogEntry};
+}
+
+function useSquadShot(squad, teamName, statMode){
+  const [shotBusy, setShotBusy] = useState(false);
+  const [shot, setShot] = useState(null);
+  const takeShot = async () => {
+    if(shotBusy) return;
+    setShotBusy(true);
+    try{
+      const blob = await makeSquadShot(squad, teamName.trim(), statMode);
+      if(blob) setShot({blob, url: URL.createObjectURL(blob)});
+    }catch(_){}
+    setShotBusy(false);
+  };
+  const closeShot = () => {
+    if(shot) setTimeout(() => URL.revokeObjectURL(shot.url), 1000);
+    setShot(null);
+  };
+  return {shot, shotBusy, takeShot, closeShot};
+}
+
+function useSlotDrag(sideState){
+  const [dragSlot, setDragSlot] = useState(null);   // {side, index}
+  const [dragOver, setDragOver] = useState(null);   // {side, index} currently hovered drop target
+  const swapSlots = (fromSide, a, toSide, b) => {
+    if(fromSide === toSide && a === b) return;
+    if(fromSide === toSide){
+      const [list, set] = sideState(fromSide);
+      const arr = padSlots(list);
+      while(arr.length <= Math.max(a, b)) arr.push(null);
+      [arr[a], arr[b]] = [arr[b], arr[a]];
+      set(arr);
+    } else {
+      const [fList, fSet] = sideState(fromSide);
+      const [tList, tSet] = sideState(toSide);
+      const fArr = padSlots(fList); while(fArr.length <= a) fArr.push(null);
+      const tArr = padSlots(tList); while(tArr.length <= b) tArr.push(null);
+      const tmp = fArr[a]; fArr[a] = tArr[b]; tArr[b] = tmp;
+      fSet(fArr); tSet(tArr);
+    }
+  };
+  const isOver = (side, i) => dragOver && dragOver.side === side && dragOver.index === i;
+  const dragHandlers = (side, i) => ({
+    draggable: true,
+    onDragStart: e => {
+      if(e.target.closest && e.target.closest('input,button,select,textarea')){ e.preventDefault(); return; }
+      setDragSlot({side, index:i});
+      e.dataTransfer.effectAllowed = 'move';
+      try{ e.dataTransfer.setData('text/plain', ''); }catch(_){}
+    },
+    onDragEnd: () => { setDragSlot(null); setDragOver(null); },
+    onDragOver: e => {
+      if(dragSlot){
+        e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+        setDragOver(o => (o && o.side === side && o.index === i) ? o : {side, index:i});
+      }
+    },
+    onDragLeave: () => setDragOver(o => (o && o.side === side && o.index === i) ? null : o),
+    onDrop: e => { e.preventDefault(); if(dragSlot){ swapSlots(dragSlot.side, dragSlot.index, side, i); } setDragSlot(null); setDragOver(null); }
+  });
+  return {dragSlot, isOver, dragHandlers};
+}
+
+function vgcSquadActions(ctx){
+  const {lib, squad, shotBusy, takeShot, filled} = ctx;
+  return (
+    <React.Fragment>
+      <input className="f-input team-lib-name" value={lib.teamName} placeholder="Team name"
+        onChange={e => lib.setTeamName(e.target.value)}
+        onKeyDown={e => { if(e.key === 'Enter') lib.saveTeam(); }}/>
+      <button className="btn primary" onClick={lib.saveTeam}
+        disabled={!lib.teamName.trim() || !squad.filter(Boolean).length}
+        style={!lib.teamName.trim() || !squad.filter(Boolean).length ? {opacity:.5} : null}>
+        {lib.teams.some(t => t.name === lib.teamName.trim()) ? 'Overwrite' : 'Save'}
+      </button>
+      <select className="mini-sel team-lib-sel" value="" aria-label="Load a saved team"
+        onChange={e => { if(e.target.value) lib.loadTeam(e.target.value); e.target.value = ''; }}>
+        <option value="">{lib.teams.length ? `Load… (${lib.teams.length})` : 'No saved teams'}</option>
+        {lib.teams.map(t => <option key={t.name} value={t.name}>{t.name}</option>)}
+      </select>
+      {lib.teams.some(t => t.name === lib.teamName.trim()) &&
+        <Tip text={'Delete saved team "' + lib.teamName.trim() + '"'}>
+          <button className="btn" onClick={lib.deleteTeam}>Delete</button>
+        </Tip>}
+      <Tip text={shotBusy ? 'Rendering the team sheet…' : 'Screenshot — preview these six cards as a PNG team sheet, then copy or download it'}>
+        <button className="btn btn-ico" onClick={takeShot} disabled={filled === 0 || shotBusy}
+          style={filled === 0 ? {opacity:.5} : null} aria-label="Screenshot team sheet">
+          <CameraIcon/>
+        </button>
+      </Tip>
+    </React.Fragment>
+  );
+}
+
+function vgcColumn(side, title, list, set, ctx){
+  const {lib, squad, log, shotBusy, takeShot, statMode, drag, setBuilder, setIoFor} = ctx;
+  const slots = padSlots(list);
+  const filled = slots.filter(Boolean).length;
+  return (
+  <section>
+    <div className="col-head">
+      <span className="col-title"><span className="idx">{side === 'squad' ? '01' : '02'}</span>{title}</span>
+      <div className="col-actions">
+        {side === 'squad' && vgcSquadActions({lib, squad, shotBusy, takeShot, filled})}
+        {side === 'ref' && <button className={'btn' + (log.loggedFlash ? '' : ' primary')} onClick={log.logOpponent}
+          disabled={filled === 0} style={filled === 0 ? {opacity:.5} : null}>
+          {log.loggedFlash ? 'Logged ✓' : 'Log opponent'}
+        </button>}
+        <button className="btn" onClick={() => setIoFor(side)}>Import / Export</button>
+        {filled > 0 && <button className="btn" onClick={() => { set([]); if(side === 'ref') log.setMarks({}); }}>Clear</button>}
+      </div>
+    </div>
+    <div className="squad-grid">
+      {slots.map((m,i) => m ? (
+        <SquadCard key={i} mon={m} mine={side === 'squad'} side={side} statMode={statMode}
+          brought={side === 'ref' ? !!(log.marks[i] && log.marks[i].brought) : false}
+          lead={side === 'ref' ? !!(log.marks[i] && log.marks[i].lead) : false}
+          onBrought={side === 'ref' ? () => log.toggleBrought(i) : null}
+          onLead={side === 'ref' ? () => log.toggleLead(i) : null}
+          dragProps={drag.dragHandlers(side, i)}
+          dragging={drag.dragSlot && drag.dragSlot.side === side && drag.dragSlot.index === i}
+          dropover={!!(drag.isOver(side, i) && drag.dragSlot && !(drag.dragSlot.side === side && drag.dragSlot.index === i))}
+          onEdit={() => setBuilder({side, index:i})}
+          onUpdate={patch => set(slots.map((x,xi) => xi === i ? {...x, ...patch} : x))}
+          onRemove={() => { set(slots.map((x,xi) => xi === i ? null : x)); if(side === 'ref') log.setMarks(mk => ({...mk, [i]: undefined})); }}/>
+      ) : (
+        <GhostCard key={i} onClick={() => setBuilder({side, index:i})}
+          dropover={!!drag.isOver(side, i)}
+          dropProps={drag.dragHandlers(side, i)}/>
+      ))}
+    </div>
+  </section>
+  );
+}
+
+/* builder pane cycling: save into a slot, Tab to the next/prev pane of the side */
+function useBuilderSlots(sideState){
+  const [builder, setBuilder] = useState(null);   // {side:'squad'|'ref', index:number|null}
   const saveMon = mon => {
     const [list, set] = sideState(builder.side);
     const arr = padSlots(list);
@@ -5234,132 +5582,14 @@ function VgcPage({squad, setSquad, refs, setRefs}){
     const next = ((cur + (dir > 0 ? 1 : -1)) % n + n) % n;
     setBuilder({side, index: next});
   };
-  const [dragSlot, setDragSlot] = useState(null);   // {side, index}
-  const [dragOver, setDragOver] = useState(null);   // {side, index} currently hovered drop target
-  const swapSlots = (fromSide, a, toSide, b) => {
-    if(fromSide === toSide && a === b) return;
-    if(fromSide === toSide){
-      const [list, set] = sideState(fromSide);
-      const arr = padSlots(list);
-      while(arr.length <= Math.max(a, b)) arr.push(null);
-      [arr[a], arr[b]] = [arr[b], arr[a]];
-      set(arr);
-    } else {
-      const [fList, fSet] = sideState(fromSide);
-      const [tList, tSet] = sideState(toSide);
-      const fArr = padSlots(fList); while(fArr.length <= a) fArr.push(null);
-      const tArr = padSlots(tList); while(tArr.length <= b) tArr.push(null);
-      const tmp = fArr[a]; fArr[a] = tArr[b]; tArr[b] = tmp;
-      fSet(fArr); tSet(tArr);
-    }
-  };
-  const isOver = (side, i) => dragOver && dragOver.side === side && dragOver.index === i;
-  const dragHandlers = (side, i) => ({
-    draggable: true,
-    onDragStart: e => {
-      if(e.target.closest && e.target.closest('input,button,select,textarea')){ e.preventDefault(); return; }
-      setDragSlot({side, index:i});
-      e.dataTransfer.effectAllowed = 'move';
-      try{ e.dataTransfer.setData('text/plain', ''); }catch(_){}
-    },
-    onDragEnd: () => { setDragSlot(null); setDragOver(null); },
-    onDragOver: e => {
-      if(dragSlot){
-        e.preventDefault(); e.dataTransfer.dropEffect = 'move';
-        setDragOver(o => (o && o.side === side && o.index === i) ? o : {side, index:i});
-      }
-    },
-    onDragLeave: () => setDragOver(o => (o && o.side === side && o.index === i) ? null : o),
-    onDrop: e => { e.preventDefault(); if(dragSlot){ swapSlots(dragSlot.side, dragSlot.index, side, i); } setDragSlot(null); setDragOver(null); }
-  });
+  return {builder, setBuilder, saveMon, cycleBuilder};
+}
 
-  const column = (side, title, list, set) => {
-    const slots = padSlots(list);
-    const filled = slots.filter(Boolean).length;
-    return (
-    <section>
-      <div className="col-head">
-        <span className="col-title"><span className="idx">{side === 'squad' ? '01' : '02'}</span>{title}</span>
-        <div className="col-actions">
-          {side === 'squad' && <React.Fragment>
-            <input className="f-input team-lib-name" value={teamName} placeholder="Team name"
-              onChange={e => setTeamName(e.target.value)}
-              onKeyDown={e => { if(e.key === 'Enter') saveTeam(); }}/>
-            <button className="btn primary" onClick={saveTeam}
-              disabled={!teamName.trim() || !squad.filter(Boolean).length}
-              style={!teamName.trim() || !squad.filter(Boolean).length ? {opacity:.5} : null}>
-              {teams.some(t => t.name === teamName.trim()) ? 'Overwrite' : 'Save'}
-            </button>
-            <select className="mini-sel team-lib-sel" value="" aria-label="Load a saved team"
-              onChange={e => { if(e.target.value) loadTeam(e.target.value); e.target.value = ''; }}>
-              <option value="">{teams.length ? `Load… (${teams.length})` : 'No saved teams'}</option>
-              {teams.map(t => <option key={t.name} value={t.name}>{t.name}</option>)}
-            </select>
-            {teams.some(t => t.name === teamName.trim()) &&
-              <Tip text={'Delete saved team "' + teamName.trim() + '"'}>
-                <button className="btn" onClick={deleteTeam}>Delete</button>
-              </Tip>}
-          </React.Fragment>}
-          {side === 'squad' && <Tip text={shotBusy ? 'Rendering the team sheet…' : 'Screenshot — preview these six cards as a PNG team sheet, then copy or download it'}>
-            <button className="btn btn-ico" onClick={takeShot} disabled={filled === 0 || shotBusy}
-              style={filled === 0 ? {opacity:.5} : null} aria-label="Screenshot team sheet">
-              <CameraIcon/>
-            </button>
-          </Tip>}
-          {side === 'ref' && <button className={'btn' + (loggedFlash ? '' : ' primary')} onClick={logOpponent}
-            disabled={filled === 0} style={filled === 0 ? {opacity:.5} : null}>
-            {loggedFlash ? 'Logged ✓' : 'Log opponent'}
-          </button>}
-          <button className="btn" onClick={() => setIoFor(side)}>Import / Export</button>
-          {filled > 0 && <button className="btn" onClick={() => { set([]); if(side === 'ref') setMarks({}); }}>Clear</button>}
-        </div>
-      </div>
-      <div className="squad-grid">
-        {slots.map((m,i) => m ? (
-          <SquadCard key={i} mon={m} mine={side === 'squad'} side={side} statMode={statMode}
-            brought={side === 'ref' ? !!(marks[i] && marks[i].brought) : false}
-            lead={side === 'ref' ? !!(marks[i] && marks[i].lead) : false}
-            onBrought={side === 'ref' ? () => toggleBrought(i) : null}
-            onLead={side === 'ref' ? () => toggleLead(i) : null}
-            dragProps={dragHandlers(side, i)}
-            dragging={dragSlot && dragSlot.side === side && dragSlot.index === i}
-            dropover={!!(isOver(side, i) && dragSlot && !(dragSlot.side === side && dragSlot.index === i))}
-            onEdit={() => setBuilder({side, index:i})}
-            onUpdate={patch => set(slots.map((x,xi) => xi === i ? {...x, ...patch} : x))}
-            onRemove={() => { set(slots.map((x,xi) => xi === i ? null : x)); if(side === 'ref') setMarks(mk => ({...mk, [i]: undefined})); }}/>
-        ) : (
-          <GhostCard key={i} onClick={() => setBuilder({side, index:i})}
-            dropover={!!isOver(side, i)}
-            dropProps={dragHandlers(side, i)}/>
-        ))}
-      </div>
-    </section>
-    );
-  };
-
+function vgcModals(ctx){
+  const {builder, sideState, saveMon, setBuilder, cycleBuilder, shot, closeShot,
+         ioFor, setIoFor, squad, refs, setSquad, setRefs, setNote} = ctx;
   return (
-    <div>
-      <div className="page-head">
-        <h1>VGC Companion</h1>
-        <div className="col-actions" style={{marginLeft:0,marginTop:10}}>
-          <div className="stat-toggle" role="group" aria-label="Stat display">
-            <button className={statMode === 'base' ? 'on' : ''} onClick={() => setStatMode('base')}>Base</button>
-            <button className={statMode === 'actual' ? 'on' : ''} onClick={() => setStatMode('actual')}>Actual</button>
-          </div>
-        </div>
-        {note && <div className="status err">{note}</div>}
-      </div>
-      <div className="vgc-cols">
-        {column('squad', 'Your Squad', squad, setSquad)}
-        {column('ref', 'Reference', refs, setRefs)}
-      </div>
-      <div className="ana-head">
-        <span className="col-title"><span className="idx">03</span>Team Analysis</span>
-      </div>
-      <TeamAnalysis squad={squad}/>
-      <SpeedTiers squad={squad} setSquad={setSquad} refs={refs} setRefs={setRefs}/>
-      <OpponentLog oppLog={oppLog} refs={refs} onResult={setLogResult} onExclude={toggleLogExcluded}
-        onDelete={deleteLogEntry} onClear={clearLog} onLoad={loadLogEntry}/>
+    <React.Fragment>
       {builder && (
         <BuilderModal
           key={builder.side + ':' + (builder.index === null ? 'new' : builder.index)}
@@ -5373,10 +5603,56 @@ function VgcPage({squad, setSquad, refs, setRefs}){
           onLoad={team => { (ioFor === 'squad' ? setSquad : setRefs)(team); setIoFor(null); setNote(''); }}
           onClose={() => setIoFor(null)}/>
       )}
+    </React.Fragment>
+  );
+}
+
+function vgcPageHead(statMode, setStatMode, note){
+  return (
+    <div className="page-head">
+      <h1>VGC Companion</h1>
+      <div className="col-actions" style={{marginLeft:0,marginTop:10}}>
+        <div className="stat-toggle" role="group" aria-label="Stat display">
+          <button className={statMode === 'base' ? 'on' : ''} onClick={() => setStatMode('base')}>Base</button>
+          <button className={statMode === 'actual' ? 'on' : ''} onClick={() => setStatMode('actual')}>Actual</button>
+        </div>
+      </div>
+      {note && <div className="status err">{note}</div>}
     </div>
   );
 }
 
+function VgcPage({squad, setSquad, refs, setRefs}){
+  const [ioFor, setIoFor] = useState(null); // 'squad' | 'ref'
+  const [note, setNote] = useState('');
+  const [statMode, setStatMode] = useState(() => lsGet('cc-statmode-v1', 'base') === 'actual' ? 'actual' : 'base');
+  useEffect(() => lsSet('cc-statmode-v1', statMode), [statMode]);
+  const lib = useSavedTeams(squad, setSquad, setNote);
+  const sideState = side => side === 'squad' ? [squad, setSquad] : [refs, setRefs];
+  const log = useBattleLog(refs, setRefs);
+  const {shot, shotBusy, takeShot, closeShot} = useSquadShot(squad, lib.teamName, statMode);
+  const drag = useSlotDrag(sideState);
+  const {builder, setBuilder, saveMon, cycleBuilder} = useBuilderSlots(sideState);
+  const colCtx = {lib, squad, log, shotBusy, takeShot, statMode, drag, setBuilder, setIoFor};
+  return (
+    <div>
+      {vgcPageHead(statMode, setStatMode, note)}
+      <div className="vgc-cols">
+        {vgcColumn('squad', 'Your Squad', squad, setSquad, colCtx)}
+        {vgcColumn('ref', 'Reference', refs, setRefs, colCtx)}
+      </div>
+      <div className="ana-head">
+        <span className="col-title"><span className="idx">03</span>Team Analysis</span>
+      </div>
+      <TeamAnalysis squad={squad}/>
+      <SpeedTiers squad={squad} setSquad={setSquad} refs={refs} setRefs={setRefs}/>
+      <OpponentLog oppLog={log.oppLog} refs={refs} onResult={log.setLogResult} onExclude={log.toggleLogExcluded}
+        onDelete={log.deleteLogEntry} onClear={log.clearLog} onLoad={log.loadLogEntry}/>
+      {vgcModals({builder, sideState, saveMon, setBuilder, cycleBuilder, shot, closeShot,
+        ioFor, setIoFor, squad, refs, setSquad, setRefs, setNote})}
+    </div>
+  );
+}
 
 /* ============ top teams (bundled tournament snapshot) ============ */
 /* Snapshot assembled from public Reg M-B sources — RK9 / Limitless tournament team
@@ -5651,6 +5927,7 @@ function TopTeamRow({t, id, open, setOpen, onLoadTeam, badge, extraTag, extraAct
    Every release adds a dated entry here, newest first. */
 const CHANGELOG = [
   {date: 'August 17, 2026', items: [
+    {tag: 'General', text: 'Under-the-hood restructure: the app\u2019s largest components were split into small, focused functions and hooks (clean-code pass \u2014 no function over 100 lines). No behavior changes; verified against full render-tree snapshots.'},
     {tag: 'Fixes', text: 'Big one: the Competitive Pok\u00e9dex was hiding a Pok\u00e9mon\u2019s entire intel column \u2014 ladder tables and live in-game data included \u2014 whenever that Pok\u00e9mon didn\u2019t appear in any team the app knew about. Fresh visitors saw almost nothing. Every section now renders for every ranked Pok\u00e9mon, no local data required.'},
     {tag: 'Data', text: 'The dex\u2019s teammate intel now includes the site\u2019s featured teams for everyone, and early-season in-game lookups fall back to the final Season M-4 snapshot when Season M-5 data is still thin for a Pok\u00e9mon.'},
     {tag: 'General', text: 'A build stamp now shows in the footer so anyone can tell at a glance which version of PokePanion they\u2019re on.'}
@@ -5814,13 +6091,113 @@ function replicaPaste(code, mons){
     return lines.join('\n');
   }).join('\n\n');
 }
-function TopTeamsPage({onLoadTeam}){
-  const [open, setOpen] = useState({});   // id -> expanded (multiple rows can stay open)
-  /* user-added trending teams — persisted locally, editable in place */
+/* ---- trending teams page: fetch parsing + section renderers ---- */
+function parseTrendingJson(j){
+  if(!j || !Array.isArray(j.teams)) return null;
+  const ok = j.teams.filter(t => t && typeof t.name === 'string' && typeof t.paste === 'string' && parsePaste(t.paste).length);
+  const posts = Array.isArray(j.posts) ? j.posts.filter(p => p && p.title && p.url) : [];
+  return {updated: j.updated || '', posts, teams: ok.map((t, i) => ({
+    id: 'ft' + i, name: t.name, paste: t.paste, url: t.url || '', code: (t.code || '').toUpperCase(),
+    tag: 'Featured \u00b7 ' + parsePaste(t.paste).length + ' Pok\u00e9mon'
+  }))};
+}
+
+function ttFeaturedSection(featured, rowProps){
+  if(!(featured && featured.teams.length > 0)) return null;
+  return (
+    <React.Fragment>
+      <h2 className="tt-section-title">Featured Teams</h2>
+      <p className="sub">Curated by PokePanion{featured.updated ? ' \u00b7 updated ' + featured.updated : ''}.</p>
+      {featured.teams.map((t, i) => (
+        <TopTeamRow key={t.id} id={t.id} t={t} {...rowProps} badge={String(i + 1).padStart(2, '0')}/>
+      ))}
+      <div style={{height: 18}}/>
+    </React.Fragment>
+  );
+}
+
+function ttPostsSection(featured){
+  if(!(featured && featured.posts && featured.posts.length > 0)) return null;
+  return (
+    <React.Fragment>
+      <h2 className="tt-section-title">Community Posts</h2>
+      <p className="sub">Hand-picked reports and roundups from the wider Champions community — these open on their authors' sites.</p>
+      {featured.posts.map((p, i) => (
+        <a className="cp-row" key={i} href={p.url} target="_blank" rel="noopener noreferrer">
+          <span className="cp-badge">✦</span>
+          <span className="cp-main">
+            <span className="cp-title">{p.title}</span>
+            <span className="cp-meta">{p.source}{p.date ? ' · ' + p.date : ''}{p.lang ? ' · ' + p.lang : ''}</span>
+            {p.blurb && <span className="cp-blurb">{p.blurb}</span>}
+          </span>
+          <span className="cp-ext">Read ↗</span>
+        </a>
+      ))}
+      <div style={{height: 18}}/>
+    </React.Fragment>
+  );
+}
+
+function ttCurateForm(ctx){
+  const {fName, setFName, fCode, setFCode, fLink, setFLink, fPaste, setFPaste,
+         editingId, formErr, saveUserTeam, resetForm, importBundled, exportSiteFile, userTeams} = ctx;
+  return (
+    <div className="ut-form">
+      <input className="f-input" placeholder="Team title" value={fName} maxLength={60}
+        onChange={e => setFName(e.target.value)}/>
+      <input className="f-input rl-codein" placeholder="Replica ID (optional)" value={fCode} maxLength={12}
+        onChange={e => setFCode(e.target.value.toUpperCase())} aria-label="Replica Team ID (optional)"/>
+      <input className="f-input" placeholder="Reference link (optional) — YouTube video, X post, article…" value={fLink} maxLength={300}
+        onChange={e => setFLink(e.target.value)}/>
+      <textarea className="f-input ut-paste" placeholder="Paste the team here (PokéPaste / Showdown format)&#10;&#10;Garchomp @ Choice Scarf&#10;Ability: Rough Skin&#10;..." value={fPaste}
+        onChange={e => setFPaste(e.target.value)}/>
+      <div className="ut-form-btns">
+        <button className="btn primary" onClick={saveUserTeam}
+          disabled={!fName.trim() || !fPaste.trim()}
+          style={!fName.trim() || !fPaste.trim() ? {opacity:.5} : null}>
+          {editingId ? 'Save changes' : '+ Add team'}
+        </button>
+        {editingId && <button className="btn" onClick={resetForm}>Cancel edit</button>}
+        <Tip text="Copies the app's built-in tournament teams into your draft list below, so you can keep, edit, or delete each before exporting">
+          <button className="btn" onClick={importBundled}>Import bundled teams</button>
+        </Tip>
+        {userTeams.length > 0 && <Tip text="Site owners: downloads trending.json built from the teams below \u2014 put it in your site's public/ folder and every visitor will see them as Featured Teams (read-only)">
+          <button className="btn" onClick={exportSiteFile}>Export site file</button>
+        </Tip>}
+      </div>
+      {formErr && <div className="status err">{formErr}</div>}
+    </div>
+  );
+}
+
+function ttCommunityMeta(cmeta){
+  if(!(cmeta && cmeta.battles > 0)) return null;
+  return (
+    <div className="tt-section" style={{marginTop: 26}}>
+      <h2 className="tt-section-title">Community Meta</h2>
+      <p className="sub">What PokePanion users are facing on ladder — {cmeta.battles} battle{cmeta.battles === 1 ? '' : 's'} logged in the last {cmeta.days} days by players who opted in. Small samples are noisy; treat this as a community snapshot, not gospel.</p>
+      {cmeta.species.slice(0, 20).map((sp, i) => {
+        const d = findMon(sp.species);
+        return (
+          <div className="cm-row" key={sp.species}>
+            <span className="cm-rank">{String(i + 1).padStart(2, '0')}</span>
+            {d && <img className="cm-sprite" src={SPRITE(d.id)} alt="" loading="lazy"/>}
+            <span className="cm-name">{sp.species}</span>
+            <span className="cm-pct">{sp.pct}%</span>
+            <span className="cm-tops">
+              {sp.items[0] ? sp.items[0][0] : ''}{sp.moves.length ? ' · ' + sp.moves.slice(0, 3).map(x => x[0]).join(', ') : ''}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/* hooks bundle: trending-page state, persistence, and curation actions */
+function useTrendingState(){
   const [userTeams, setUserTeams] = useState(() => lsArr('cc-user-teams-v1'));
   const [featured, setFeatured] = useState(null);
-  const CURATE = !!(window.location && /[?#&]curate/.test((window.location.search || '') + (window.location.hash || '')));
-  const siteMode = !!(featured && featured.teams.length > 0);
   const [cmeta, setCmeta] = useState(null);
   useEffect(() => {
     if(!(window.location && /^https?:/.test(window.location.protocol))) return;
@@ -5834,19 +6211,15 @@ function TopTeamsPage({onLoadTeam}){
     let live = true;
     fetch('trending.json', {cache: 'no-store'})
       .then(r => r.ok ? r.json() : null)
-      .then(j => {
-        if(!live || !j || !Array.isArray(j.teams)) return;
-        const ok = j.teams.filter(t => t && typeof t.name === 'string' && typeof t.paste === 'string' && parsePaste(t.paste).length);
-        const posts = Array.isArray(j.posts) ? j.posts.filter(p => p && p.title && p.url) : [];
-        setFeatured({updated: j.updated || '', posts, teams: ok.map((t, i) => ({
-          id: 'ft' + i, name: t.name, paste: t.paste, url: t.url || '', code: (t.code || '').toUpperCase(),
-          tag: 'Featured \u00b7 ' + parsePaste(t.paste).length + ' Pok\u00e9mon'
-        }))});
-      })
+      .then(j => { const parsed = parseTrendingJson(j); if(live && parsed) setFeatured(parsed); })
       .catch(() => {});
     return () => { live = false; };
   }, []);
   useEffect(() => lsSet('cc-user-teams-v1', userTeams), [userTeams]);
+  return {userTeams, setUserTeams, featured, cmeta};
+}
+
+function useCurateForm(userTeams, setUserTeams, featured){
   const [fName, setFName] = useState('');
   const [fPaste, setFPaste] = useState('');
   const [fLink, setFLink] = useState('');
@@ -5871,6 +6244,37 @@ function TopTeamsPage({onLoadTeam}){
     if(editingId === t.id) resetForm();
     setUserTeams(ts => ts.filter(x => x.id !== t.id));
   };
+  const importBundled = () => {
+    setUserTeams(ts => {
+      const have = new Set(ts.map(t => t.name));
+      const inc = [];
+      TOP_TEAMS.forEach(t => { if(!have.has(t.name)) inc.push({id: 'u' + Date.now() + '-' + inc.length, name: t.name, paste: t.paste, url: t.url || '', tag: t.tag}); });
+      return [...ts, ...inc];
+    });
+  };
+  const exportSiteFile = () => {
+    const out = {updated: new Date().toISOString().slice(0, 10),
+      posts: (featured && featured.posts) || [],
+      teams: userTeams.map(t => ({name: t.name, paste: t.paste, url: t.url || '', code: t.code || ''}))};
+    const blob = new Blob([JSON.stringify(out, null, 2)], {type: 'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'trending.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  };
+  return {fName, setFName, fPaste, setFPaste, fLink, setFLink, fCode, setFCode,
+          editingId, formErr, resetForm, saveUserTeam, editUserTeam, deleteUserTeam,
+          importBundled, exportSiteFile, userTeams};
+}
+
+function TopTeamsPage({onLoadTeam}){
+  const [open, setOpen] = useState({});   // id -> expanded (multiple rows can stay open)
+  /* user-added trending teams — persisted locally, editable in place */
+  const {userTeams, setUserTeams, featured, cmeta} = useTrendingState();
+  const CURATE = !!(window.location && /[?#&]curate/.test((window.location.search || '') + (window.location.hash || '')));
+  const siteMode = !!(featured && featured.teams.length > 0);
+  const form = useCurateForm(userTeams, setUserTeams, featured);
+  const rowProps = {open, setOpen, onLoadTeam};
   return (
     <div>
       <div className="page-head">
@@ -5878,117 +6282,29 @@ function TopTeamsPage({onLoadTeam}){
         <p className="sub">Proven Reg M-B archetypes assembled from tournament team lists (RK9 / Limitless events) and Showdown ranked ladder data, with full sets included — bundled as a July 2026 snapshot until the online version syncs live results. Tap a row for the complete builds, or load a team straight into Your Squad or the Reference side.</p>
       </div>
       {!siteMode && TOP_TEAMS.map(t => (
-        <TopTeamRow key={'t' + t.rank} id={'t' + t.rank} t={t} open={open} setOpen={setOpen}
-          onLoadTeam={onLoadTeam} badge={String(t.rank).padStart(2,'0')} extraTag={t.src}/>
+        <TopTeamRow key={'t' + t.rank} id={'t' + t.rank} t={t} {...rowProps} badge={String(t.rank).padStart(2,'0')} extraTag={t.src}/>
       ))}
       <ReplicaLookup featured={featured} userTeams={userTeams} onLoadTeam={onLoadTeam} open={open} setOpen={setOpen}/>
       {(CURATE || (featured && featured.teams.length > 0)) && <div className="tt-section">
-        {featured && featured.teams.length > 0 && (
-          <React.Fragment>
-            <h2 className="tt-section-title">Featured Teams</h2>
-            <p className="sub">Curated by PokePanion{featured.updated ? ' \u00b7 updated ' + featured.updated : ''}.</p>
-            {featured.teams.map((t, i) => (
-              <TopTeamRow key={t.id} id={t.id} t={t} open={open} setOpen={setOpen}
-                onLoadTeam={onLoadTeam} badge={String(i + 1).padStart(2, '0')}/>
-            ))}
-            <div style={{height: 18}}/>
-          </React.Fragment>
-        )}
-        {featured && featured.posts && featured.posts.length > 0 && (
-          <React.Fragment>
-            <h2 className="tt-section-title">Community Posts</h2>
-            <p className="sub">Hand-picked reports and roundups from the wider Champions community — these open on their authors' sites.</p>
-            {featured.posts.map((p, i) => (
-              <a className="cp-row" key={i} href={p.url} target="_blank" rel="noopener noreferrer">
-                <span className="cp-badge">✦</span>
-                <span className="cp-main">
-                  <span className="cp-title">{p.title}</span>
-                  <span className="cp-meta">{p.source}{p.date ? ' · ' + p.date : ''}{p.lang ? ' · ' + p.lang : ''}</span>
-                  {p.blurb && <span className="cp-blurb">{p.blurb}</span>}
-                </span>
-                <span className="cp-ext">Read ↗</span>
-              </a>
-            ))}
-            <div style={{height: 18}}/>
-          </React.Fragment>
-        )}
+        {ttFeaturedSection(featured, rowProps)}
+        {ttPostsSection(featured)}
         {CURATE && <React.Fragment>
           <h2 className="tt-section-title">Curate Featured Teams</h2>
           <p className="sub">Site-owner mode. Build the featured list here — title, PokéPaste, optional reference link. When it looks right, click Export site file and drop the downloaded trending.json into your site's public folder. Once that file has teams, it becomes the whole page for visitors — the built-in Tournament and Creator lists disappear, so use Import bundled teams first if you want to keep any of them.</p>
         </React.Fragment>}
       </div>}
       {CURATE && <React.Fragment>
-      <div className="ut-form">
-        <input className="f-input" placeholder="Team title" value={fName} maxLength={60}
-          onChange={e => setFName(e.target.value)}/>
-        <input className="f-input rl-codein" placeholder="Replica ID (optional)" value={fCode} maxLength={12}
-          onChange={e => setFCode(e.target.value.toUpperCase())} aria-label="Replica Team ID (optional)"/>
-        <input className="f-input" placeholder="Reference link (optional) — YouTube video, X post, article…" value={fLink} maxLength={300}
-          onChange={e => setFLink(e.target.value)}/>
-        <textarea className="f-input ut-paste" placeholder="Paste the team here (PokéPaste / Showdown format)&#10;&#10;Garchomp @ Choice Scarf&#10;Ability: Rough Skin&#10;..." value={fPaste}
-          onChange={e => setFPaste(e.target.value)}/>
-        <div className="ut-form-btns">
-          <button className="btn primary" onClick={saveUserTeam}
-            disabled={!fName.trim() || !fPaste.trim()}
-            style={!fName.trim() || !fPaste.trim() ? {opacity:.5} : null}>
-            {editingId ? 'Save changes' : '+ Add team'}
-          </button>
-          {editingId && <button className="btn" onClick={resetForm}>Cancel edit</button>}
-          <Tip text="Copies the app's built-in tournament teams into your draft list below, so you can keep, edit, or delete each before exporting">
-            <button className="btn" onClick={() => {
-              setUserTeams(ts => {
-                const have = new Set(ts.map(t => t.name));
-                const inc = [];
-                TOP_TEAMS.forEach(t => { if(!have.has(t.name)) inc.push({id: 'u' + Date.now() + '-' + inc.length, name: t.name, paste: t.paste, url: t.url || '', tag: t.tag}); });
-                return [...ts, ...inc];
-              });
-            }}>Import bundled teams</button>
-          </Tip>
-          {userTeams.length > 0 && <Tip text="Site owners: downloads trending.json built from the teams below \u2014 put it in your site's public/ folder and every visitor will see them as Featured Teams (read-only)">
-            <button className="btn" onClick={() => {
-              const out = {updated: new Date().toISOString().slice(0, 10),
-                posts: (featured && featured.posts) || [],
-                teams: userTeams.map(t => ({name: t.name, paste: t.paste, url: t.url || '', code: t.code || ''}))};
-              const blob = new Blob([JSON.stringify(out, null, 2)], {type: 'application/json'});
-              const a = document.createElement('a');
-              a.href = URL.createObjectURL(blob); a.download = 'trending.json';
-              document.body.appendChild(a); a.click(); a.remove();
-              setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-            }}>Export site file</button>
-          </Tip>}
-        </div>
-        {formErr && <div className="status err">{formErr}</div>}
-      </div>
+      {ttCurateForm(form)}
       {userTeams.map((t, i) => (
-        <TopTeamRow key={t.id} id={t.id} t={t} open={open} setOpen={setOpen}
-          onLoadTeam={onLoadTeam} badge={String(i + 1).padStart(2, '0')}
+        <TopTeamRow key={t.id} id={t.id} t={t} {...rowProps} badge={String(i + 1).padStart(2, '0')}
           extraActions={<React.Fragment>
-            <button className="btn tsm" onClick={() => editUserTeam(t)}>Edit</button>
-            <button className="btn tsm" onClick={() => deleteUserTeam(t)}>Delete</button>
+            <button className="btn tsm" onClick={() => form.editUserTeam(t)}>Edit</button>
+            <button className="btn tsm" onClick={() => form.deleteUserTeam(t)}>Delete</button>
           </React.Fragment>}/>
       ))}
       {!userTeams.length && <div className="tt-empty">No teams drafted yet — teams you add here become the site's Featured Teams once exported.</div>}
       </React.Fragment>}
-      {cmeta && cmeta.battles > 0 && (
-        <div className="tt-section" style={{marginTop: 26}}>
-          <h2 className="tt-section-title">Community Meta</h2>
-          <p className="sub">What PokePanion users are facing on ladder — {cmeta.battles} battle{cmeta.battles === 1 ? '' : 's'} logged in the last {cmeta.days} days by players who opted in. Small samples are noisy; treat this as a community snapshot, not gospel.</p>
-          {cmeta.species.slice(0, 20).map((sp, i) => {
-            const d = findMon(sp.species);
-            return (
-              <div className="cm-row" key={sp.species}>
-                <span className="cm-rank">{String(i + 1).padStart(2, '0')}</span>
-                {d && <img className="cm-sprite" src={SPRITE(d.id)} alt="" loading="lazy"/>}
-                <span className="cm-name">{sp.species}</span>
-                <span className="cm-pct">{sp.pct}%</span>
-                <span className="cm-tops">
-                  {sp.items[0] ? sp.items[0][0] : ''}{sp.moves.length ? ' · ' + sp.moves.slice(0, 3).map(x => x[0]).join(', ') : ''}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      )}
+      {ttCommunityMeta(cmeta)}
     </div>
   );
 }
