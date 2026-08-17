@@ -2709,6 +2709,7 @@ const TYPE_COLORS = {normal:'#9BA0A8',fire:'#E8613C',water:'#3E8EE0',electric:'#
 ice:'#6FC9C9',fighting:'#C4443F',poison:'#9A50A0',ground:'#CBA34A',flying:'#8FA3DE',psychic:'#E06388',
 bug:'#9AAB33',rock:'#B0A05A',ghost:'#6A5C9E',dragon:'#6A55DF',dark:'#5C544C',steel:'#9BA6B5',fairy:'#DE8FDE'};
 const TYPES = Object.keys(TYPE_COLORS);
+const BUILD_STAMP = '2026-08-17';
 const STAT_KEYS = ['HP','Atk','Def','SpA','SpD','Spe'];
 const SPRITE = id => `img/sprite/${id}.png`;
 const ART = id => `img/art/${id}.png`;
@@ -5632,6 +5633,9 @@ function TopTeamRow({t, id, open, setOpen, onLoadTeam, badge, extraTag, extraAct
 /* ---- Updates / changelog ----
    Every release adds a dated entry here, newest first. */
 const CHANGELOG = [
+  {date: 'August 17, 2026', items: [
+    {tag: 'General', text: 'A build stamp now shows in the footer so anyone can tell at a glance which version of PokePanion they\u2019re on.'}
+  ]},
   {date: 'August 12, 2026', items: [
     {tag: 'Teams', text: 'Trending Teams gains a Community Posts section \u2014 hand-picked reports and roundups from around the Champions community, opening on their authors\u2019 sites with full credit. First up: Liberty Note\u2019s Season M-4 Doubles final Top 100 roundup.'},
     {tag: 'Data', text: 'New Usage tab: every ranked Regulation M-B Pok\u00e9mon in one sortable, searchable table \u2014 rank, usage share with bars, and one click opens that Pok\u00e9mon\u2019s full competitive window right on the page. Built on the newest published ladder statistics.'},
@@ -6019,7 +6023,7 @@ function App(){
         {tab === 'teams' && <TopTeamsPage onLoadTeam={loadTopTeam}/>}
       </main>
       <footer className="site-foot">
-        <span>PokePanion is a free, fan-made companion for Pokémon Champions · Not affiliated with Nintendo, The Pokémon Company, or Game Freak</span>
+        <span>PokePanion is a free, fan-made companion for Pokémon Champions · Not affiliated with Nintendo, The Pokémon Company, or Game Freak · Build {BUILD_STAMP}</span>
         <button className="foot-link" onClick={() => setAboutOpen(true)}>About &amp; credits</button>
       </footer>
       {aboutOpen && <AboutModal onClose={() => setAboutOpen(false)}/>}
