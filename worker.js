@@ -158,13 +158,21 @@ function replicaNormalize(json){
   })).filter(m => m.species && m.moves.length);
   return mons.length ? mons : null;
 }
+/* Replica lookup upstream — set this to the real lookup URL when known, with
+   {code} where the Team ID goes, e.g. "https://example.com/api/replica/{code}".
+   When unset, a small list of candidate endpoints is tried; if none answer,
+   /api/replica returns 404 and the app falls back gracefully. */
+const REPLICA_UPSTREAM = "";
+
 async function handleReplica(req, env, code){
-  if(!/^[A-Za-z0-9]{6,14}$/.test(code)) return ok({error: "bad code"}, 400);
-  code = code.toUpperCase();
+  if(!/^[A-Z0-9]{8,12}$/.test(code)) return ok({error: "bad code"}, 400);
   const cacheKey = new Request("https://cache.poke-panion.com/replica/" + code);
   const cached = await caches.default.match(cacheKey);
   if(cached) return cached;
-  for(const url of REPLICA_TRIES(code)){
+  const tries = REPLICA_UPSTREAM
+    ? [REPLICA_UPSTREAM.replace("{code}", code)]
+    : REPLICA_TRIES(code);
+  for(const url of tries){
     try{
       const r = await fetch(url, {headers: {
         "accept": "application/json",
@@ -175,7 +183,7 @@ async function handleReplica(req, env, code){
       let json; try{ json = JSON.parse(text); }catch(_){ continue; }
       const mons = replicaNormalize(json);
       if(!mons) continue;
-      const res = ok({code, mons, source: "champions.karthikb.dev"});
+      const res = ok({code, mons, source: "replica lookup"});
       res.headers.set("cache-control", "public, max-age=86400");
       await caches.default.put(cacheKey, res.clone());
       return res;
@@ -184,39 +192,15 @@ async function handleReplica(req, env, code){
   return ok({error: "not found", note: "Lookup service unavailable or unknown Team ID"}, 404);
 }
 
-/* Replica lookup upstream — paste the real lookup URL here when known, with
-   {code} where the Team ID goes, e.g. "https://example.com/api/replica/{code}".
-   Until it's set, /api/replica answers 404 and the app falls back gracefully. */
-const REPLICA_UPSTREAM = "";
-
-async function handleReplica(req, code){
-  if(!/^[A-Z0-9]{8,12}$/.test(code)) return ok({error: "bad code"}, 400);
-  if(!REPLICA_UPSTREAM) return ok({error: "lookup source not configured"}, 404);
-  const cache = caches.default;
-  const key = new Request("https://replica-cache.local/" + code);
-  const hit = await cache.match(key);
-  if(hit) return hit;
-  const res = await fetch(REPLICA_UPSTREAM.replace("{code}", code), {headers: {"user-agent": "PokePanion replica lookup"}});
-  if(!res.ok) return ok({error: "not found"}, 404);
-  const body = await res.text();
-  const out = new Response(body, {status: 200, headers: {...JSONH, "cache-control": "public, max-age=86400"}});
-  await cache.put(key, out.clone());
-  return out;
-}
-
 export default {
   async fetch(req, env){
     const url = new URL(req.url);
-    const rm = url.pathname.match(/^\/api\/replica\/([A-Za-z0-9]+)$/);
-    if(rm && req.method === "GET") {
-      try{ return await handleReplica(req, rm[1].toUpperCase()); }catch(e){ return ok({error: "server"}, 500); }
-    }
     if(url.pathname === "/api/log" && req.method === "POST") {
       try{ return await handleLog(req, env); }catch(e){ return ok({error: "server"}, 500); }
     }
     const rep = url.pathname.match(/^\/api\/replica\/([A-Za-z0-9]+)$/);
     if(rep && req.method === "GET") {
-      try{ return await handleReplica(req, env, rep[1]); }catch(e){ return ok({error: "server"}, 500); }
+      try{ return await handleReplica(req, env, rep[1].toUpperCase()); }catch(e){ return ok({error: "server"}, 500); }
     }
     if(url.pathname === "/api/meta" && req.method === "GET") {
       try{ return await handleMeta(req, env); }catch(e){ return ok({error: "server"}, 500); }
