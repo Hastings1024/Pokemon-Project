@@ -2709,7 +2709,7 @@ const TYPE_COLORS = {normal:'#9BA0A8',fire:'#E8613C',water:'#3E8EE0',electric:'#
 ice:'#6FC9C9',fighting:'#C4443F',poison:'#9A50A0',ground:'#CBA34A',flying:'#8FA3DE',psychic:'#E06388',
 bug:'#9AAB33',rock:'#B0A05A',ghost:'#6A5C9E',dragon:'#6A55DF',dark:'#5C544C',steel:'#9BA6B5',fairy:'#DE8FDE'};
 const TYPES = Object.keys(TYPE_COLORS);
-const BUILD_STAMP = '2026-08-17';
+const BUILD_STAMP = '2026-08-17b';
 const STAT_KEYS = ['HP','Atk','Def','SpA','SpD','Spe'];
 const SPRITE = id => `img/sprite/${id}.png`;
 const ART = id => `img/art/${id}.png`;
@@ -3229,6 +3229,24 @@ function MovesPanel({mon}){
    Sources: bundled tournament snapshot, creator teams, your trending teams, your saved
    library, and the opponent log. When the site goes online this swaps to live
    Showdown-ladder teammate stats + tournament team lists. */
+/* Featured teams from trending.json, fetched once at boot so every visitor's
+   dex intel includes them (no login, no local data needed). */
+let FEATURED_TEAMS = [];
+(function loadFeatured(){
+  try{
+    if(!(window.location && /^https?:/.test(window.location.protocol))) return;
+    fetch('trending.json', {cache: 'no-store'})
+      .then(r => r.ok ? r.json() : null)
+      .then(j => {
+        if(!j || !Array.isArray(j.teams)) return;
+        FEATURED_TEAMS = j.teams
+          .filter(t => t && typeof t.paste === 'string')
+          .map(t => ({name: t.name || 'Featured team', tag: 'Featured team', species: parsePaste(t.paste).map(m => m.species)}))
+          .filter(t => t.species.length);
+      })
+      .catch(() => {});
+  }catch(_){}
+})();
 function knownTeams(){
   const out = [];
   const add = (name, tag, paste, log) => {
@@ -3238,6 +3256,7 @@ function knownTeams(){
     }catch(_){}
   };
   TOP_TEAMS.forEach(t => add(t.name, t.src, t.paste));
+  FEATURED_TEAMS.forEach(t => out.push({name: t.name, tag: t.tag, species: t.species.slice(), log: false}));
   lsArr('cc-user-teams-v1').forEach(t => add(t.name, 'Your trending team', t.paste));
   lsArr('cc-saved-teams-v1').forEach(t => add(t.name, 'Saved team', t.paste));
   lsArr('cc-opponent-log-v1').forEach((e, i) => {
@@ -3285,14 +3304,24 @@ function cbdDistill(rows){
     t: by('teammate').slice(0, 6).map(r => r.name)
   };
 }
-async function cbdFetch(id, format){
-  const res = await fetch(CBD_URL + '/api/battle/' + format + '/' + id);
+async function cbdFetchOne(url){
+  const res = await fetch(url);
   if(!res.ok) throw new Error('http ' + res.status);
   const json = await res.json();
   const rows = json.rows && json.rows.length ? json.rows
     : (json.daily && json.daily.length ? json.daily[0].rows : []);
   if(!rows.length) throw new Error('empty');
   return {season: json.season || '', data: cbdDistill(rows)};
+}
+async function cbdFetch(id, format){
+  try{
+    return await cbdFetchOne(CBD_URL + '/api/battle/' + format + '/' + id);
+  }catch(e){
+    /* early in a new season the current files can be empty for less-common
+       Pokémon — fall back to the final Season M4 snapshot */
+    const prev = await cbdFetchOne(CBD_URL + '/api/battle/' + format + '/' + id + '?season=M4&days=1');
+    return {season: (prev.season || 'M4') + ' (final)', data: prev.data};
+  }
 }
 function CbdSection({mon, onJump}){
   const [fmt, setFmt] = useState('Doubles');
@@ -3397,19 +3426,6 @@ function CompIntel({mon, onJump}){
   const {withMe, mates} = useMemo(() => teammateIntel(mon.name), [mon.id]);
   const featured = withMe.filter(t => !t.log).slice(0, 6);
   const logCount = withMe.filter(t => t.log).length;
-  const u0 = ladderOf(mon);
-  if(!withMe.length) return (
-    <div>
-      {u0 && <div className="dd-sec">
-        <div className="dd-h">Ladder snapshot <span className="dd-hn">{LADDER.month} · {LADDER.cutoff}+ rating</span></div>
-        <div className="ladder-stat"><span className="ladder-rank">#{u0[0]}</span>
-          <span className="ladder-pct">{u0[1]}%</span>
-          <span className="ladder-lbl">of teams — {LADDER.fmt} ranked ladder</span></div>
-      </div>}
-      <div className="dd-h">Best teammates</div>
-      <div className="dd-note">No team data for {mon.name} yet — it hasn't appeared in the bundled tournament snapshot, your trending or saved teams, or the opponent log. Data grows as you add teams and log battles; the online version will pull live ladder stats.</div>
-    </div>
-  );
   const u = ladderOf(mon);
   return (
     <div>
@@ -3430,7 +3446,8 @@ function CompIntel({mon, onJump}){
       ); })()}
       <CbdSection mon={mon} onJump={onJump}/>
       <div className="dd-sec">
-        <div className="dd-h">{LADDER.detail[mon.slug] ? 'Teammates in your app data' : 'Best teammates'} <span className="dd-hn">from {withMe.length} known team{withMe.length === 1 ? '' : 's'}</span></div>
+        <div className="dd-h">{LADDER.detail[mon.slug] ? 'Teammates in your app data' : 'Best teammates'} {withMe.length > 0 && <span className="dd-hn">from {withMe.length} known team{withMe.length === 1 ? '' : 's'}</span>}</div>
+        {!withMe.length && <div className="dd-note">Nothing yet — {mon.name} hasn't appeared in the site's featured teams, your saved or trending teams, or your opponent log.</div>}
         {mates.map((m, i) => {
           const d = findMon(m.species);
           return (
@@ -5634,6 +5651,8 @@ function TopTeamRow({t, id, open, setOpen, onLoadTeam, badge, extraTag, extraAct
    Every release adds a dated entry here, newest first. */
 const CHANGELOG = [
   {date: 'August 17, 2026', items: [
+    {tag: 'Fixes', text: 'Big one: the Competitive Pok\u00e9dex was hiding a Pok\u00e9mon\u2019s entire intel column \u2014 ladder tables and live in-game data included \u2014 whenever that Pok\u00e9mon didn\u2019t appear in any team the app knew about. Fresh visitors saw almost nothing. Every section now renders for every ranked Pok\u00e9mon, no local data required.'},
+    {tag: 'Data', text: 'The dex\u2019s teammate intel now includes the site\u2019s featured teams for everyone, and early-season in-game lookups fall back to the final Season M-4 snapshot when Season M-5 data is still thin for a Pok\u00e9mon.'},
     {tag: 'General', text: 'A build stamp now shows in the footer so anyone can tell at a glance which version of PokePanion they\u2019re on.'}
   ]},
   {date: 'August 12, 2026', items: [
