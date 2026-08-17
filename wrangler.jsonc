@@ -1,16 +1,29 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "pokemon-project",
-  "main": "worker.js",
-  "compatibility_date": "2026-08-05",
-  "observability": { "enabled": true },
-  "assets": { "directory": "./public", "binding": "ASSETS" },
-  "compatibility_flags": ["nodejs_compat"],
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "pokepanion-meta",
-      "database_id": "PASTE_DATABASE_ID_HERE"
-    }
-  ]
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "pokemon-project",
+	"main": "worker.js",
+	"compatibility_date": "2026-08-05",
+	"observability": {
+		"enabled": true
+	},
+	"assets": {
+		"directory": "./public",
+		"binding": "ASSETS"
+	},
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "pokepanion-meta",
+			"database_id": "4a4f82d8-234c-46ed-9212-b52b2949d101"
+		},
+		{
+			"binding": "pokepanion_meta",
+			"database_name": "pokepanion-meta",
+			"database_id": "4a4f82d8-234c-46ed-9212-b52b2949d101",
+			"remote": true
+		}
+	]
 }
