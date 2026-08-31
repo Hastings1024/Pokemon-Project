@@ -82,6 +82,10 @@ table.dex tbody tr{cursor:pointer}
 table.dex tbody tr:hover td{background:#1F2A3F}
 .cell-mon{display:flex;align-items:center;gap:10px;min-width:200px}
 .row-sprite{width:40px;height:40px;image-rendering:pixelated;flex-shrink:0}
+.dex td.row-dexno{color:var(--gold)}
+.mc-chip{margin-left:7px;font-family:var(--disp);font-size:9px;font-weight:800;letter-spacing:.09em;padding:1.5px 6px;border-radius:4px;border:1px solid var(--gold-dim);color:var(--gold);vertical-align:1.5px}
+.dex-mvfilter{position:relative;display:inline-block}
+.dex-mvfilter .f-input{width:180px;height:34px;font-size:13px}
 .row-dexno{font-family:var(--disp);font-size:10px;color:#5F7195;letter-spacing:.05em}
 .mon-stack .row-name{font-family:var(--disp);font-weight:600;font-size:13.5px;line-height:1.2;color:var(--ink)}
 .mini-badges{display:flex;gap:4px;margin-top:3px}
@@ -136,9 +140,6 @@ table.moves td{padding:6px 8px;border-bottom:1px solid #1C2637}
 .dd-note{font-size:12px;color:var(--muted);line-height:1.55}
 .usage-line{font-family:var(--disp);font-size:12px;color:var(--gold);margin-top:3px;font-weight:700}
 .usage-meta{color:var(--muted);font-family:var(--body);font-weight:400;font-size:10.5px}
-.cell-usage{width:52px}
-.usage-chip{font-family:var(--disp);font-weight:700;font-size:12px;color:var(--gold)}
-.usage-none{color:var(--muted);opacity:.45}
 .ladder-stat{display:flex;align-items:baseline;gap:10px}
 .ladder-rank{font-family:var(--disp);font-weight:800;font-size:24px;color:var(--gold)}
 .ladder-pct{font-family:var(--disp);font-weight:700;font-size:17px;color:var(--ink)}
@@ -535,10 +536,6 @@ a.tt-watch{text-decoration:none;display:inline-flex;align-items:center;gap:5px;c
 .cm-name{font-weight:700;font-size:13px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cm-pct{font-family:var(--disp);font-weight:800;font-size:13px;color:var(--gold);text-align:right}
 .cm-tops{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rl-sec{margin-bottom:26px}
-.rl-form{display:flex;gap:8px;margin:10px 0 8px;flex-wrap:wrap}
-.rl-input{width:240px;max-width:70vw;font-family:var(--disp);letter-spacing:.12em;text-transform:uppercase}
-.rl-ext{color:var(--gold);text-decoration:none}
 .tt-code{margin-left:8px;font-family:var(--disp);font-size:10px;font-weight:700;letter-spacing:.08em;padding:2px 8px;border-radius:5px;border:1px solid var(--gold-dim);background:none;color:var(--gold);cursor:pointer;vertical-align:1px}
 .tt-code.on{color:#8BD48B;border-color:#2E5B33}
 .rl-codein{width:170px;text-transform:uppercase}
@@ -2709,7 +2706,7 @@ const TYPE_COLORS = {normal:'#9BA0A8',fire:'#E8613C',water:'#3E8EE0',electric:'#
 ice:'#6FC9C9',fighting:'#C4443F',poison:'#9A50A0',ground:'#CBA34A',flying:'#8FA3DE',psychic:'#E06388',
 bug:'#9AAB33',rock:'#B0A05A',ghost:'#6A5C9E',dragon:'#6A55DF',dark:'#5C544C',steel:'#9BA6B5',fairy:'#DE8FDE'};
 const TYPES = Object.keys(TYPE_COLORS);
-const BUILD_STAMP = '2026-08-17c';
+const BUILD_STAMP = '2026-08-31';
 const STAT_KEYS = ['HP','Atk','Def','SpA','SpD','Spe'];
 const SPRITE = id => `img/sprite/${id}.png`;
 const ART = id => `img/art/${id}.png`;
@@ -3161,6 +3158,12 @@ function parseSave(raw){
 
 /* ============ News ============ */
 const NEWS = [
+  {date:'2026-08-30', cat:'Regulation', title:'Regulation M-C confirmed — new Pokémon arrive Sep 9',
+   body:'Announced at Worlds: Regulation Set M-C goes live worldwide on September 9 and runs through December 2. Rillaboom and Baxcalibur are confirmed additions (more possible — the official list isn\u2019t published yet), and Z Mega Evolutions debut, including Mega Lucario Z and Mega Absol Z (Sharpness: cutting moves ×1.5). Legendary Pokémon like Heatran were teased for later. PokePanion will bake the full M-C data — learnsets, stats, and legality — the moment it\u2019s published.',
+   url:'https://www.pokemon-zone.com/champions/regulations/m-c/'},
+  {date:'2026-08-30', cat:'Events', title:'Worlds 2026: Takuma Yamazaki is the first Champions World Champion',
+   body:'The first Pokémon Champions Worlds (San Francisco, Aug 28–30, Regulation M-B, 645 players) crowned Takuma Yamazaki, whose Mega Floette + Mega Dragonite squad beat Hiroshi Onishi\u2019s Big Six in the finals. The full top-cut teams are now featured on Trending Teams.',
+   url:'https://www.pokedata.ovh/standingsVGC/'},
   {date:'2026-07-15', cat:'Championships', title:'Pokémon Championship Series 2027 season update',
    body:'The official site posted an update on the 2027 Championship Series season. Worth a read for anyone planning their circuit schedule.',
    url:'https://champions.pokemon.com/en-us/'},
@@ -3580,7 +3583,8 @@ function detailHead(ctx){
         }}/>
       <div>
         <div className="row-dexno">#{String(mon.dex).padStart(4,'0')} · Gen {mon.gen}
-          {REG.legal.has(mon.dex) && <span style={{color:'var(--gold)'}}> · {REG.id} legal</span>}</div>
+          {REG.legal.has(mon.dex) && <span style={{color:'var(--gold)'}}> · {REG.id} legal</span>}
+          {MC_CONFIRMED.has(mon.slug) && <span style={{color:'var(--gold)'}}> · Confirmed for M-C — playable Sep 9</span>}</div>
         {ladderOf(mon) && <div className="usage-line">Ladder #{ladderOf(mon)[0]} · {ladderOf(mon)[1]}% usage
           <span className="usage-meta"> — {LADDER.fmt} · {LADDER.month} · {LADDER.cutoff}+</span></div>}
         <h2>{mon.name}</h2>
@@ -3699,10 +3703,12 @@ function MonDetail({mon, onClose, onPrev, onNext, onJump}){
   );
 }
 
+/* Confirmed Regulation M-C additions (arrive Sep 9) — flagged in the dex until the
+   full M-C data is published and baked. */
+const MC_CONFIRMED = new Set(['rillaboom', 'baxcalibur']);
 const COLS = [
   {key:'dex', label:'#', sortable:true},
   {key:'name', label:'Pokémon', sortable:true},
-  {key:'usage', label:'Usage', sortable:true},
   {key:'abil', label:'Abilities', sortable:false},
   {key:'hp', label:'HP', sortable:true, stat:0},
   {key:'atk', label:'Atk', sortable:true, stat:1},
@@ -3723,7 +3729,7 @@ function useDexFilters(){
   const [moveQ2, setMoveQ2] = useState(typeof df.moveQ2 === 'string' ? df.moveQ2 : '');
   const [types, setTypes] = useState(Array.isArray(df.types) ? df.types : []);          // multi-select type filter
   const [gen, setGen] = useState(typeof df.gen === 'number' ? df.gen : 0);
-  const [sortKey, setSortKey] = useState(typeof df.sortKey === 'string' ? df.sortKey : 'dex');
+  const [sortKey, setSortKey] = useState(typeof df.sortKey === 'string' && df.sortKey !== 'usage' ? df.sortKey : 'dex');
   const [sortDir, setSortDir] = useState(df.sortDir === -1 ? -1 : 1);
   const [forms, setForms] = useState(df.forms === false ? false : true);
   useEffect(() => lsSet('cc-dexfilters-v1', {q, abilQ, moveQ, moveQ2, types, gen, sortKey, sortDir, forms}),
@@ -3734,7 +3740,7 @@ function useDexFilters(){
 
 function dexFilterSort({mode, q, abilQ, moveQ, moveQ2, types, gen, sortKey, sortDir, forms}){
   let list = POKEDEX;
-  if(mode === 'comp') list = list.filter(p => REG.legal.has(p.dex) && !COMP_EXCLUDE.test(p.slug));
+  if(mode === 'comp') list = list.filter(p => (REG.legal.has(p.dex) && !COMP_EXCLUDE.test(p.slug)) || MC_CONFIRMED.has(p.slug));
   else if(!forms) list = list.filter(p => p.default);
   if(q){ const n = norm(q); list = list.filter(p => p.slug.includes(n) || norm(p.name).includes(n)); }
   [moveQ, moveQ2].forEach(mv => {
@@ -3754,7 +3760,6 @@ function dexFilterSort({mode, q, abilQ, moveQ, moveQ2, types, gen, sortKey, sort
     if(sortKey === 'name') return sortDir * a.name.localeCompare(b.name);
     let va, vb;
     if(sortKey === 'dex'){ va = a.dex * 1000000 + a.id; vb = b.dex * 1000000 + b.id; }
-    else if(sortKey === 'usage'){ va = ladderOf(a) ? -ladderOf(a)[0] : -99999; vb = ladderOf(b) ? -ladderOf(b)[0] : -99999; }
     else if(sortKey === 'bst'){ va = a.bst; vb = b.bst; }
     else { va = a.stats[col.stat]; vb = b.stats[col.stat]; }
     return sortDir * (va - vb) || a.id - b.id;
@@ -3775,8 +3780,10 @@ function dexToolbars(f, mode, filteredCount){
       </div>
       <div className="dex-toolbar">
         <input className="search" style={{width:180}} placeholder="Filter by ability…" value={f.abilQ} onChange={e => f.setAbilQ(e.target.value)} aria-label="Filter by ability"/>
-        <input className="search" style={{width:180}} placeholder="Filter by move…" value={f.moveQ} onChange={e => f.setMoveQ(e.target.value)} aria-label="Filter by move"/>
-        <input className="search" style={{width:180}} placeholder="+ second move…" value={f.moveQ2} onChange={e => f.setMoveQ2(e.target.value)} aria-label="Filter by second move"/>
+        <span className="dex-mvfilter"><MoveInput value={f.moveQ} learnIds={[]} placeholder="Filter by move…"
+          onCommit={f.setMoveQ} onType={f.setMoveQ} onClear={() => f.setMoveQ('')} onCancel={() => {}}/></span>
+        <span className="dex-mvfilter"><MoveInput value={f.moveQ2} learnIds={[]} placeholder="+ second move…"
+          onCommit={f.setMoveQ2} onType={f.setMoveQ2} onClear={() => f.setMoveQ2('')} onCancel={() => {}}/></span>
         <select className="ctl" value={f.gen} onChange={e => f.setGen(+e.target.value)} aria-label="Generation">
           <option value={0}>All gens</option>
           {[1,2,3,4,5,6,7,8,9].map(g => <option key={g} value={g}>Gen {g}</option>)}
@@ -3806,22 +3813,15 @@ function dexTableHead(sortKey, sortDir, setSort){
   );
 }
 
-function dexUsageCell(p){
-  const u = ladderOf(p);
-  return u ? <Tip text={`#${u[0]} · ${u[1]}% usage — ${LADDER.fmt} ladder, ${LADDER.month} (${LADDER.cutoff}+)`}>
-    <span className="usage-chip">#{u[0]}</span></Tip> : <span className="usage-none">—</span>;
-}
-
 function dexRow(p, setSel){
   return (
     <tr key={p.id} onClick={() => setSel(p)}>
       <td className="row-dexno">{String(p.dex).padStart(3,'0')}</td>
-      <td className="cell-usage">{dexUsageCell(p)}</td>
       <td>
         <div className="cell-mon">
           <img className="row-sprite" loading="lazy" src={SPRITE(p.id)} alt="" onError={e => spriteFallback(e, p)}/>
           <div className="mon-stack">
-            <div className="row-name">{p.name}</div>
+            <div className="row-name">{p.name}{MC_CONFIRMED.has(p.slug) && <Tip text="Confirmed for Regulation M-C — playable from Sep 9"><span className="mc-chip">M-C</span></Tip>}</div>
             <div className="mini-badges">
               {p.types.map(t => <span key={t} className="tbm" style={{background:TYPE_COLORS[t]}}>{TYPE_ABBR[t]}</span>)}
             </div>
@@ -4345,7 +4345,7 @@ function GhostCard({onClick, dropProps, dropover}){
   );
 }
 
-function MoveInput({value, learnIds, placeholder, autoFocus, onCommit, onCancel, onClear}){
+function MoveInput({value, learnIds, placeholder, autoFocus, onCommit, onCancel, onClear, onType}){
   const [q, setQ] = useState(value || '');
   const [open, setOpen] = useState(false);
   const [hi, setHi] = useState(0);
@@ -4369,7 +4369,7 @@ function MoveInput({value, learnIds, placeholder, autoFocus, onCommit, onCancel,
   return (
     <div className="ns-wrap" style={{flex:1,minWidth:0}}>
       <input ref={inputRef} className="f-input" value={q} placeholder={placeholder} autoFocus={autoFocus}
-        onChange={e => { setQ(e.target.value); setOpen(true); }}
+        onChange={e => { setQ(e.target.value); setOpen(true); if(onType) onType(e.target.value); }}
         onFocus={() => setOpen(true)}
         onBlur={() => setTimeout(() => {
           setOpen(false);
@@ -5795,83 +5795,6 @@ function linkMeta(url){
 /* ---- Replica Team lookup ----
    Resolves a 10-character in-game Team ID against (1) this site's featured/known
    teams and (2) the /api/replica endpoint when a lookup source is configured. */
-function ReplicaLookup({featured, userTeams, onLoadTeam, open, setOpen}){
-  const [code, setCode] = useState('');
-  const [state, setState] = useState({status: 'idle'});
-  const online = !!(window.location && /^https?:/.test(window.location.protocol));
-  const known = c => {
-    const all = [];
-    if(featured && featured.teams) all.push(...featured.teams);
-    all.push(...userTeams);
-    TOP_TEAMS.forEach(t => all.push(t));
-    return all.find(t => (t.code && String(t.code).toUpperCase() === c) || (t.name || '').toUpperCase().includes(c));
-  };
-  const lookup = async () => {
-    const c = code.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
-    if(!/^[A-Z0-9]{8,12}$/.test(c)){
-      setState({status: 'err', msg: 'Team IDs are the 10-character codes shown on replica teams in-game.'});
-      return;
-    }
-    const hit = known(c);
-    if(hit){ setState({status: 'ok', team: hit, src: 'library'}); return; }
-    if(!online){ setState({status: 'miss', code: c, offline: true}); return; }
-    let cache = {};
-    try{ cache = JSON.parse(localStorage.getItem('cc-replica-v1') || '{}'); }catch(_){}
-    const cached = cache[c];
-    if(cached && Date.now() - cached.at < 24 * 60 * 60 * 1000){
-      setState({status: 'ok', src: 'live', team: cached.team});
-      return;
-    }
-    setState({status: 'loading'});
-    try{
-      const r = await fetch('/api/replica/' + c);
-      const j = await r.json();
-      let paste = '';
-      if(r.ok && j){
-        if(typeof j.paste === 'string') paste = j.paste;
-        else if(Array.isArray(j.mons) && j.mons.length) paste = replicaPaste(c, j.mons);
-      }
-      if(!paste || !parsePaste(paste).length){ setState({status: 'miss', code: c}); return; }
-      const team = {id: 'rl-' + c, name: (j.name || 'Replica team'), code: c, paste,
-        url: j.url || '', tag: 'Replica lookup \u00b7 ' + parsePaste(paste).length + ' Pok\u00e9mon'};
-      try{ cache[c] = {at: Date.now(), team}; localStorage.setItem('cc-replica-v1', JSON.stringify(cache)); }catch(_){}
-      setState({status: 'ok', src: 'live', team});
-    }catch(_){
-      setState({status: 'miss', code: c});
-    }
-  };
-  return (
-    <div className="tt-section rl-sec">
-      <h2 className="tt-section-title">Replica Lookup</h2>
-      <p className="sub">Enter an in-game Team ID to view that replica team here — then load it straight into your squad or reference side.</p>
-      <div className="rl-form">
-        <input className="f-input rl-input" placeholder="Team ID (e.g. SKSRLTBYV8)" value={code} maxLength={12}
-          onChange={e => setCode(e.target.value.toUpperCase())}
-          onKeyDown={e => { if(e.key === 'Enter') lookup(); }}
-          aria-label="Replica Team ID"/>
-        <button className="btn primary" onClick={lookup} disabled={state.status === 'loading'}>
-          {state.status === 'loading' ? 'Looking up…' : 'Look up'}
-        </button>
-      </div>
-      {state.status === 'err' && <div className="cbd-note">{state.msg}</div>}
-      {state.status === 'miss' && (
-        <div className="cbd-note">
-          「{state.code}」 isn't in PokePanion's team library{state.offline ? ' (and live lookup needs an internet connection)' : ' and the live lookup couldn\u2019t resolve it'}.
-          You can still pull it in-game (Training → Replicated Teams), or try the{' '}
-          <a className="rl-ext" href="https://champions.karthikb.dev/replica" target="_blank" rel="noopener noreferrer">Replica Team Viewer</a> by KarthikVGC.
-        </div>
-      )}
-      {state.status === 'ok' && (
-        <React.Fragment>
-          {state.src === 'library' && <div className="cbd-note">Found in this site's team library.</div>}
-          <TopTeamRow id="replica-result" t={state.team} open={open} setOpen={setOpen}
-            onLoadTeam={onLoadTeam} badge="ID"/>
-        </React.Fragment>
-      )}
-    </div>
-  );
-}
-
 function CodeChip({code}){
   const [done, setDone] = useState(false);
   return (
@@ -5926,7 +5849,15 @@ function TopTeamRow({t, id, open, setOpen, onLoadTeam, badge, extraTag, extraAct
 /* ---- Updates / changelog ----
    Every release adds a dated entry here, newest first. */
 const CHANGELOG = [
+  {date: 'August 31, 2026', items: [
+    {tag: 'Teams', text: 'Trending Teams is now the Worlds 2026 edition: the full top-cut archetypes from the first Champions World Championship \u2014 both finals teams (champion Takuma Yamazaki\u2019s Mega Floette + Mega Dragonite squad and Hiroshi Onishi\u2019s Big Six), the 8-0 swiss run, the double-setup team, Aurora Veil ice, sun Trick Room, and more \u2014 every set as played, credited to its pilot.'},
+    {tag: 'Data', text: 'Regulation M-C (Sep 9): Rillaboom and Baxcalibur are confirmed and now appear in the Competitive Pok\u00e9dex wearing an M-C chip; the full M-C bake \u2014 learnsets, legality, Z Mega Evolutions \u2014 lands the moment official data publishes.'},
+    {tag: 'Pokédex', text: 'The move filters now autocomplete from the full Champions move list, exactly like the move pickers in the team builder \u2014 and still filter live as you type.'}
+  ]},
   {date: 'August 17, 2026', items: [
+    {tag: 'Pokédex', text: 'Dex table cleanup: the Usage column is gone (its header and values had been misaligned, and the same rank lives on each Pokémon\u2019s detail window and the Usage tab), and the # column now shows in gold.'},
+    {tag: 'Teams', text: 'The Replica Team Viewer is shelved for now \u2014 arbitrary Team IDs can only be decoded by a live lookup service we can\u2019t yet guarantee, and half-working isn\u2019t the bar. Featured teams keep their gold Replica ID chips (click to copy for in-game use), and the viewer returns when a reliable lookup is secured.'},
+    {tag: 'Teams', text: 'The Replica Lookup grew into a full Replica Team Viewer: enter any in-game Team ID and the complete team opens automatically with full sets, a one-click Showdown paste export, and \u2192 Squad / \u2192 Reference loading. Library IDs resolve instantly; all other IDs go through the live lookup service.'},
     {tag: 'General', text: 'Under-the-hood restructure: the app\u2019s largest components were split into small, focused functions and hooks (clean-code pass \u2014 no function over 100 lines). No behavior changes; verified against full render-tree snapshots.'},
     {tag: 'Fixes', text: 'Big one: the Competitive Pok\u00e9dex was hiding a Pok\u00e9mon\u2019s entire intel column \u2014 ladder tables and live in-game data included \u2014 whenever that Pok\u00e9mon didn\u2019t appear in any team the app knew about. Fresh visitors saw almost nothing. Every section now renders for every ranked Pok\u00e9mon, no local data required.'},
     {tag: 'Data', text: 'The dex\u2019s teammate intel now includes the site\u2019s featured teams for everyone, and early-season in-game lookups fall back to the final Season M-4 snapshot when Season M-5 data is still thin for a Pok\u00e9mon.'},
@@ -6077,21 +6008,6 @@ function UpdatesPage(){
 }
 
 const EV_ORDER = [['hp','HP'],['atk','Atk'],['def','Def'],['spa','SpA'],['spd','SpD'],['spe','Spe']];
-function replicaPaste(code, mons){
-  return mons.map(m => {
-    const lines = [m.item ? m.species + ' @ ' + m.item : m.species];
-    if(m.ability) lines.push('Ability: ' + m.ability);
-    lines.push('Level: 50');
-    if(m.evs){
-      const ev = EV_ORDER.filter(([k]) => m.evs[k]).map(([k, lbl]) => m.evs[k] + ' ' + lbl).join(' / ');
-      if(ev) lines.push('EVs: ' + ev);
-    }
-    if(m.nature) lines.push(m.nature + ' Nature');
-    (m.moves || []).forEach(mv => lines.push('- ' + mv));
-    return lines.join('\n');
-  }).join('\n\n');
-}
-/* ---- trending teams page: fetch parsing + section renderers ---- */
 function parseTrendingJson(j){
   if(!j || !Array.isArray(j.teams)) return null;
   const ok = j.teams.filter(t => t && typeof t.name === 'string' && typeof t.paste === 'string' && parsePaste(t.paste).length);
@@ -6284,7 +6200,6 @@ function TopTeamsPage({onLoadTeam}){
       {!siteMode && TOP_TEAMS.map(t => (
         <TopTeamRow key={'t' + t.rank} id={'t' + t.rank} t={t} {...rowProps} badge={String(t.rank).padStart(2,'0')} extraTag={t.src}/>
       ))}
-      <ReplicaLookup featured={featured} userTeams={userTeams} onLoadTeam={onLoadTeam} open={open} setOpen={setOpen}/>
       {(CURATE || (featured && featured.teams.length > 0)) && <div className="tt-section">
         {ttFeaturedSection(featured, rowProps)}
         {ttPostsSection(featured)}
