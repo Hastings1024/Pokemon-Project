@@ -1,24 +1,84 @@
 {
- "updated": "2026-08-31",
+ "updated": "2026-09-15",
  "posts": [
+  {
+   "title": "Reg M-C Top Teams — live tournament results",
+   "source": "Pikalytics",
+   "lang": "English",
+   "date": "Sep 15, 2026",
+   "blurb": "Every recent M-C tournament with full team lists and usage — the source for this page's early-meta winners.",
+   "url": "https://www.pikalytics.com/topteams"
+  },
   {
    "title": "Worlds 2026 — Official VGC Standings & Team Lists",
    "source": "pokedata.ovh",
    "lang": "English",
    "date": "Aug 30, 2026",
-   "blurb": "The complete standings and registered team lists from the first Pokémon Champions World Championship in San Francisco — 645 players, Regulation M-B.",
+   "blurb": "The complete standings and registered team lists from the first Pokémon Champions World Championship — 645 players, Regulation M-B.",
    "url": "https://www.pokedata.ovh/standingsVGC/"
-  },
-  {
-   "title": "Season M-4 Doubles — Final Top 100 Roundup",
-   "source": "Liberty Note",
-   "lang": "Japanese",
-   "date": "Aug 5, 2026",
-   "blurb": "A compilation of the final top 100 finishers from Ranked Doubles Season M-4, with the site's team-report coverage running through the top 50.",
-   "url": "https://liberty-note.com/2026/08/05/champions-seasonm4-top100/"
   }
  ],
  "teams": [
+  {
+   "name": "Terrain Overdrive — 12-0 · DDee (Talon's Fight Club #101 winner)",
+   "paste": "Floette-Eternal @ Floettite\nAbility: Flower Veil\n- Moonblast\n- Dazzling Gleam\n- Calm Mind\n- Protect\n\nSneasler @ Grassy Seed\nAbility: Unburden\n- Close Combat\n- Dire Claw\n- Rock Slide\n- Protect\n\nIncineroar @ Sitrus Berry\nAbility: Intimidate\n- Flare Blitz\n- Throat Chop\n- Fake Out\n- Parting Shot\n\nRillaboom @ Miracle Seed\nAbility: Grassy Surge\n- Wood Hammer\n- Grassy Glide\n- High Horsepower\n- Fake Out\n\nGholdengo @ Life Orb\nAbility: Good as Gold\n- Make It Rain\n- Shadow Ball\n- Nasty Plot\n- Protect\n\nRaichu @ Raichunite Y\nAbility: Lightning Rod\n- Zap Cannon\n- Focus Blast\n- Encore\n- Protect",
+   "url": "https://www.pikalytics.com/topteams",
+   "code": ""
+  },
+  {
+   "name": "Mega Baxcalibur Rain — 10-2 · Contrapple (Talon's Fight Club #101 runner-up)",
+   "paste": "Baxcalibur @ Baxcalibrite\nAbility: Thermal Exchange\n- Protect\n- Dragon Dance\n- Glaive Rush\n- Ice Shard\n\nArchaludon @ Leftovers\nAbility: Stamina\n- Protect\n- Dragon Pulse\n- Flash Cannon\n- Electro Shot\n\nPelipper @ Focus Sash\nAbility: Drizzle\n- Wide Guard\n- Tailwind\n- Weather Ball\n- Hurricane\n\nBasculegion-Male @ Choice Scarf\nAbility: Adaptability\n- Aqua Jet\n- Last Respects\n- Wave Crash\n- Flip Turn\n\nRillaboom @ Miracle Seed\nAbility: Grassy Surge\n- Fake Out\n- Wood Hammer\n- Grassy Glide\n- High Horsepower\n\nSneasler @ White Herb\nAbility: Unburden\n- Fake Out\n- Coaching\n- Dire Claw\n- Close Combat",
+   "url": "https://www.pikalytics.com/topteams",
+   "code": ""
+  },
+  {
+   "name": "Mega Metagross Psyspam — 10-1 · LelloCartello (Tenki's Cart Weekly #117 winner)",
+   "paste": "Metagross @ Metagrossite\nAbility: Clear Body\n- Iron Head\n- Psychic Fangs\n- Body Press\n- Protect\n\nIndeedee-Male @ Choice Scarf\nAbility: Psychic Surge\n- Expanding Force\n- Imprison\n- Trick\n- Trick Room\n\nSneasler @ Psychic Seed\nAbility: Unburden\n- Close Combat\n- Dire Claw\n- Rock Slide\n- Protect\n\nArcanine-Hisui @ Focus Sash\nAbility: Rock Head\n- Flare Blitz\n- Head Smash\n- Rock Slide\n- Protect\n\nSalamence @ Salamencite\nAbility: Intimidate\n- Hyper Voice\n- Dragon Pulse\n- Heat Wave\n- Protect\n\nMilotic @ Leftovers\nAbility: Competitive\n- Scald\n- Icy Wind\n- Recover\n- Protect",
+   "url": "https://www.pikalytics.com/topteams",
+   "code": ""
+  },
+  {
+   "name": "Mega Gengar Perish Trap — 7-0 · M_rada (Alpensee Tour #74 winner)",
+   "paste": "Gengar @ Gengarite\nAbility: Cursed Body\n- Perish Song\n- Shadow Ball\n- Sludge Bomb\n- Protect\n\nSnorlax @ Leftovers\nAbility: Thick Fat\n- Yawn\n- Encore\n- Fissure\n- Protect\n\nIncineroar @ Sitrus Berry\nAbility: Intimidate\n- Flare Blitz\n- Parting Shot\n- Fake Out\n- Protect\n\nScrafty @ Focus Sash\nAbility: Intimidate\n- Close Combat\n- Knock Off\n- Fake Out\n- Protect\n\nDragonite @ Life Orb\nAbility: Inner Focus\n- Dragon Claw\n- Low Kick\n- Extreme Speed\n- Protect\n\nRillaboom @ Eject Button\nAbility: Grassy Surge\n- Grassy Glide\n- U-turn\n- Fake Out\n- Protect",
+   "url": "https://www.pikalytics.com/topteams",
+   "code": ""
+  },
+  {
+   "name": "Aurora Veil Balance — 5-0 · LittlePotato13 (Pokepal Smackdown #157 winner)",
+   "paste": "Froslass @ Froslassite\nAbility: Cursed Body\n- Protect\n- Aurora Veil\n- Shadow Ball\n- Blizzard\n\nArcanine-Hisui @ Focus Sash\nAbility: Rock Head\n- Protect\n- Extreme Speed\n- Flare Blitz\n- Head Smash\n\nKingambit @ Chople Berry\nAbility: Defiant\n- Sucker Punch\n- Kowtow Cleave\n- Low Kick\n- Iron Head\n\nFarigiraf @ Sitrus Berry\nAbility: Armor Tail\n- Protect\n- Trick Room\n- Helping Hand\n- Psychic\n\nFloette-Eternal @ Floettite\nAbility: Flower Veil\n- Protect\n- Dazzling Gleam\n- Moonblast\n- Light of Ruin\n\nToxapex @ Leftovers\nAbility: Regenerator\n- Baneful Bunker\n- Wide Guard\n- Toxic\n- Infestation",
+   "url": "https://www.pikalytics.com/topteams",
+   "code": ""
+  },
+  {
+   "name": "Wolfey Tour Winner — Mega Blastoise Sun-Rain — 4-0 · Hazarai (Wolfey Patreon M-C Launch)",
+   "paste": "Blastoise @ Blastoisinite\nAbility: Rain Dish\n- Water Spout\n- Aura Sphere\n- Dark Pulse\n- Fake Out\n\nGolisopod @ Golisopite\nAbility: Emergency Exit\n- Leech Life\n- Swords Dance\n- Iron Head\n- Close Combat\n\nTorkoal @ Charcoal\nAbility: Drought\n- Eruption\n- Weather Ball\n- Solar Beam\n- Protect\n\nFarigiraf @ Sitrus Berry\nAbility: Armor Tail\n- Twin Beam\n- Helping Hand\n- Thunderbolt\n- Trick Room\n\nBasculegion-Male @ Life Orb\nAbility: Adaptability\n- Wave Crash\n- Last Respects\n- Protect\n- Aqua Jet\n\nSylveon @ Fairy Feather\nAbility: Pixilate\n- Hyper Voice\n- Quick Attack\n- Hyper Beam\n- Detect",
+   "url": "https://www.pikalytics.com/topteams",
+   "code": ""
+  },
+  {
+   "name": "Screens Rain — Mega Swampert — 7-0 · Suruga (Off Meta Fight Club #2 winner)",
+   "paste": "Grimmsnarl @ Light Clay\nAbility: Prankster\n- Parting Shot\n- Light Screen\n- Reflect\n- Spirit Break\n\nArchaludon @ Leftovers\nAbility: Stamina\n- Electro Shot\n- Snarl\n- Dragon Pulse\n- Protect\n\nSwampert @ Swampertite\nAbility: Torrent\n- Wave Crash\n- Ice Punch\n- Earthquake\n- Protect\n\nGolisopod @ Golisopite\nAbility: Emergency Exit\n- Leech Life\n- Iron Head\n- Swords Dance\n- Protect\n\nPelipper @ Focus Sash\nAbility: Drizzle\n- Weather Ball\n- Hurricane\n- Wide Guard\n- Tailwind\n\nFarigiraf @ Sitrus Berry\nAbility: Armor Tail\n- Trick Room\n- Psychic\n- Thunderbolt\n- Protect",
+   "url": "https://www.pikalytics.com/topteams",
+   "code": ""
+  },
+  {
+   "name": "New-Meta Big Six — 11-2 · 138mysx (Sitrus Series #75 winner)",
+   "paste": "Rillaboom @ Sitrus Berry\nAbility: Grassy Surge\n- Fake Out\n- Wood Hammer\n- Grassy Glide\n- U-turn\n\nCharizard @ Charizardite Y\nAbility: Blaze\n- Heat Wave\n- Weather Ball\n- Ancient Power\n- Protect\n\nKingambit @ Life Orb\nAbility: Defiant\n- Kowtow Cleave\n- Iron Head\n- Sucker Punch\n- Protect\n\nSylveon @ Fairy Feather\nAbility: Pixilate\n- Hyper Beam\n- Hyper Voice\n- Quick Attack\n- Detect\n\nSalamence @ Salamencite\nAbility: Intimidate\n- Hyper Voice\n- Tailwind\n- Double-Edge\n- Protect\n\nSneasler @ Grassy Seed\nAbility: Unburden\n- Fake Out\n- Close Combat\n- Dire Claw\n- Protect",
+   "url": "https://www.pikalytics.com/topteams",
+   "code": ""
+  },
+  {
+   "name": "Glimmora Room — London Weekly runner-up · MaxTrickRoom",
+   "paste": "Indeedee-Male @ Focus Sash\nAbility: Psychic Surge\n- Trick Room\n- Imprison\n- Protect\n- Expanding Force\n\nGlimmora @ Glimmoranite\nAbility: Toxic Debris\n- Spiky Shield\n- Earth Power\n- Power Gem\n- Sludge Bomb\n\nSneasler @ Psychic Seed\nAbility: Unburden\n- Close Combat\n- Dire Claw\n- Protect\n- Throat Chop\n\nNinetales-Alola @ Choice Scarf\nAbility: Snow Cloak\n- Moonblast\n- Freeze-Dry\n- Blizzard\n- Icy Wind\n\nCharizard @ Charizardite Y\nAbility: Blaze\n- Heat Wave\n- Protect\n- Solar Beam\n- Weather Ball\n\nGarchomp @ Life Orb\nAbility: Rough Skin\n- Protect\n- Dragon Claw\n- Rock Slide\n- Stomping Tantrum",
+   "url": "https://www.pikalytics.com/topteams",
+   "code": ""
+  },
+  {
+   "name": "Veil + Spicy Spray — Liga CWB winner · Tyler Reis",
+   "paste": "Froslass @ Froslassite\nAbility: Cursed Body\n- Blizzard\n- Aurora Veil\n- Shadow Ball\n- Protect\n\nSneasler @ White Herb\nAbility: Unburden\n- Fake Out\n- Close Combat\n- Dire Claw\n- Protect\n\nKingambit @ Black Glasses\nAbility: Defiant\n- Kowtow Cleave\n- Sucker Punch\n- Swords Dance\n- Protect\n\nLycanroc-Dusk @ Focus Sash\nAbility: Tough Claws\n- Rock Slide\n- Accelerock\n- Close Combat\n- Protect\n\nScovillain @ Scovillainite\nAbility: Moody\n- Giga Drain\n- Overheat\n- Rage Powder\n- Protect\n\nBasculegion-Male @ Life Orb\nAbility: Adaptability\n- Wave Crash\n- Last Respects\n- Aqua Jet\n- Protect",
+   "url": "https://www.pikalytics.com/topteams",
+   "code": ""
+  },
   {
    "name": "World Champion — Mega Floette Balance · Takuma Yamazaki (Worlds 2026 winner, finals)",
    "paste": "Floette-Eternal @ Floettite\nAbility: Flower Veil\nTimid Nature\n- Moonblast\n- Dazzling Gleam\n- Light of Ruin\n- Protect\n\nBasculegion-Male @ Life Orb\nAbility: Adaptability\nAdamant Nature\n- Wave Crash\n- Last Respects\n- Aqua Jet\n- Protect\n\nKingambit @ Chople Berry\nAbility: Defiant\nAdamant Nature\n- Sucker Punch\n- Kowtow Cleave\n- Low Kick\n- Iron Head\n\nDragonite @ Dragoninite\nAbility: Multiscale\nModest Nature\n- Dragon Pulse\n- Heat Wave\n- Extreme Speed\n- Protect\n\nGarchomp @ Choice Scarf\nAbility: Rough Skin\nAdamant Nature\n- Dragon Claw\n- Stomping Tantrum\n- Earthquake\n- Rock Slide\n\nSneasler @ Focus Sash\nAbility: Poison Touch\nJolly Nature\n- Close Combat\n- Dire Claw\n- Fake Out\n- Feint",
@@ -29,84 +89,6 @@
    "name": "Worlds Finals — Big Six · Hiroshi Onishi (runner-up; event-standard sets)",
    "paste": "Charizard @ Charizardite Y\nAbility: Solar Power\nTimid Nature\n- Heat Wave\n- Weather Ball\n- Ancient Power\n- Protect\n\nFloette-Eternal @ Floettite\nAbility: Flower Veil\nModest Nature\n- Moonblast\n- Dazzling Gleam\n- Light of Ruin\n- Protect\n\nWhimsicott @ Focus Sash\nAbility: Prankster\nTimid Nature\n- Moonblast\n- Tailwind\n- Encore\n- Protect\n\nKingambit @ Black Glasses\nAbility: Defiant\nAdamant Nature\n- Kowtow Cleave\n- Iron Head\n- Sucker Punch\n- Protect\n\nGarchomp @ Life Orb\nAbility: Rough Skin\nJolly Nature\n- Dragon Claw\n- Earthquake\n- Rock Slide\n- Protect\n\nBasculegion-Male @ Colbur Berry\nAbility: Adaptability\nAdamant Nature\n- Wave Crash\n- Last Respects\n- Aqua Jet\n- Protect",
    "url": "https://www.pokedata.ovh/standingsVGC/",
-   "code": ""
-  },
-  {
-   "name": "8-0 Swiss — Mega Dragonite Six · Yuya Wakasugi (Worlds 2026 #1 seed)",
-   "paste": "Whimsicott @ Focus Sash\nAbility: Prankster\nTimid Nature\n- Moonblast\n- Tailwind\n- Encore\n- Protect\n\nBasculegion-Male @ Life Orb\nAbility: Adaptability\nAdamant Nature\n- Wave Crash\n- Last Respects\n- Aqua Jet\n- Protect\n\nFloette-Eternal @ Floettite\nAbility: Flower Veil\nTimid Nature\n- Moonblast\n- Dazzling Gleam\n- Light of Ruin\n- Protect\n\nDragonite @ Dragoninite\nAbility: Inner Focus\nModest Nature\n- Dragon Pulse\n- Heat Wave\n- Thunderbolt\n- Protect\n\nSneasler @ White Herb\nAbility: Unburden\nJolly Nature\n- Dire Claw\n- Close Combat\n- Rock Slide\n- Fake Out\n\nKingambit @ Chople Berry\nAbility: Defiant\nAdamant Nature\n- Kowtow Cleave\n- Iron Head\n- Low Kick\n- Sucker Punch",
-   "url": "https://www.pokemon-zone.com/champions/tournaments/vgc/2026-pokemon-vgc-world-championship/",
-   "code": ""
-  },
-  {
-   "name": "Double Setup — Smash + Plot + Dance · Justin Tang (Worlds 2026 Top 4 swiss)",
-   "paste": "Sneasler @ Focus Sash\nAbility: Poison Touch\nJolly Nature\n- Fake Out\n- Close Combat\n- Poison Jab\n- Quick Guard\n\nSinistcha @ Colbur Berry\nAbility: Hospitality\nBold Nature\n- Matcha Gotcha\n- Rage Powder\n- Trick Room\n- Protect\n\nKingambit @ Life Orb\nAbility: Defiant\nAdamant Nature\n- Kowtow Cleave\n- Sucker Punch\n- Swords Dance\n- Protect\n\nBlastoise @ Blastoisinite\nAbility: Rain Dish\nModest Nature\n- Water Spout\n- Dark Pulse\n- Shell Smash\n- Protect\n\nDelphox @ Delphoxite\nAbility: Blaze\nTimid Nature\n- Heat Wave\n- Psychic\n- Nasty Plot\n- Protect\n\nIncineroar @ Sitrus Berry\nAbility: Intimidate\nCareful Nature\n- Parting Shot\n- Flare Blitz\n- Throat Chop\n- Fake Out",
-   "url": "https://www.pokemon-zone.com/champions/tournaments/vgc/2026-pokemon-vgc-world-championship/",
-   "code": ""
-  },
-  {
-   "name": "Aurora Veil Ice — Moody Scovillain · Zachary Weed (Worlds 2026 semifinalist)",
-   "paste": "Froslass @ Froslassite\nAbility: Cursed Body\nTimid Nature\n- Blizzard\n- Shadow Ball\n- Aurora Veil\n- Protect\n\nSneasler @ White Herb\nAbility: Unburden\nAdamant Nature\n- Close Combat\n- Gunk Shot\n- Fake Out\n- Protect\n\nLycanroc-Dusk @ Focus Sash\nAbility: Tough Claws\nAdamant Nature\n- Rock Slide\n- Close Combat\n- Accelerock\n- Protect\n\nBasculegion-Male @ Life Orb\nAbility: Adaptability\nJolly Nature\n- Wave Crash\n- Last Respects\n- Aqua Jet\n- Protect\n\nKingambit @ Black Glasses\nAbility: Defiant\nAdamant Nature\n- Kowtow Cleave\n- Sucker Punch\n- Swords Dance\n- Protect\n\nScovillain @ Scovillainite\nAbility: Moody\nBold Nature\n- Overheat\n- Giga Drain\n- Rage Powder\n- Protect",
-   "url": "https://www.pokemon-zone.com/champions/tournaments/vgc/2026-pokemon-vgc-world-championship/",
-   "code": ""
-  },
-  {
-   "name": "Sun Trick Room — Mega Blaziken · Filip Woźniak (Worlds 2026 #3 swiss)",
-   "paste": "Venusaur @ Occa Berry\nAbility: Chlorophyll\nTimid Nature\n- Leaf Storm\n- Sludge Bomb\n- Sleep Powder\n- Protect\n\nPrimarina @ Life Orb\nAbility: Liquid Voice\nQuiet Nature\n- Protect\n- Hyper Voice\n- Moonblast\n- Aqua Jet\n\nKingambit @ Focus Sash\nAbility: Defiant\nAdamant Nature\n- Kowtow Cleave\n- Sucker Punch\n- Iron Head\n- Protect\n\nFarigiraf @ Sitrus Berry\nAbility: Armor Tail\nBold Nature\n- Psychic\n- Thunderbolt\n- Trick Room\n- Protect\n\nTorkoal @ Charcoal\nAbility: Drought\nQuiet Nature\n- Weather Ball\n- Helping Hand\n- Eruption\n- Protect\n\nBlaziken @ Blazikenite\nAbility: Speed Boost\nAdamant Nature\n- Flare Blitz\n- Close Combat\n- Rock Slide\n- Detect",
-   "url": "https://www.pokemon-zone.com/champions/tournaments/vgc/2026-pokemon-vgc-world-championship/",
-   "code": ""
-  },
-  {
-   "name": "Hisuian Arcanine Goodstuffs — Mega Staraptor · Cary D'Ortona (Worlds 2026 Top 8 swiss)",
-   "paste": "Farigiraf @ Sitrus Berry\nAbility: Armor Tail\nCalm Nature\n- Psychic\n- Helping Hand\n- Trick Room\n- Protect\n\nArcanine-Hisui @ Focus Sash\nAbility: Rock Head\nJolly Nature\n- Flare Blitz\n- Extreme Speed\n- Head Smash\n- Protect\n\nSylveon @ Fairy Feather\nAbility: Pixilate\nModest Nature\n- Hyper Voice\n- Hyper Beam\n- Quick Attack\n- Protect\n\nStaraptor @ Staraptite\nAbility: Intimidate\nJolly Nature\n- Dual Wingbeat\n- Close Combat\n- Tailwind\n- Protect\n\nRaichu @ Raichunite Y\nAbility: Lightning Rod\nTimid Nature\n- Fake Out\n- Zap Cannon\n- Focus Blast\n- Protect\n\nKingambit @ Life Orb\nAbility: Defiant\nAdamant Nature\n- Kowtow Cleave\n- Swords Dance\n- Sucker Punch\n- Protect",
-   "url": "https://www.pokemon-zone.com/champions/tournaments/vgc/2026-pokemon-vgc-world-championship/",
-   "code": ""
-  },
-  {
-   "name": "Toxapex Sun Balance · Antonio Sánchez (Worlds 2026 Top 8 swiss)",
-   "paste": "Incineroar @ Sitrus Berry\nAbility: Intimidate\nImpish Nature\n- Fake Out\n- Parting Shot\n- Flare Blitz\n- Protect\n\nToxapex @ Leftovers\nAbility: Regenerator\nRelaxed Nature\n- Baneful Bunker\n- Infestation\n- Toxic\n- Wide Guard\n\nGarchomp @ Choice Scarf\nAbility: Rough Skin\nAdamant Nature\n- Stomping Tantrum\n- Earthquake\n- Dragon Claw\n- Rock Slide\n\nCharizard @ Charizardite Y\nAbility: Blaze\nTimid Nature\n- Protect\n- Heat Wave\n- Solar Beam\n- Weather Ball\n\nVenusaur @ Focus Sash\nAbility: Chlorophyll\nModest Nature\n- Protect\n- Sludge Bomb\n- Earth Power\n- Sleep Powder\n\nSylveon @ Fairy Feather\nAbility: Pixilate\nQuiet Nature\n- Detect\n- Hyper Voice\n- Quick Attack\n- Yawn",
-   "url": "https://www.pokemon-zone.com/champions/tournaments/vgc/2026-pokemon-vgc-world-championship/",
-   "code": ""
-  },
-  {
-   "name": "Standard Big Six — Ancient Power tech · Shohei Kimura (Worlds 2026 Top 8 swiss)",
-   "paste": "Charizard @ Charizardite Y\nAbility: Solar Power\nTimid Nature\n- Heat Wave\n- Weather Ball\n- Ancient Power\n- Protect\n\nKingambit @ Black Glasses\nAbility: Defiant\nAdamant Nature\n- Kowtow Cleave\n- Iron Head\n- Sucker Punch\n- Protect\n\nFloette-Eternal @ Floettite\nAbility: Flower Veil\nModest Nature\n- Moonblast\n- Dazzling Gleam\n- Light of Ruin\n- Protect\n\nWhimsicott @ Focus Sash\nAbility: Prankster\nTimid Nature\n- Moonblast\n- Tailwind\n- Encore\n- Protect\n\nGarchomp @ Life Orb\nAbility: Rough Skin\nJolly Nature\n- Dragon Claw\n- Earthquake\n- Rock Slide\n- Protect\n\nBasculegion-Male @ Colbur Berry\nAbility: Adaptability\nAdamant Nature\n- Wave Crash\n- Last Respects\n- Aqua Jet\n- Protect",
-   "url": "https://www.pokemon-zone.com/champions/tournaments/vgc/2026-pokemon-vgc-world-championship/",
-   "code": ""
-  },
-  {
-   "name": "Camerupt Trick Room · Nikolaj Høj Nielsen (Worlds 2026 Top 16 swiss)",
-   "paste": "Camerupt @ Cameruptite\nAbility: Solid Rock\nQuiet Nature\n- Protect\n- Earth Power\n- Heat Wave\n- Ancient Power\n\nKingambit @ Expert Belt\nAbility: Defiant\nAdamant Nature\n- Kowtow Cleave\n- Iron Head\n- Sucker Punch\n- Low Kick\n\nSylveon @ Fairy Feather\nAbility: Pixilate\nModest Nature\n- Hyper Voice\n- Hyper Beam\n- Quick Attack\n- Protect\n\nKangaskhan @ Life Orb\nAbility: Scrappy\nBrave Nature\n- Double-Edge\n- Fake Out\n- Hammer Arm\n- Ice Punch\n\nFarigiraf @ Sitrus Berry\nAbility: Armor Tail\nCalm Nature\n- Psychic\n- Thunderbolt\n- Trick Room\n- Helping Hand\n\nAerodactyl @ Aerodactylite\nAbility: Unnerve\nJolly Nature\n- Rock Slide\n- Dual Wingbeat\n- Ice Fang\n- Tailwind",
-   "url": "https://www.pokemon-zone.com/champions/tournaments/vgc/2026-pokemon-vgc-world-championship/",
-   "code": ""
-  },
-  {
-   "name": "Big Six — the textbook permutation · Giovanni Piscitelli (Worlds 2026 Top 16 swiss)",
-   "paste": "Garchomp @ Life Orb\nAbility: Rough Skin\nJolly Nature\n- Earthquake\n- Dragon Claw\n- Rock Slide\n- Protect\n\nKingambit @ Chople Berry\nAbility: Defiant\nAdamant Nature\n- Kowtow Cleave\n- Iron Head\n- Sucker Punch\n- Low Kick\n\nCharizard @ Charizardite Y\nAbility: Blaze\nModest Nature\n- Heat Wave\n- Weather Ball\n- Ancient Power\n- Protect\n\nWhimsicott @ Focus Sash\nAbility: Prankster\nTimid Nature\n- Moonblast\n- Encore\n- Tailwind\n- Protect\n\nBasculegion-Male @ Mystic Water\nAbility: Adaptability\nAdamant Nature\n- Wave Crash\n- Last Respects\n- Aqua Jet\n- Protect\n\nFloette-Eternal @ Floettite\nAbility: Flower Veil\nModest Nature\n- Moonblast\n- Dazzling Gleam\n- Light of Ruin\n- Protect",
-   "url": "https://www.pokemon-zone.com/champions/tournaments/vgc/2026-pokemon-vgc-world-championship/",
-   "code": ""
-  },
-  {
-   "name": "Big Six — double-Mega Floette + Charizard · Yuya Tada (Worlds 2026 Top 16 swiss)",
-   "paste": "Garchomp\nAbility: Rough Skin\nJolly Nature\n- Dragon Claw\n- Stomping Tantrum\n- Rock Slide\n- Protect\n\nBasculegion-Male @ Mystic Water\nAbility: Adaptability\nAdamant Nature\n- Wave Crash\n- Last Respects\n- Aqua Jet\n- Protect\n\nKingambit @ Occa Berry\nAbility: Defiant\nAdamant Nature\n- Kowtow Cleave\n- Sucker Punch\n- Low Kick\n- Iron Head\n\nWhimsicott @ Focus Sash\nAbility: Prankster\nTimid Nature\n- Moonblast\n- Tailwind\n- Encore\n- Protect\n\nFloette-Eternal @ Floettite\nAbility: Flower Veil\nTimid Nature\n- Moonblast\n- Dazzling Gleam\n- Light of Ruin\n- Protect\n\nCharizard @ Charizardite Y\nAbility: Solar Power\nTimid Nature\n- Heat Wave\n- Weather Ball\n- Ancient Power\n- Protect",
-   "url": "https://www.pokemon-zone.com/champions/tournaments/vgc/2026-pokemon-vgc-world-championship/",
-   "code": ""
-  },
-  {
-   "name": "Big Six — Sneasler permutation · Carson St Denis (Worlds 2026 Top 8 swiss)",
-   "paste": "Garchomp @ Life Orb\nAbility: Rough Skin\nJolly Nature\n- Earthquake\n- Rock Slide\n- Dragon Claw\n- Protect\n\nSneasler @ White Herb\nAbility: Unburden\nAdamant Nature\n- Close Combat\n- Dire Claw\n- Rock Tomb\n- Protect\n\nKingambit @ Chople Berry\nAbility: Defiant\nAdamant Nature\n- Kowtow Cleave\n- Sucker Punch\n- Low Kick\n- Iron Head\n\nBasculegion-Male @ Mystic Water\nAbility: Adaptability\nAdamant Nature\n- Aqua Jet\n- Wave Crash\n- Last Respects\n- Protect\n\nCharizard @ Charizardite Y\nAbility: Blaze\nModest Nature\n- Heat Wave\n- Weather Ball\n- Solar Beam\n- Protect\n\nWhimsicott @ Focus Sash\nAbility: Prankster\nTimid Nature\n- Encore\n- Moonblast\n- Tailwind\n- Protect",
-   "url": "https://www.pokemon-zone.com/champions/tournaments/vgc/2026-pokemon-vgc-world-championship/",
-   "code": ""
-  },
-  {
-   "name": "Aerodactyl sun — Tailwind goodstuffs · Naoto Mizobuchi (Worlds 2026 Top 16 swiss)",
-   "paste": "Charizard @ Charizardite Y\nAbility: Blaze\nModest Nature\n- Heat Wave\n- Ancient Power\n- Weather Ball\n- Protect\n\nAerodactyl @ Focus Sash\nAbility: Unnerve\nJolly Nature\n- Rock Slide\n- Dual Wingbeat\n- Tailwind\n- Protect\n\nGarchomp @ Life Orb\nAbility: Rough Skin\nJolly Nature\n- Dragon Claw\n- Rock Slide\n- Earthquake\n- Protect\n\nSylveon @ Fairy Feather\nAbility: Pixilate\nModest Nature\n- Hyper Voice\n- Hyper Beam\n- Quick Attack\n- Detect\n\nIncineroar @ Sitrus Berry\nAbility: Intimidate\nImpish Nature\n- Fake Out\n- Flare Blitz\n- Throat Chop\n- Parting Shot\n\nVenusaur @ Wide Lens\nAbility: Chlorophyll\nModest Nature\n- Sleep Powder\n- Leaf Storm\n- Sludge Bomb\n- Protect",
-   "url": "https://www.pokemon-zone.com/champions/tournaments/vgc/2026-pokemon-vgc-world-championship/",
-   "code": ""
-  },
-  {
-   "name": "Mega Aerodactyl room-or-wind hybrid · Stefano Greppi (Worlds 2026 Top 16 swiss)",
-   "paste": "Sylveon @ Fairy Feather\nAbility: Pixilate\nModest Nature\n- Hyper Voice\n- Hyper Beam\n- Quick Attack\n- Protect\n\nAerodactyl @ Aerodactylite\nAbility: Unnerve\nJolly Nature\n- Rock Slide\n- Dual Wingbeat\n- Tailwind\n- Ice Fang\n\nFarigiraf @ Sitrus Berry\nAbility: Armor Tail\nBold Nature\n- Psychic\n- Thunderbolt\n- Trick Room\n- Protect\n\nGarchomp @ Life Orb\nAbility: Rough Skin\nJolly Nature\n- Earthquake\n- Rock Tomb\n- Dragon Claw\n- Protect\n\nKingambit @ Focus Sash\nAbility: Defiant\nAdamant Nature\n- Kowtow Cleave\n- Sucker Punch\n- Iron Head\n- Low Kick\n\nCharizard @ Charizardite Y\nAbility: Blaze\nModest Nature\n- Heat Wave\n- Weather Ball\n- Solar Beam\n- Protect",
-   "url": "https://www.pokemon-zone.com/champions/tournaments/vgc/2026-pokemon-vgc-world-championship/",
    "code": ""
   }
  ]
