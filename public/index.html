@@ -664,7 +664,7 @@ const TYPE_COLORS = {normal:'#9BA0A8',fire:'#E8613C',water:'#3E8EE0',electric:'#
 ice:'#6FC9C9',fighting:'#C4443F',poison:'#9A50A0',ground:'#CBA34A',flying:'#8FA3DE',psychic:'#E06388',
 bug:'#9AAB33',rock:'#B0A05A',ghost:'#6A5C9E',dragon:'#6A55DF',dark:'#5C544C',steel:'#9BA6B5',fairy:'#DE8FDE'};
 const TYPES = Object.keys(TYPE_COLORS);
-const BUILD_STAMP = '2026-09-15';
+const BUILD_STAMP = '2026-09-21';
 const STAT_KEYS = ['HP','Atk','Def','SpA','SpD','Spe'];
 const SPRITE = id => `img/sprite/${id}.png`;
 const ART = id => `img/art/${id}.png`;
@@ -1125,6 +1125,9 @@ function parseSave(raw){
 
 /* ============ News ============ */
 const NEWS = [
+  {date:'2026-09-20', cat:'Teams', title:'Baltimore Regional: Ugarte wins with Mega Salamence sand',
+   body:'The 2027 Baltimore Regional (Sep 18\u201320, 1,175 players, Reg M-C) crowned Joseph Ugarte at 13-2 \u2014 Mega Salamence + Mega Tyranitar sand with Sand Rush Excadrill and a Bulk Up Power Trip Corviknight. Mega Gengar took three of the top ten (all Perish Song), Contrary Mega Staraptor broke out on three more, and Rillaboom was everywhere. All ten top-cut teams, with full stat spreads, are on the Trending Teams tab under the Baltimore Regional tag.',
+   url:'https://metavgc.com/teams/featured/regional-baltimore'},
   {date:'2026-09-15', cat:'Meta', title:'Early M-C meta: Rillaboom takes over',
    body:'One week in, the terrain era is real: Rillaboom leads all usage at 37.6% with Sneasler (36.6%) riding its Grassy Seeds, and Rillaboom + Sneasler is the format\u2019s top core (25.8% of teams). Mega Salamence is the top Mega at 26% usage, Golisopod and Indeedee-F crack the top 8, and Archaludon posts the best winrate among top-15 staples (52.4%). Usage, per-Pok\u00e9mon intel, and Trending Teams are now running on this data.',
    url:'https://www.pikalytics.com/'},
@@ -2006,8 +2009,30 @@ function cardMegaInfo(dex){
   return {isMega, baseForm, megas};
 }
 
+/* In-battle form changes that work like Mega Evolution in the builder:
+   base slug -> alternate battle forms. Palafin's Zero to Hero. */
+const FORM_SWAPS = { 'palafin-zero': ['palafin-hero'] };
+function cardSwapInfo(dex){
+  if(!dex) return {isSwap:false, swapBase:null, swaps:[]};
+  const baseSlug = Object.keys(FORM_SWAPS).find(b => b === dex.slug || FORM_SWAPS[b].includes(dex.slug));
+  if(!baseSlug) return {isSwap:false, swapBase:null, swaps:[]};
+  const swapBase = POKEDEX.find(x => x.slug === baseSlug) || dex;
+  const swaps = FORM_SWAPS[baseSlug].map(sl => POKEDEX.find(x => x.slug === sl)).filter(Boolean);
+  return {isSwap: dex.slug !== baseSlug, swapBase, swaps};
+}
+
+function FormSwapIcon({size}){
+  const sz = size || 12;
+  return (
+    <svg width={sz} height={sz} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M20 11a8 8 0 0 0-14.9-3M4 13a8 8 0 0 0 14.9 3"/>
+      <path d="M5.5 3.5V8H10M18.5 20.5V16H14"/>
+    </svg>
+  );
+}
+
 function cardIconBar(ctx){
-  const {dex, shiny, setShinyMon, isMega, megas, cycleMega, onRemove, onLead, onBrought, lead, brought} = ctx;
+  const {dex, shiny, setShinyMon, isMega, megas, cycleMega, isSwap, swaps, cycleSwap, onRemove, onLead, onBrought, lead, brought} = ctx;
   return (
     <div className="sq-icons" onClick={e => e.stopPropagation()}>
       <button className="icon-btn" onClick={onRemove} aria-label="Remove">✕</button>
@@ -2017,6 +2042,11 @@ function cardIconBar(ctx){
       {megas.length > 0 && <Tip text={isMega ? 'Showing ' + dex.name + ' — click to cycle back' : (megas.length > 1 ? 'Mega Evolve (cycles forms)' : 'Mega Evolve')}>
         <button className={'icon-btn' + (isMega ? ' gold' : '')} onClick={cycleMega} aria-label="Mega form">
           <MegaIcon/>
+        </button>
+      </Tip>}
+      {swaps && swaps.length > 0 && <Tip text={isSwap ? 'Showing ' + dex.name + ' — click to change back' : 'Change form — ' + swaps[0].name}>
+        <button className={'icon-btn' + (isSwap ? ' gold' : '')} onClick={cycleSwap} aria-label="Form change">
+          <FormSwapIcon/>
         </button>
       </Tip>}
       {onLead && <Tip text={lead ? 'Led this battle — click to unmark' : 'Mark as a lead'}>
@@ -2161,6 +2191,7 @@ function SquadCard({mon, mine, side, onEdit, onRemove, onUpdate, statMode, dragP
   const shiny = !!mon.shiny;
   const setShinyMon = () => onUpdate({shiny: !mon.shiny});
   const {isMega, baseForm, megas} = cardMegaInfo(dex);
+  const {isSwap, swapBase, swaps} = cardSwapInfo(dex);
   const view = dex;
   const cycleMega = () => {
     const cycle = [baseForm, ...megas];
@@ -2173,6 +2204,16 @@ function SquadCard({mon, mine, side, onEdit, onRemove, onUpdate, statMode, dragP
     if(MEGA_STONES[next.slug]) patch.item = MEGA_STONES[next.slug];
     onUpdate(patch);
   };
+  const cycleSwap = () => {
+    const cycle = [swapBase, ...swaps];
+    const cur = cycle.findIndex(f => f.id === dex.id);
+    const next = cycle[(cur + 1) % cycle.length];
+    if(next.id === dex.id) return;
+    const abils = [...next.abilities, ...(next.hiddenAbility ? [next.hiddenAbility] : [])];
+    const patch = {species: next.name};
+    if(!abils.includes(mon.ability)) patch.ability = abils.length === 1 ? abils[0] : '';
+    onUpdate(patch);
+  };
   const artSrc = view ? (shiny ? ART_SHINY(view.id) : ART(view.id)) : null;
   const artErr = e => {
     if(shiny && !e.target.dataset.sf){ e.target.dataset.sf = '1'; e.target.src = ART(view.id); return; }
@@ -2182,7 +2223,7 @@ function SquadCard({mon, mine, side, onEdit, onRemove, onUpdate, statMode, dragP
   return (
     <div className={'sq-card clickable' + (mine ? ' mine' : '') + (dragging ? ' dragging' : '') + (dropover ? ' dropover' : '') + (brought ? ' wasbrought' : '') + (lead ? ' wasled' : '')}
       tabIndex={0} data-side={side} onKeyDown={cardKeys} onClick={onEdit} {...(dragProps || {})}>
-      {cardIconBar({dex, shiny, setShinyMon, isMega, megas, cycleMega, onRemove, onLead, onBrought, lead, brought})}
+      {cardIconBar({dex, shiny, setShinyMon, isMega, megas, cycleMega, isSwap, swaps, cycleSwap, onRemove, onLead, onBrought, lead, brought})}
       <div className="sq-main">
         <div className="sq-artcell">
           {view
@@ -2609,7 +2650,7 @@ function builderApplyPick(p, s){
 }
 
 function builderHead(ctx){
-  const {dexMon, initial, slot, shiny, setShiny, onClose, bldIsMega, bldMegas, bldCycleMega} = ctx;
+  const {dexMon, initial, slot, shiny, setShiny, onClose, bldIsMega, bldMegas, bldCycleMega, bldIsSwap, bldSwaps, bldCycleSwap} = ctx;
   return (
     <div className="bx-head">
       {dexMon && <img className="bx-art" key={(shiny ? 's' : 'n') + dexMon.id}
@@ -2629,6 +2670,9 @@ function builderHead(ctx){
         </Tip>}
         {dexMon && bldMegas.length > 0 && <Tip text={bldIsMega ? 'Showing ' + dexMon.name + ' — click to cycle back' : (bldMegas.length > 1 ? 'Mega Evolve (cycles forms)' : 'Mega Evolve')}>
           <button type="button" className={'bld-ico' + (bldIsMega ? ' gold' : '')} onClick={bldCycleMega} aria-label="Mega form"><MegaIcon/></button>
+        </Tip>}
+        {dexMon && bldSwaps.length > 0 && <Tip text={bldIsSwap ? 'Showing ' + dexMon.name + ' — click to change back' : 'Change form — ' + bldSwaps[0].name}>
+          <button type="button" className={'bld-ico' + (bldIsSwap ? ' gold' : '')} onClick={bldCycleSwap} aria-label="Form change"><FormSwapIcon/></button>
         </Tip>}
       </div>
     </div>
@@ -2784,6 +2828,13 @@ function BuilderModal({initial, slot, onSave, onClose, onCycle}){
     const next = cycle[(cur + 1) % cycle.length];
     if(next.id !== dexMon.id) setQ(next.name);
   };
+  const {isSwap: bldIsSwap, swapBase: bldSwapBase, swaps: bldSwaps} = cardSwapInfo(dexMon);
+  const bldCycleSwap = () => {
+    const cycle = [bldSwapBase, ...bldSwaps];
+    const cur = cycle.findIndex(f => f.id === dexMon.id);
+    const next = cycle[(cur + 1) % cycle.length];
+    if(next.id !== dexMon.id) setQ(next.name);
+  };
   const handleTab = e => {
     if(e.key !== 'Tab' || !onCycle) return;
     e.preventDefault();
@@ -2793,7 +2844,7 @@ function BuilderModal({initial, slot, onSave, onClose, onCycle}){
   return (
     <div className="overlay" onClick={e => { if(e.target === e.currentTarget) onClose(); }}>
       <div className="builder xl" role="dialog" aria-modal="true" aria-label="Pokémon builder" onKeyDown={handleTab}>
-        {builderHead({dexMon, initial, slot, shiny, setShiny, onClose, bldIsMega, bldMegas, bldCycleMega})}
+        {builderHead({dexMon, initial, slot, shiny, setShiny, onClose, bldIsMega, bldMegas, bldCycleMega, bldIsSwap, bldSwaps, bldCycleSwap})}
         <div className={dexMon ? 'bx-cols' : null}>
           <div>
             {builderSpeciesPicker({q, setQ, setDexMon, dexMon, acOpen, setAcOpen, acIdx, setAcIdx, suggestions, pick})}
@@ -3815,6 +3866,10 @@ function TopTeamRow({t, id, open, setOpen, onLoadTeam, badge, extraTag, extraAct
 /* ---- Updates / changelog ----
    Every release adds a dated entry here, newest first. */
 const CHANGELOG = [
+  {date: 'September 21, 2026', items: [
+    {tag: 'VGC', text: 'Palafin gets a form chip on squad cards and in the builder \u2014 it works just like the Mega Evolution chip, swapping between Zero Form and Hero Form (stats and art update; the shared Zero to Hero ability carries over).'},
+    {tag: 'Teams', text: 'Baltimore Regional top 10 added to Trending Teams under the Baltimore Regional tag \u2014 every team with full stat-point spreads, natures, items, and moves as played (Sep 18\u201320 \u00b7 1,175 players \u00b7 Reg M-C).'}
+  ]},
   {date: 'September 15, 2026', items: [
     {tag: 'Usage', text: 'The Usage tab and per-Pok\u00e9mon intel now run on the first Regulation M-C data: top-25 usage with winrates from 1,543 early-season tournament teams, plus each leader\u2019s common items, moves, and cores. Spread data returns when the season\u2019s ranked stats publish.'},
     {tag: 'Teams', text: 'Top Teams and Trending Teams refreshed with real M-C tournament winners \u2014 the 12-0 terrain team, Mega Baxcalibur rain, Mega Metagross psyspam, Mega Gengar Perish trap, and more \u2014 each credited with its pilot, event, and record.'},
