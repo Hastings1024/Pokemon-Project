@@ -1,6 +1,30 @@
 {
- "updated": "2026-10-08",
+ "updated": "2026-10-30",
  "posts": [
+  {
+   "title": "Puebla Regional — full team list",
+   "source": "MetaVGC",
+   "lang": "English",
+   "date": "Oct 26, 2026",
+   "blurb": "Every Puebla team with sets and stat points — Kyle Livinghouse's Charizard Y + Froslass on top.",
+   "url": "https://metavgc.com/teams/featured/regional-puebla"
+  },
+  {
+   "title": "Nice Regional — full team list",
+   "source": "MetaVGC",
+   "lang": "English",
+   "date": "Oct 19, 2026",
+   "blurb": "Louis Fontvieille's Mega Raichu X rain won Nice; all teams with sets and stat points.",
+   "url": "https://metavgc.com/teams/featured/regional-nice"
+  },
+  {
+   "title": "Louisville Regional — open team sheets",
+   "source": "Limitless",
+   "lang": "English",
+   "date": "Oct 12, 2026",
+   "blurb": "Joseph Ugarte's second regional title of the season, plus every top-cut team sheet.",
+   "url": "https://limitlessvgc.com/tournaments/445"
+  },
   {
    "title": "Recife Regional — full team list",
    "source": "MetaVGC",
@@ -43,6 +67,150 @@
   }
  ],
  "teams": [
+  {
+   "name": "Puebla Regional — Champion · Kyle Livinghouse — Mega Charizard Y + Mega Froslass",
+   "url": "https://metavgc.com/teams/charizard-mega-y-froslass-mega-by-kyle-livinghouse-at-2027-puebla-pokemon-vgc-regional-championships",
+   "code": "",
+   "paste": "Sneasler @ White Herb\nAbility: Unburden\nLevel: 50\nEVs: 32 Atk / 2 SpD / 32 Spe\nAdamant Nature\n- Close Combat\n- Dire Claw\n- Rock Tomb\n- Protect\n\nWhimsicott @ Focus Sash\nAbility: Prankster\nLevel: 50\nEVs: 2 HP / 32 SpA / 32 Spe\nTimid Nature\n- Moonblast\n- Encore\n- Tailwind\n- Protect\n\nCharizard @ Charizardite Y\nAbility: Blaze\nLevel: 50\nEVs: 15 HP / 18 Def / 1 SpA / 32 Spe\nModest Nature\n- Heat Wave\n- Weather Ball\n- Solar Beam\n- Protect\n\nKingambit @ Chople Berry\nAbility: Defiant\nLevel: 50\nEVs: 32 HP / 32 Atk / 2 SpD\nAdamant Nature\n- Kowtow Cleave\n- Sucker Punch\n- Iron Head\n- Low Kick\n\nGarchomp @ Life Orb\nAbility: Rough Skin\nLevel: 50\nEVs: 32 Atk / 2 SpD / 32 Spe\nJolly Nature\n- Earthquake\n- Dragon Claw\n- Rock Slide\n- Protect\n\nFroslass @ Froslassite\nAbility: Cursed Body\nLevel: 50\nEVs: 25 HP / 26 SpD / 15 Spe\nTimid Nature\n- Blizzard\n- Aurora Veil\n- Shadow Ball\n- Protect"
+  },
+  {
+   "name": "Puebla Regional — 2nd · Renzo Navarro — Mega Raichu Y + Mega Staraptor",
+   "url": "https://metavgc.com/teams/raichu-mega-y-staraptor-by-renzo-navarro-at-2027-puebla-pokemon-vgc-regional-championships",
+   "code": "",
+   "paste": "Staraptor @ Staraptite\nAbility: Intimidate\nLevel: 50\nEVs: 29 HP / 1 Atk / 4 SpD / 32 Spe\nJolly Nature\n- Close Combat\n- Brave Bird\n- Tailwind\n- Protect\n\nRaichu @ Raichunite Y\nAbility: Lightning Rod\nLevel: 50\nEVs: 32 HP / 11 Def / 23 Spe\nTimid Nature\n- Zap Cannon\n- Focus Blast\n- Fake Out\n- Protect\n\nArcanine-Hisui @ Focus Sash\nAbility: Rock Head\nLevel: 50\nEVs: 2 HP / 32 Atk / 32 Spe\nJolly Nature\n- Flare Blitz\n- Extreme Speed\n- Rock Slide\n- Protect\n\nPrimarina @ Leftovers\nAbility: Liquid Voice\nLevel: 50\nEVs: 28 HP / 1 Def / 14 SpA / 23 Spe\nModest Nature\n- Hyper Voice\n- Moonblast\n- Calm Mind\n- Protect\n\nGholdengo @ Life Orb\nAbility: Good as Gold\nLevel: 50\nEVs: 17 HP / 17 SpA / 32 Spe\nModest Nature\n- Make It Rain\n- Shadow Ball\n- Nasty Plot\n- Protect\n\nRillaboom @ Miracle Seed\nAbility: Grassy Surge\nLevel: 50\nEVs: 32 HP / 15 Atk / 19 SpD\nAdamant Nature\n- Wood Hammer\n- Grassy Glide\n- High Horsepower\n- Fake Out"
+  },
+  {
+   "name": "Puebla Regional — 3rd · Arthur Mosca — Mega Tyranitar Sand + Mega Staraptor",
+   "url": "https://metavgc.com/teams/tyranitar-mega-gholdengo-by-arthur-mosca-at-2027-puebla-pokemon-vgc-regional-championships",
+   "code": "",
+   "paste": "Tyranitar @ Tyranitarite\nAbility: Sand Stream\nLevel: 50\nEVs: 16 HP / 18 Atk / 32 Spe\nJolly Nature\n- Rock Slide\n- Knock Off\n- Dragon Dance\n- Protect\n\nGholdengo @ Life Orb\nAbility: Good as Gold\nLevel: 50\nEVs: 17 HP / 17 SpA / 32 Spe\nModest Nature\n- Make It Rain\n- Shadow Ball\n- Nasty Plot\n- Protect\n\nExcadrill @ Focus Sash\nAbility: Sand Rush\nLevel: 50\nEVs: 2 HP / 32 Atk / 32 Spe\nAdamant Nature\n- High Horsepower\n- Iron Head\n- Rock Slide\n- Protect\n\nMilotic @ Sitrus Berry\nAbility: Competitive\nLevel: 50\nEVs: 32 HP / 10 Def / 17 SpA / 5 SpD / 2 Spe\nCalm Nature\n- Scald\n- Ice Beam\n- Icy Wind\n- Protect\n\nStaraptor @ Staraptite\nAbility: Intimidate\nLevel: 50\nEVs: 29 HP / 1 Atk / 4 SpD / 32 Spe\nJolly Nature\n- Brave Bird\n- Close Combat\n- Tailwind\n- Protect\n\nSinistcha @ Rocky Helmet\nAbility: Hospitality\nLevel: 50\nEVs: 32 HP / 32 Def / 2 SpA\nBold Nature\n- Matcha Gotcha\n- Strength Sap\n- Rage Powder\n- Protect"
+  },
+  {
+   "name": "Puebla Regional — 4th · Zach Holowiak — Mega Blaziken + Mega Raichu Y",
+   "url": "https://metavgc.com/teams/blaziken-mega-raichu-mega-y-by-zach-holowiak-at-2027-puebla-pokemon-vgc-regional-championships",
+   "code": "",
+   "paste": "Rillaboom @ Miracle Seed\nAbility: Grassy Surge\nLevel: 50\nEVs: 32 HP / 15 Atk / 19 SpD\nAdamant Nature\n- Grassy Glide\n- Wood Hammer\n- Fake Out\n- U-turn\n\nBlaziken @ Blazikenite\nAbility: Speed Boost\nLevel: 50\nEVs: 32 HP / 32 Atk / 2 Spe\nAdamant Nature\n- Flare Blitz\n- Close Combat\n- Rock Slide\n- Detect\n\nKingambit @ Black Glasses\nAbility: Defiant\nLevel: 50\nEVs: 32 HP / 32 Atk / 2 SpD\nAdamant Nature\n- Kowtow Cleave\n- Sucker Punch\n- Swords Dance\n- Protect\n\nSneasler @ Grassy Seed\nAbility: Unburden\nLevel: 50\nEVs: 32 Atk / 2 SpD / 32 Spe\nAdamant Nature\n- Close Combat\n- Dire Claw\n- Rock Slide\n- Protect\n\nPrimarina @ Leftovers\nAbility: Liquid Voice\nLevel: 50\nEVs: 28 HP / 1 Def / 14 SpA / 23 Spe\nModest Nature\n- Hyper Voice\n- Moonblast\n- Calm Mind\n- Protect\n\nRaichu @ Raichunite Y\nAbility: Lightning Rod\nLevel: 50\nEVs: 32 HP / 11 Def / 23 Spe\nTimid Nature\n- Fake Out\n- Zap Cannon\n- Focus Blast\n- Protect"
+  },
+  {
+   "name": "Puebla Regional — 5th · David Rodriguez — Mega Charizard Y Tailwind",
+   "url": "https://metavgc.com/teams/charizard-mega-y-kingambit-by-david-rodriguez-at-2027-puebla-pokemon-vgc-regional-championships",
+   "code": "",
+   "paste": "Kingambit @ Chople Berry\nAbility: Defiant\nLevel: 50\nEVs: 32 HP / 32 Atk / 2 SpD\nAdamant Nature\n- Kowtow Cleave\n- Low Kick\n- Sucker Punch\n- Iron Head\n\nGarchomp @ Life Orb\nAbility: Rough Skin\nLevel: 50\nEVs: 32 Atk / 2 SpD / 32 Spe\nJolly Nature\n- Dragon Claw\n- Earthquake\n- Rock Slide\n- Protect\n\nWhimsicott @ Focus Sash\nAbility: Prankster\nLevel: 50\nEVs: 2 HP / 32 SpA / 32 Spe\nTimid Nature\n- Moonblast\n- Tailwind\n- Encore\n- Protect\n\nBasculegion-Male @ Mystic Water\nAbility: Adaptability\nLevel: 50\nEVs: 15 HP / 32 Atk / 3 Def / 2 SpD / 14 Spe\nAdamant Nature\n- Wave Crash\n- Aqua Jet\n- Last Respects\n- Protect\n\nCharizard @ Charizardite Y\nAbility: Blaze\nLevel: 50\nEVs: 15 HP / 18 Def / 1 SpA / 32 Spe\nModest Nature\n- Weather Ball\n- Heat Wave\n- Solar Beam\n- Protect\n\nSneasler @ White Herb\nAbility: Unburden\nLevel: 50\nEVs: 32 Atk / 2 SpD / 32 Spe\nAdamant Nature\n- Close Combat\n- Dire Claw\n- Fake Out\n- Protect"
+  },
+  {
+   "name": "Puebla Regional — 6th · Otoniel Longorio López — Mega Charizard Y + Mega Aerodactyl",
+   "url": "https://metavgc.com/teams/charizard-mega-y-aerodactyl-mega-by-otoniel-longorio-lopez-at-2027-puebla-pokemon-vgc-regional-championships",
+   "code": "",
+   "paste": "Charizard @ Charizardite Y\nAbility: Blaze\nLevel: 50\nEVs: 15 HP / 18 Def / 1 SpA / 32 Spe\nModest Nature\n- Heat Wave\n- Weather Ball\n- Solar Beam\n- Protect\n\nFarigiraf @ Sitrus Berry\nAbility: Armor Tail\nLevel: 50\nEVs: 31 HP / 21 Def / 14 SpD\nBold Nature\n- Psychic\n- Trick Room\n- Thunderbolt\n- Helping Hand\n\nAerodactyl @ Aerodactylite\nAbility: Unnerve\nLevel: 50\nEVs: 16 HP / 18 Atk / 32 Spe\nJolly Nature\n- Rock Slide\n- Dual Wingbeat\n- Tailwind\n- Protect\n\nKingambit @ Focus Sash\nAbility: Defiant\nLevel: 50\nEVs: 32 HP / 32 Atk / 2 SpD\nAdamant Nature\n- Low Kick\n- Kowtow Cleave\n- Iron Head\n- Sucker Punch\n\nGarchomp @ Choice Scarf\nAbility: Rough Skin\nLevel: 50\nEVs: 2 HP / 32 Atk / 32 Spe\nAdamant Nature\n- Earthquake\n- Dragon Claw\n- Stomping Tantrum\n- Rock Slide\n\nSylveon @ Fairy Feather\nAbility: Pixilate\nLevel: 50\nEVs: 9 HP / 22 Def / 20 SpA / 15 Spe\nModest Nature\n- Hyper Voice\n- Hyper Beam\n- Quick Attack\n- Detect"
+  },
+  {
+   "name": "Puebla Regional — 7th · Chase Matteo — Mega Charizard Y Screens Sun-Rain",
+   "url": "https://metavgc.com/teams/charizard-mega-y-861-000-by-chase-matteo-at-2027-puebla-pokemon-vgc-regional-championships",
+   "code": "",
+   "paste": "Grimmsnarl @ Light Clay\nAbility: Prankster\nLevel: 50\nEVs: 32 HP / 22 Def / 10 SpD / 2 Spe\nImpish Nature\n- Light Screen\n- Reflect\n- Parting Shot\n- Spirit Break\n\nPelipper @ Sitrus Berry\nAbility: Drizzle\nLevel: 50\nEVs: 31 HP / 1 SpA / 32 SpD / 2 Spe\nCalm Nature\n- Weather Ball\n- Hurricane\n- Tailwind\n- Protect\n\nGarchomp @ Choice Scarf\nAbility: Rough Skin\nLevel: 50\nEVs: 2 HP / 32 Atk / 32 Spe\nAdamant Nature\n- Dragon Claw\n- Earthquake\n- Rock Slide\n- Bulldoze\n\nVenusaur @ Focus Sash\nAbility: Chlorophyll\nLevel: 50\nEVs: 2 HP / 32 SpA / 32 Spe\nModest Nature\n- Sludge Bomb\n- Sleep Powder\n- Earth Power\n- Protect\n\nArchaludon @ Leftovers\nAbility: Stamina\nLevel: 50\nEVs: 27 HP / 5 Def / 5 SpA / 10 SpD / 19 Spe\nModest Nature\n- Dragon Pulse\n- Electro Shot\n- Snarl\n- Protect\n\nCharizard @ Charizardite Y\nAbility: Blaze\nLevel: 50\nEVs: 15 HP / 18 Def / 1 SpA / 32 Spe\nModest Nature\n- Heat Wave\n- Weather Ball\n- Hurricane\n- Protect"
+  },
+  {
+   "name": "Puebla Regional — 8th · Luis Perez Alcocer — Mega Charizard Y + Mega Garchomp Z",
+   "url": "https://metavgc.com/teams/charizard-mega-y-garchomp-mega-z-by-luis-perez-alcocer-at-2027-puebla-pokemon-vgc-regional-championships",
+   "code": "",
+   "paste": "Incineroar @ Leftovers\nAbility: Intimidate\nLevel: 50\nEVs: 32 HP / 25 Def / 9 SpD\nRelaxed Nature\n- Fake Out\n- Snarl\n- Flare Blitz\n- Parting Shot\n\nVenusaur @ Focus Sash\nAbility: Chlorophyll\nLevel: 50\nEVs: 2 HP / 32 SpA / 32 Spe\nModest Nature\n- Earth Power\n- Sludge Bomb\n- Sleep Powder\n- Protect\n\nCharizard @ Charizardite Y\nAbility: Blaze\nLevel: 50\nEVs: 15 HP / 18 Def / 1 SpA / 32 Spe\nModest Nature\n- Heat Wave\n- Ancient Power\n- Weather Ball\n- Protect\n\nGarchomp @ Garchompite Z\nAbility: Rough Skin\nLevel: 50\nEVs: 2 HP / 32 SpA / 32 Spe\nModest Nature\n- Power Gem\n- Draco Meteor\n- Earth Power\n- Protect\n\nSylveon @ Fairy Feather\nAbility: Pixilate\nLevel: 50\nEVs: 9 HP / 22 Def / 20 SpA / 15 Spe\nModest Nature\n- Hyper Voice\n- Yawn\n- Quick Attack\n- Detect\n\nFarigiraf @ Sitrus Berry\nAbility: Armor Tail\nLevel: 50\nEVs: 21 HP / 18 Def / 27 SpD\nModest Nature\n- Psychic\n- Trick Room\n- Thunderbolt\n- Protect"
+  },
+  {
+   "name": "Nice Regional — Champion · Louis Fontvieille (15-2) — Mega Raichu X Rain",
+   "url": "https://metavgc.com/teams/raichu-mega-x-golisopod-mega-by-louis-fontvieille-at-2027-nice-pokemon-vgc-regional-championships",
+   "code": "",
+   "paste": "Raichu @ Raichunite X\nAbility: Lightning Rod\nLevel: 50\nEVs: 2 HP / 32 Atk / 32 Spe\nJolly Nature\n- Volt Tackle\n- Volt Switch\n- Feint\n- Fake Out\n\nGolisopod @ Golisopite\nAbility: Emergency Exit\nLevel: 50\nEVs: 32 HP / 32 Atk / 2 Def\nAdamant Nature\n- Leech Life\n- Iron Head\n- Sucker Punch\n- Protect\n\nArchaludon @ Leftovers\nAbility: Stamina\nLevel: 50\nEVs: 32 HP / 1 Def / 2 SpA / 20 SpD / 11 Spe\nCalm Nature\n- Electro Shot\n- Dragon Pulse\n- Snarl\n- Protect\n\nPelipper @ Damp Rock\nAbility: Drizzle\nLevel: 50\nEVs: 31 HP / 25 SpD / 10 Spe\nBold Nature\n- Weather Ball\n- Hurricane\n- Wide Guard\n- Helping Hand\n\nBasculegion-Female @ Focus Sash\nAbility: Swift Swim\nLevel: 50\nEVs: 2 HP / 32 SpA / 32 Spe\nModest Nature\n- Muddy Water\n- Shadow Ball\n- Ice Beam\n- Protect\n\nSneasler @ Electric Seed\nAbility: Unburden\nLevel: 50\nEVs: 32 Atk / 2 SpD / 32 Spe\nAdamant Nature\n- Poison Jab\n- Close Combat\n- Swords Dance\n- Protect"
+  },
+  {
+   "name": "Nice Regional — 2nd · Eduardo Cunha — Mega Gengar Perish + Mega Garchomp Z",
+   "url": "https://metavgc.com/teams/gengar-mega-garchomp-mega-z-by-eduardo-cunha-at-2027-nice-pokemon-vgc-regional-championships",
+   "code": "",
+   "paste": "Rillaboom @ Miracle Seed\nAbility: Grassy Surge\nLevel: 50\nEVs: 32 HP / 2 Def / 32 SpD\nSassy Nature\n- Grassy Glide\n- U-turn\n- Fake Out\n- Protect\n\nVivillon @ Focus Sash\nAbility: Compound Eyes\nLevel: 50\nEVs: 2 HP / 32 SpA / 32 Spe\nTimid Nature\n- Hurricane\n- Sleep Powder\n- Rage Powder\n- Protect\n\nIncineroar @ Leftovers\nAbility: Intimidate\nLevel: 50\nEVs: 32 HP / 13 Def / 21 SpD\nSassy Nature\n- Flare Blitz\n- Parting Shot\n- Fake Out\n- Protect\n\nPrimarina @ Sitrus Berry\nAbility: Liquid Voice\nLevel: 50\nEVs: 32 HP / 2 Def / 32 SpA\nQuiet Nature\n- Hyper Voice\n- Moonblast\n- Perish Song\n- Protect\n\nGengar @ Gengarite\nAbility: Cursed Body\nLevel: 50\nEVs: 20 HP / 4 Def / 10 SpA / 32 Spe\nModest Nature\n- Shadow Ball\n- Perish Song\n- Sludge Bomb\n- Protect\n\nGarchomp @ Garchompite Z\nAbility: Rough Skin\nLevel: 50\nEVs: 2 HP / 32 SpA / 32 Spe\nModest Nature\n- Draco Meteor\n- Earth Power\n- Power Gem\n- Protect"
+  },
+  {
+   "name": "Nice Regional — 3rd · Simone Sanvito — Mega Tyranitar Sand + Mega Staraptor",
+   "url": "https://metavgc.com/teams/tyranitar-mega-staraptor-mega-by-simone-sanvito-at-2027-nice-pokemon-vgc-regional",
+   "code": "",
+   "paste": "Excadrill @ Focus Sash\nAbility: Sand Rush\nLevel: 50\nEVs: 2 HP / 32 Atk / 32 Spe\nAdamant Nature\n- High Horsepower\n- Iron Head\n- Rock Slide\n- Protect\n\nStaraptor @ Staraptite\nAbility: Intimidate\nLevel: 50\nEVs: 29 HP / 1 Atk / 4 SpD / 32 Spe\nJolly Nature\n- Brave Bird\n- Close Combat\n- Tailwind\n- Protect\n\nSinistcha @ Rocky Helmet\nAbility: Hospitality\nLevel: 50\nEVs: 32 HP / 32 Def / 2 SpA\nBold Nature\n- Matcha Gotcha\n- Strength Sap\n- Rage Powder\n- Protect\n\nMilotic @ Sitrus Berry\nAbility: Competitive\nLevel: 50\nEVs: 32 HP / 10 Def / 17 SpA / 5 SpD / 2 Spe\nCalm Nature\n- Scald\n- Ice Beam\n- Icy Wind\n- Protect\n\nGholdengo @ Life Orb\nAbility: Good as Gold\nLevel: 50\nEVs: 17 HP / 17 SpA / 32 Spe\nModest Nature\n- Make It Rain\n- Shadow Ball\n- Nasty Plot\n- Protect\n\nTyranitar @ Tyranitarite\nAbility: Sand Stream\nLevel: 50\nEVs: 16 HP / 18 Atk / 32 Spe\nJolly Nature\n- Rock Slide\n- Knock Off\n- Dragon Dance\n- Protect"
+  },
+  {
+   "name": "Nice Regional — 4th · Francesco Pio Pero — Mega Raichu X Rain (same six as the champion)",
+   "url": "https://metavgc.com/teams/golisopod-mega-raichu-mega-x-by-francesco-pio-pero-at-rk9-nc002-zbmwk69abs7rrv",
+   "code": "",
+   "paste": "Raichu @ Raichunite X\nAbility: Lightning Rod\nLevel: 50\nEVs: 2 HP / 32 Atk / 32 Spe\nJolly Nature\n- Volt Tackle\n- Volt Switch\n- Feint\n- Fake Out\n\nGolisopod @ Golisopite\nAbility: Emergency Exit\nLevel: 50\nEVs: 32 HP / 32 Atk / 2 Def\nAdamant Nature\n- Leech Life\n- Iron Head\n- Sucker Punch\n- Protect\n\nArchaludon @ Leftovers\nAbility: Stamina\nLevel: 50\nEVs: 32 HP / 1 Def / 2 SpA / 20 SpD / 11 Spe\nCalm Nature\n- Electro Shot\n- Dragon Pulse\n- Snarl\n- Protect\n\nPelipper @ Damp Rock\nAbility: Drizzle\nLevel: 50\nEVs: 31 HP / 25 SpD / 10 Spe\nBold Nature\n- Weather Ball\n- Hurricane\n- Wide Guard\n- Helping Hand\n\nBasculegion-Female @ Focus Sash\nAbility: Swift Swim\nLevel: 50\nEVs: 2 HP / 32 SpA / 32 Spe\nModest Nature\n- Muddy Water\n- Shadow Ball\n- Ice Beam\n- Protect\n\nSneasler @ Electric Seed\nAbility: Unburden\nLevel: 50\nEVs: 32 Atk / 2 SpD / 32 Spe\nAdamant Nature\n- Poison Jab\n- Close Combat\n- Swords Dance\n- Protect"
+  },
+  {
+   "name": "Nice Regional — 5th · Ko Tsukide — Mega Charizard Y Tailwind",
+   "url": "https://metavgc.com/teams/charizard-mega-y-sneasler-by-ko-tsukide-at-2027-nice-pokemon-vgc-regional-championships",
+   "code": "",
+   "paste": "Charizard @ Charizardite Y\nAbility: Blaze\nLevel: 50\nEVs: 15 HP / 18 Def / 1 SpA / 32 Spe\nModest Nature\n- Heat Wave\n- Solar Beam\n- Weather Ball\n- Protect\n\nSneasler @ White Herb\nAbility: Unburden\nLevel: 50\nEVs: 32 Atk / 2 SpD / 32 Spe\nAdamant Nature\n- Close Combat\n- Dire Claw\n- Rock Tomb\n- Protect\n\nKingambit @ Chople Berry\nAbility: Defiant\nLevel: 50\nEVs: 32 HP / 32 Atk / 2 SpD\nAdamant Nature\n- Kowtow Cleave\n- Iron Head\n- Sucker Punch\n- Low Kick\n\nGarchomp @ Life Orb\nAbility: Rough Skin\nLevel: 50\nEVs: 32 Atk / 2 SpD / 32 Spe\nJolly Nature\n- Earthquake\n- Dragon Claw\n- Rock Slide\n- Protect\n\nBasculegion-Male @ Mystic Water\nAbility: Adaptability\nLevel: 50\nEVs: 15 HP / 32 Atk / 3 Def / 2 SpD / 14 Spe\nAdamant Nature\n- Wave Crash\n- Last Respects\n- Aqua Jet\n- Protect\n\nWhimsicott @ Focus Sash\nAbility: Prankster\nLevel: 50\nEVs: 2 HP / 32 SpA / 32 Spe\nTimid Nature\n- Moonblast\n- Encore\n- Tailwind\n- Protect"
+  },
+  {
+   "name": "Nice Regional — 6th · Riccardo Stellini — Mega Camerupt Room + Mega Raichu Y",
+   "url": "https://metavgc.com/teams/camerupt-mega-raichu-mega-y-by-riccardo-stellini-at-2027-nice-pokemon-vgc-regional-championships",
+   "code": "",
+   "paste": "Incineroar @ White Herb\nAbility: Intimidate\nLevel: 50\nEVs: 32 HP / 32 Atk / 2 Def\nBrave Nature\n- Flare Blitz\n- Darkest Lariat\n- Fake Out\n- Parting Shot\n\nCamerupt @ Cameruptite\nAbility: Solid Rock\nLevel: 50\nEVs: 32 HP / 32 SpA / 2 SpD\nQuiet Nature\n- Heat Wave\n- Earth Power\n- Ancient Power\n- Protect\n\nRaichu @ Raichunite Y\nAbility: Lightning Rod\nLevel: 50\nEVs: 32 HP / 11 Def / 23 Spe\nTimid Nature\n- Zap Cannon\n- Focus Blast\n- Fake Out\n- Protect\n\nSylveon @ Fairy Feather\nAbility: Pixilate\nLevel: 50\nEVs: 9 HP / 22 Def / 20 SpA / 15 Spe\nModest Nature\n- Hyper Voice\n- Moonblast\n- Calm Mind\n- Detect\n\nFarigiraf @ Sitrus Berry\nAbility: Armor Tail\nLevel: 50\nEVs: 31 HP / 21 Def / 14 SpD\nBold Nature\n- Psychic\n- Helping Hand\n- Trick Room\n- Protect\n\nRillaboom @ Life Orb\nAbility: Grassy Surge\nLevel: 50\nEVs: 32 HP / 15 Atk / 19 SpD\nAdamant Nature\n- Wood Hammer\n- Grassy Glide\n- Fake Out\n- U-turn"
+  },
+  {
+   "name": "Nice Regional — 7th · Giovanni Piscitelli — Mega Charizard Y Tailwind (same six as 5th)",
+   "url": "https://metavgc.com/teams/charizard-mega-y-garchomp-by-giovanni-piscitelli-at-2027-nice-pokemon-vgc-regional-championships",
+   "code": "",
+   "paste": "Charizard @ Charizardite Y\nAbility: Blaze\nLevel: 50\nEVs: 15 HP / 18 Def / 1 SpA / 32 Spe\nModest Nature\n- Heat Wave\n- Solar Beam\n- Weather Ball\n- Protect\n\nSneasler @ White Herb\nAbility: Unburden\nLevel: 50\nEVs: 32 Atk / 2 SpD / 32 Spe\nAdamant Nature\n- Close Combat\n- Dire Claw\n- Rock Tomb\n- Protect\n\nKingambit @ Chople Berry\nAbility: Defiant\nLevel: 50\nEVs: 32 HP / 32 Atk / 2 SpD\nAdamant Nature\n- Kowtow Cleave\n- Iron Head\n- Sucker Punch\n- Low Kick\n\nGarchomp @ Life Orb\nAbility: Rough Skin\nLevel: 50\nEVs: 32 Atk / 2 SpD / 32 Spe\nJolly Nature\n- Earthquake\n- Dragon Claw\n- Rock Slide\n- Protect\n\nBasculegion-Male @ Mystic Water\nAbility: Adaptability\nLevel: 50\nEVs: 15 HP / 32 Atk / 3 Def / 2 SpD / 14 Spe\nAdamant Nature\n- Wave Crash\n- Last Respects\n- Aqua Jet\n- Protect\n\nWhimsicott @ Focus Sash\nAbility: Prankster\nLevel: 50\nEVs: 2 HP / 32 SpA / 32 Spe\nTimid Nature\n- Moonblast\n- Encore\n- Tailwind\n- Protect"
+  },
+  {
+   "name": "Nice Regional — 8th · Giuseppe Musicco — Mega Floette + Mega Dragonite",
+   "url": "https://metavgc.com/teams/floette-eternal-mega-dragonite-mega-by-giuseppe-musicco-at-2027-nice-pokemon-vgc-regional-championships",
+   "code": "",
+   "paste": "Floette-Eternal @ Floettite\nAbility: Flower Veil\nLevel: 50\nEVs: 2 HP / 32 SpA / 32 Spe\nModest Nature\n- Dazzling Gleam\n- Draining Kiss\n- Calm Mind\n- Protect\n\nRillaboom @ Miracle Seed\nAbility: Grassy Surge\nLevel: 50\nEVs: 32 HP / 15 Atk / 19 SpD\nAdamant Nature\n- Wood Hammer\n- Grassy Glide\n- High Horsepower\n- Fake Out\n\nIncineroar @ Sitrus Berry\nAbility: Intimidate\nLevel: 50\nEVs: 32 HP / 32 Def / 2 SpD\nImpish Nature\n- Flare Blitz\n- Darkest Lariat\n- Parting Shot\n- Fake Out\n\nDragonite @ Dragoninite\nAbility: Multiscale\nLevel: 50\nEVs: 2 HP / 32 SpA / 32 Spe\nModest Nature\n- Dragon Pulse\n- Heat Wave\n- Tailwind\n- Protect\n\nGholdengo @ Life Orb\nAbility: Good as Gold\nLevel: 50\nEVs: 17 HP / 17 SpA / 32 Spe\nModest Nature\n- Make It Rain\n- Shadow Ball\n- Nasty Plot\n- Protect\n\nSneasler @ White Herb\nAbility: Unburden\nLevel: 50\nEVs: 32 Atk / 2 SpD / 32 Spe\nAdamant Nature\n- Dire Claw\n- Close Combat\n- Rock Tomb\n- Protect"
+  },
+  {
+   "name": "Louisville Regional — Champion · Joseph Ugarte (15-2) — Mega Charizard Y Sun",
+   "url": "https://standings.limitlessvgc.com/0041/player/755/teamlist",
+   "code": "",
+   "paste": "Farigiraf @ Sitrus Berry\nAbility: Armor Tail\nLevel: 50\nQuiet Nature\n- Psychic\n- Thunderbolt\n- Helping Hand\n- Trick Room\n\nIncineroar @ Chople Berry\nAbility: Intimidate\nLevel: 50\nAdamant Nature\n- Flare Blitz\n- Darkest Lariat\n- Parting Shot\n- Fake Out\n\nCharizard @ Charizardite Y\nAbility: Blaze\nLevel: 50\nModest Nature\n- Heat Wave\n- Weather Ball\n- Ancient Power\n- Protect\n\nSylveon @ Fairy Feather\nAbility: Pixilate\nLevel: 50\nModest Nature\n- Hyper Voice\n- Moonblast\n- Yawn\n- Protect\n\nVenusaur @ Focus Sash\nAbility: Chlorophyll\nLevel: 50\nModest Nature\n- Leaf Storm\n- Sludge Bomb\n- Sleep Powder\n- Protect\n\nGarchomp @ Choice Scarf\nAbility: Rough Skin\nLevel: 50\nAdamant Nature\n- Rock Slide\n- Stomping Tantrum\n- Dragon Claw\n- Earthquake"
+  },
+  {
+   "name": "Louisville Regional — 2nd · Andrew Figueras — Mega Charizard Y Screens Sun-Rain",
+   "url": "https://limitlessvgc.com/teams/7204",
+   "code": "",
+   "paste": "Archaludon @ Leftovers\nAbility: Stamina\nLevel: 50\nModest Nature\n- Electro Shot\n- Snarl\n- Dragon Pulse\n- Protect\n\nCharizard @ Charizardite Y\nAbility: Blaze\nLevel: 50\nModest Nature\n- Heat Wave\n- Weather Ball\n- Hurricane\n- Protect\n\nPelipper @ Sitrus Berry\nAbility: Drizzle\nLevel: 50\nCalm Nature\n- Weather Ball\n- Hurricane\n- Tailwind\n- Protect\n\nVenusaur @ Focus Sash\nAbility: Chlorophyll\nLevel: 50\nModest Nature\n- Sludge Bomb\n- Leaf Storm\n- Sleep Powder\n- Protect\n\nGrimmsnarl @ Light Clay\nAbility: Prankster\nLevel: 50\nImpish Nature\n- Spirit Break\n- Reflect\n- Light Screen\n- Parting Shot\n\nGarchomp @ Choice Scarf\nAbility: Rough Skin\nLevel: 50\nAdamant Nature\n- Bulldoze\n- Earthquake\n- Rock Slide\n- Dragon Claw"
+  },
+  {
+   "name": "Louisville Regional — 3rd · Dorian Kang — Mega Raichu X + Mega Charizard Y Weather",
+   "url": "https://limitlessvgc.com/teams/7205",
+   "code": "",
+   "paste": "Venusaur @ Focus Sash\nAbility: Chlorophyll\nLevel: 50\nModest Nature\n- Sleep Powder\n- Earth Power\n- Sludge Bomb\n- Protect\n\nPolitoed @ Mystic Water\nAbility: Drizzle\nLevel: 50\nModest Nature\n- Weather Ball\n- Ice Beam\n- Muddy Water\n- Protect\n\nGrimmsnarl @ Light Clay\nAbility: Prankster\nLevel: 50\nSassy Nature\n- Spirit Break\n- Reflect\n- Light Screen\n- Parting Shot\n\nRaichu @ Raichunite X\nAbility: Lightning Rod\nLevel: 50\nJolly Nature\n- Fake Out\n- Volt Switch\n- Feint\n- Volt Tackle\n\nArchaludon @ Leftovers\nAbility: Stamina\nLevel: 50\nBold Nature\n- Dragon Pulse\n- Electro Shot\n- Snarl\n- Protect\n\nCharizard @ Charizardite Y\nAbility: Blaze\nLevel: 50\nModest Nature\n- Heat Wave\n- Weather Ball\n- Hurricane\n- Protect"
+  },
+  {
+   "name": "Louisville Regional — 4th · JJ Miller — Mega Swampert Rain + Mega Staraptor",
+   "url": "https://limitlessvgc.com/teams/7206",
+   "code": "",
+   "paste": "Gholdengo @ Life Orb\nAbility: Good as Gold\nLevel: 50\nTimid Nature\n- Make It Rain\n- Shadow Ball\n- Power Gem\n- Protect\n\nArchaludon @ Leftovers\nAbility: Stamina\nLevel: 50\nCalm Nature\n- Dragon Pulse\n- Electro Shot\n- Flash Cannon\n- Protect\n\nPelipper @ Sitrus Berry\nAbility: Drizzle\nLevel: 50\nBold Nature\n- Weather Ball\n- Hurricane\n- Tailwind\n- Wide Guard\n\nSwampert @ Swampertite\nAbility: Torrent\nLevel: 50\nAdamant Nature\n- Wave Crash\n- Ice Punch\n- Earthquake\n- Protect\n\nStaraptor @ Staraptite\nAbility: Intimidate\nLevel: 50\nJolly Nature\n- Brave Bird\n- Close Combat\n- Tailwind\n- Protect\n\nSinistcha @ Colbur Berry\nAbility: Hospitality\nLevel: 50\nRelaxed Nature\n- Matcha Gotcha\n- Rage Powder\n- Trick Room\n- Protect"
+  },
+  {
+   "name": "Louisville Regional — 5th · Ryan Loseto — Mega Salamence + Mega Floette",
+   "url": "https://limitlessvgc.com/teams/7207",
+   "code": "",
+   "paste": "Rillaboom @ Miracle Seed\nAbility: Grassy Surge\nLevel: 50\nAdamant Nature\n- Wood Hammer\n- Grassy Glide\n- U-turn\n- Fake Out\n\nKingambit @ Chople Berry\nAbility: Defiant\nLevel: 50\nAdamant Nature\n- Kowtow Cleave\n- Sucker Punch\n- Iron Head\n- Protect\n\nSneasler @ Focus Sash\nAbility: Poison Touch\nLevel: 50\nJolly Nature\n- Dire Claw\n- Close Combat\n- Fake Out\n- Protect\n\nFloette-Eternal @ Floettite\nAbility: Flower Veil\nLevel: 50\nBold Nature\n- Moonblast\n- Dazzling Gleam\n- Calm Mind\n- Protect\n\nSalamence @ Salamencite\nAbility: Intimidate\nLevel: 50\nModest Nature\n- Hyper Voice\n- Flamethrower\n- Tailwind\n- Protect\n\nBasculegion-Male @ Life Orb\nAbility: Adaptability\nLevel: 50\nJolly Nature\n- Wave Crash\n- Last Respects\n- Aqua Jet\n- Protect"
+  },
+  {
+   "name": "Louisville Regional — 6th · Toler Webb — Mega Golisopod + Mega Garchomp Z Rain",
+   "url": "https://limitlessvgc.com/teams/7208",
+   "code": "",
+   "paste": "Golisopod @ Golisopite\nAbility: Emergency Exit\nLevel: 50\nAdamant Nature\n- Leech Life\n- Iron Head\n- Drill Run\n- Protect\n\nGarchomp @ Garchompite Z\nAbility: Rough Skin\nLevel: 50\nModest Nature\n- Earth Power\n- Draco Meteor\n- Power Gem\n- Protect\n\nPelipper @ Life Orb\nAbility: Drizzle\nLevel: 50\nModest Nature\n- Weather Ball\n- Muddy Water\n- Hurricane\n- Protect\n\nArchaludon @ Leftovers\nAbility: Stamina\nLevel: 50\nBold Nature\n- Electro Shot\n- Dragon Pulse\n- Snarl\n- Protect\n\nFarigiraf @ Sitrus Berry\nAbility: Armor Tail\nLevel: 50\nBold Nature\n- Psychic\n- Helping Hand\n- Trick Room\n- Protect\n\nSneasler @ White Herb\nAbility: Unburden\nLevel: 50\nAdamant Nature\n- Close Combat\n- Gunk Shot\n- U-turn\n- Protect"
+  },
+  {
+   "name": "Louisville Regional — 7th · Keanu Inosanto — Mega Salamence + Mega Floette",
+   "url": "https://standings.limitlessvgc.com/0041/player/0695/teamlist",
+   "code": "",
+   "paste": "Basculegion-Male @ Colbur Berry\nAbility: Adaptability\nLevel: 50\nAdamant Nature\n- Wave Crash\n- Last Respects\n- Aqua Jet\n- Protect\n\nRillaboom @ Miracle Seed\nAbility: Grassy Surge\nLevel: 50\nAdamant Nature\n- Wood Hammer\n- High Horsepower\n- Grassy Glide\n- Fake Out\n\nFloette-Eternal @ Floettite\nAbility: Flower Veil\nLevel: 50\nModest Nature\n- Moonblast\n- Dazzling Gleam\n- Calm Mind\n- Protect\n\nSneasler @ Focus Sash\nAbility: Poison Touch\nLevel: 50\nJolly Nature\n- Close Combat\n- Dire Claw\n- Fake Out\n- Protect\n\nSalamence @ Salamencite\nAbility: Intimidate\nLevel: 50\nModest Nature\n- Hyper Voice\n- Flamethrower\n- Tailwind\n- Protect\n\nKingambit @ Chople Berry\nAbility: Defiant\nLevel: 50\nAdamant Nature\n- Kowtow Cleave\n- Iron Head\n- Sucker Punch\n- Protect"
+  },
+  {
+   "name": "Louisville Regional — 8th · Brian Hough — Mega Dragonite Terrain",
+   "url": "https://limitlessvgc.com/teams/7209",
+   "code": "",
+   "paste": "Gholdengo @ Life Orb\nAbility: Good as Gold\nLevel: 50\nModest Nature\n- Make It Rain\n- Shadow Ball\n- Nasty Plot\n- Protect\n\nDragonite @ Dragoninite\nAbility: Multiscale\nLevel: 50\nTimid Nature\n- Dragon Pulse\n- Heat Wave\n- Tailwind\n- Protect\n\nIncineroar @ Sitrus Berry\nAbility: Intimidate\nLevel: 50\nCareful Nature\n- Flare Blitz\n- Darkest Lariat\n- Fake Out\n- Parting Shot\n\nSneasler @ White Herb\nAbility: Unburden\nLevel: 50\nAdamant Nature\n- Close Combat\n- Dire Claw\n- Rock Tomb\n- Protect\n\nRillaboom @ Miracle Seed\nAbility: Grassy Surge\nLevel: 50\nAdamant Nature\n- Wood Hammer\n- Grassy Glide\n- High Horsepower\n- Fake Out\n\nGarchomp @ Choice Scarf\nAbility: Rough Skin\nLevel: 50\nAdamant Nature\n- Dragon Claw\n- Stomping Tantrum\n- Rock Slide\n- Earthquake"
+  },
   {
    "name": "Recife Regional — Champion · Juan Salerno (14-0) — Mega Charizard Y Sun",
    "url": "https://metavgc.com/teams/charizard-mega-y-sylveon-by-juan-salerno-at-2027-recife-pokemon-vgc-regional-championships",
@@ -197,66 +365,6 @@
    "name": "Baltimore Regional — 10th · Billy Helm — Mega Gengar + Mega Golisopod Rain",
    "url": "https://metavgc.com/teams/gengar-mega-golisopod-mega-by-billy-helm-at-2027-baltimore-pokemon-vgc-regional-championships",
    "paste": "Rillaboom @ Miracle Seed\nAbility: Grassy Surge\nLevel: 50\nEVs: 32 HP / 15 Atk / 2 Def / 17 SpD\nAdamant Nature\n- Fake Out\n- Grassy Glide\n- U-turn\n- Protect\n\nPolitoed @ Sitrus Berry\nAbility: Drizzle\nLevel: 50\nEVs: 32 HP / 32 SpD / 2 Spe\nCalm Nature\n- Weather Ball\n- Perish Song\n- Encore\n- Protect\n\nArchaludon @ Leftovers\nAbility: Stamina\nLevel: 50\nEVs: 32 HP / 32 SpA / 2 SpD\nModest Nature\n- Electro Shot\n- Dragon Pulse\n- Aura Sphere\n- Protect\n\nGengar @ Gengarite\nAbility: Cursed Body\nLevel: 50\nEVs: 24 HP / 18 Def / 14 SpD / 10 Spe\nModest Nature\n- Perish Song\n- Sludge Bomb\n- Shadow Ball\n- Protect\n\nIncineroar @ Passho Berry\nAbility: Intimidate\nLevel: 50\nEVs: 32 HP / 2 Def / 32 SpD\nCareful Nature\n- Fake Out\n- Throat Chop\n- Parting Shot\n- Protect\n\nGolisopod @ Golisopite\nAbility: Emergency Exit\nLevel: 50\nEVs: 32 HP / 32 Atk / 2 SpD\nAdamant Nature\n- Leech Life\n- Sucker Punch\n- Swords Dance\n- Protect",
-   "code": ""
-  },
-  {
-   "name": "Terrain Overdrive — 12-0 · DDee (Talon's Fight Club #101 winner)",
-   "paste": "Floette-Eternal @ Floettite\nAbility: Flower Veil\n- Moonblast\n- Dazzling Gleam\n- Calm Mind\n- Protect\n\nSneasler @ Grassy Seed\nAbility: Unburden\n- Close Combat\n- Dire Claw\n- Rock Slide\n- Protect\n\nIncineroar @ Sitrus Berry\nAbility: Intimidate\n- Flare Blitz\n- Throat Chop\n- Fake Out\n- Parting Shot\n\nRillaboom @ Miracle Seed\nAbility: Grassy Surge\n- Wood Hammer\n- Grassy Glide\n- High Horsepower\n- Fake Out\n\nGholdengo @ Life Orb\nAbility: Good as Gold\n- Make It Rain\n- Shadow Ball\n- Nasty Plot\n- Protect\n\nRaichu @ Raichunite Y\nAbility: Lightning Rod\n- Zap Cannon\n- Focus Blast\n- Encore\n- Protect",
-   "url": "https://www.pikalytics.com/topteams",
-   "code": ""
-  },
-  {
-   "name": "Mega Baxcalibur Rain — 10-2 · Contrapple (Talon's Fight Club #101 runner-up)",
-   "paste": "Baxcalibur @ Baxcalibrite\nAbility: Thermal Exchange\n- Protect\n- Dragon Dance\n- Glaive Rush\n- Ice Shard\n\nArchaludon @ Leftovers\nAbility: Stamina\n- Protect\n- Dragon Pulse\n- Flash Cannon\n- Electro Shot\n\nPelipper @ Focus Sash\nAbility: Drizzle\n- Wide Guard\n- Tailwind\n- Weather Ball\n- Hurricane\n\nBasculegion-Male @ Choice Scarf\nAbility: Adaptability\n- Aqua Jet\n- Last Respects\n- Wave Crash\n- Flip Turn\n\nRillaboom @ Miracle Seed\nAbility: Grassy Surge\n- Fake Out\n- Wood Hammer\n- Grassy Glide\n- High Horsepower\n\nSneasler @ White Herb\nAbility: Unburden\n- Fake Out\n- Coaching\n- Dire Claw\n- Close Combat",
-   "url": "https://www.pikalytics.com/topteams",
-   "code": ""
-  },
-  {
-   "name": "Mega Metagross Psyspam — 10-1 · LelloCartello (Tenki's Cart Weekly #117 winner)",
-   "paste": "Metagross @ Metagrossite\nAbility: Clear Body\n- Iron Head\n- Psychic Fangs\n- Body Press\n- Protect\n\nIndeedee-Male @ Choice Scarf\nAbility: Psychic Surge\n- Expanding Force\n- Imprison\n- Trick\n- Trick Room\n\nSneasler @ Psychic Seed\nAbility: Unburden\n- Close Combat\n- Dire Claw\n- Rock Slide\n- Protect\n\nArcanine-Hisui @ Focus Sash\nAbility: Rock Head\n- Flare Blitz\n- Head Smash\n- Rock Slide\n- Protect\n\nSalamence @ Salamencite\nAbility: Intimidate\n- Hyper Voice\n- Dragon Pulse\n- Heat Wave\n- Protect\n\nMilotic @ Leftovers\nAbility: Competitive\n- Scald\n- Icy Wind\n- Recover\n- Protect",
-   "url": "https://www.pikalytics.com/topteams",
-   "code": ""
-  },
-  {
-   "name": "Mega Gengar Perish Trap — 7-0 · M_rada (Alpensee Tour #74 winner)",
-   "paste": "Gengar @ Gengarite\nAbility: Cursed Body\n- Perish Song\n- Shadow Ball\n- Sludge Bomb\n- Protect\n\nSnorlax @ Leftovers\nAbility: Thick Fat\n- Yawn\n- Encore\n- Fissure\n- Protect\n\nIncineroar @ Sitrus Berry\nAbility: Intimidate\n- Flare Blitz\n- Parting Shot\n- Fake Out\n- Protect\n\nScrafty @ Focus Sash\nAbility: Intimidate\n- Close Combat\n- Knock Off\n- Fake Out\n- Protect\n\nDragonite @ Life Orb\nAbility: Inner Focus\n- Dragon Claw\n- Low Kick\n- Extreme Speed\n- Protect\n\nRillaboom @ Eject Button\nAbility: Grassy Surge\n- Grassy Glide\n- U-turn\n- Fake Out\n- Protect",
-   "url": "https://www.pikalytics.com/topteams",
-   "code": ""
-  },
-  {
-   "name": "Aurora Veil Balance — 5-0 · LittlePotato13 (Pokepal Smackdown #157 winner)",
-   "paste": "Froslass @ Froslassite\nAbility: Cursed Body\n- Protect\n- Aurora Veil\n- Shadow Ball\n- Blizzard\n\nArcanine-Hisui @ Focus Sash\nAbility: Rock Head\n- Protect\n- Extreme Speed\n- Flare Blitz\n- Head Smash\n\nKingambit @ Chople Berry\nAbility: Defiant\n- Sucker Punch\n- Kowtow Cleave\n- Low Kick\n- Iron Head\n\nFarigiraf @ Sitrus Berry\nAbility: Armor Tail\n- Protect\n- Trick Room\n- Helping Hand\n- Psychic\n\nFloette-Eternal @ Floettite\nAbility: Flower Veil\n- Protect\n- Dazzling Gleam\n- Moonblast\n- Light of Ruin\n\nToxapex @ Leftovers\nAbility: Regenerator\n- Baneful Bunker\n- Wide Guard\n- Toxic\n- Infestation",
-   "url": "https://www.pikalytics.com/topteams",
-   "code": ""
-  },
-  {
-   "name": "Wolfey Tour Winner — Mega Blastoise Sun-Rain — 4-0 · Hazarai (Wolfey Patreon M-C Launch)",
-   "paste": "Blastoise @ Blastoisinite\nAbility: Rain Dish\n- Water Spout\n- Aura Sphere\n- Dark Pulse\n- Fake Out\n\nGolisopod @ Golisopite\nAbility: Emergency Exit\n- Leech Life\n- Swords Dance\n- Iron Head\n- Close Combat\n\nTorkoal @ Charcoal\nAbility: Drought\n- Eruption\n- Weather Ball\n- Solar Beam\n- Protect\n\nFarigiraf @ Sitrus Berry\nAbility: Armor Tail\n- Twin Beam\n- Helping Hand\n- Thunderbolt\n- Trick Room\n\nBasculegion-Male @ Life Orb\nAbility: Adaptability\n- Wave Crash\n- Last Respects\n- Protect\n- Aqua Jet\n\nSylveon @ Fairy Feather\nAbility: Pixilate\n- Hyper Voice\n- Quick Attack\n- Hyper Beam\n- Detect",
-   "url": "https://www.pikalytics.com/topteams",
-   "code": ""
-  },
-  {
-   "name": "Screens Rain — Mega Swampert — 7-0 · Suruga (Off Meta Fight Club #2 winner)",
-   "paste": "Grimmsnarl @ Light Clay\nAbility: Prankster\n- Parting Shot\n- Light Screen\n- Reflect\n- Spirit Break\n\nArchaludon @ Leftovers\nAbility: Stamina\n- Electro Shot\n- Snarl\n- Dragon Pulse\n- Protect\n\nSwampert @ Swampertite\nAbility: Torrent\n- Wave Crash\n- Ice Punch\n- Earthquake\n- Protect\n\nGolisopod @ Golisopite\nAbility: Emergency Exit\n- Leech Life\n- Iron Head\n- Swords Dance\n- Protect\n\nPelipper @ Focus Sash\nAbility: Drizzle\n- Weather Ball\n- Hurricane\n- Wide Guard\n- Tailwind\n\nFarigiraf @ Sitrus Berry\nAbility: Armor Tail\n- Trick Room\n- Psychic\n- Thunderbolt\n- Protect",
-   "url": "https://www.pikalytics.com/topteams",
-   "code": ""
-  },
-  {
-   "name": "New-Meta Big Six — 11-2 · 138mysx (Sitrus Series #75 winner)",
-   "paste": "Rillaboom @ Sitrus Berry\nAbility: Grassy Surge\n- Fake Out\n- Wood Hammer\n- Grassy Glide\n- U-turn\n\nCharizard @ Charizardite Y\nAbility: Blaze\n- Heat Wave\n- Weather Ball\n- Ancient Power\n- Protect\n\nKingambit @ Life Orb\nAbility: Defiant\n- Kowtow Cleave\n- Iron Head\n- Sucker Punch\n- Protect\n\nSylveon @ Fairy Feather\nAbility: Pixilate\n- Hyper Beam\n- Hyper Voice\n- Quick Attack\n- Detect\n\nSalamence @ Salamencite\nAbility: Intimidate\n- Hyper Voice\n- Tailwind\n- Double-Edge\n- Protect\n\nSneasler @ Grassy Seed\nAbility: Unburden\n- Fake Out\n- Close Combat\n- Dire Claw\n- Protect",
-   "url": "https://www.pikalytics.com/topteams",
-   "code": ""
-  },
-  {
-   "name": "Glimmora Room — London Weekly runner-up · MaxTrickRoom",
-   "paste": "Indeedee-Male @ Focus Sash\nAbility: Psychic Surge\n- Trick Room\n- Imprison\n- Protect\n- Expanding Force\n\nGlimmora @ Glimmoranite\nAbility: Toxic Debris\n- Spiky Shield\n- Earth Power\n- Power Gem\n- Sludge Bomb\n\nSneasler @ Psychic Seed\nAbility: Unburden\n- Close Combat\n- Dire Claw\n- Protect\n- Throat Chop\n\nNinetales-Alola @ Choice Scarf\nAbility: Snow Cloak\n- Moonblast\n- Freeze-Dry\n- Blizzard\n- Icy Wind\n\nCharizard @ Charizardite Y\nAbility: Blaze\n- Heat Wave\n- Protect\n- Solar Beam\n- Weather Ball\n\nGarchomp @ Life Orb\nAbility: Rough Skin\n- Protect\n- Dragon Claw\n- Rock Slide\n- Stomping Tantrum",
-   "url": "https://www.pikalytics.com/topteams",
-   "code": ""
-  },
-  {
-   "name": "Veil + Spicy Spray — Liga CWB winner · Tyler Reis",
-   "paste": "Froslass @ Froslassite\nAbility: Cursed Body\n- Blizzard\n- Aurora Veil\n- Shadow Ball\n- Protect\n\nSneasler @ White Herb\nAbility: Unburden\n- Fake Out\n- Close Combat\n- Dire Claw\n- Protect\n\nKingambit @ Black Glasses\nAbility: Defiant\n- Kowtow Cleave\n- Sucker Punch\n- Swords Dance\n- Protect\n\nLycanroc-Dusk @ Focus Sash\nAbility: Tough Claws\n- Rock Slide\n- Accelerock\n- Close Combat\n- Protect\n\nScovillain @ Scovillainite\nAbility: Moody\n- Giga Drain\n- Overheat\n- Rage Powder\n- Protect\n\nBasculegion-Male @ Life Orb\nAbility: Adaptability\n- Wave Crash\n- Last Respects\n- Aqua Jet\n- Protect",
-   "url": "https://www.pikalytics.com/topteams",
    "code": ""
   },
   {

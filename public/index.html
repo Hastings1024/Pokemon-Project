@@ -664,7 +664,7 @@ const TYPE_COLORS = {normal:'#9BA0A8',fire:'#E8613C',water:'#3E8EE0',electric:'#
 ice:'#6FC9C9',fighting:'#C4443F',poison:'#9A50A0',ground:'#CBA34A',flying:'#8FA3DE',psychic:'#E06388',
 bug:'#9AAB33',rock:'#B0A05A',ghost:'#6A5C9E',dragon:'#6A55DF',dark:'#5C544C',steel:'#9BA6B5',fairy:'#DE8FDE'};
 const TYPES = Object.keys(TYPE_COLORS);
-const BUILD_STAMP = '2026-10-08';
+const BUILD_STAMP = '2026-10-30';
 const STAT_KEYS = ['HP','Atk','Def','SpA','SpD','Spe'];
 const SPRITE = id => `img/sprite/${id}.png`;
 const ART = id => `img/art/${id}.png`;
@@ -1063,6 +1063,199 @@ async function makeSquadShot(squad, teamName, statMode){
   return await new Promise(res => canvas.toBlob(res, 'image/png'));
 }
 
+/* ---- battle-record report: the opponent log as a chronological image ---- */
+const LOGSHOT = {W: 960, M: 24, ROW: 84, SPR: 40, win: '#5CC97A', loss: '#E5766B'};
+
+/* local sprite first, then the base form's, then the online copy (CORS-enabled so the canvas stays exportable) */
+async function logShotSprite(species){
+  const d = findMon(species);
+  if(!d) return null;
+  const base = DEFAULT_ID[d.dex];
+  const local = (await shotImg(SPRITE(d.id))) || (base && base !== d.id ? await shotImg(SPRITE(base)) : null);
+  if(local) return local;
+  return await new Promise(res => {
+    const im = new window.Image();
+    im.crossOrigin = 'anonymous';
+    im.onload = () => res(im); im.onerror = () => res(null);
+    im.src = RSPR(d.dex);
+  });
+}
+
+function logShotStats(games){
+  let w = 0, l = 0;
+  const running = games.map(g => {
+    if(g.result === 'win') w++; else if(g.result === 'loss') l++;
+    return w + '–' + l;
+  });
+  let streak = '';
+  for(let i = games.length - 1; i >= 0; i--){
+    const r = games[i].result;
+    if(!r) continue;
+    const ch = r === 'win' ? 'W' : 'L';
+    if(!streak || streak[0] === ch) streak += ch; else break;
+  }
+  const unmarked = games.filter(g => !g.result).length;
+  return {w, l, running, streak: streak ? streak[0] + streak.length : '', unmarked};
+}
+
+const logShotDay = ts => { try{ return new Date(ts).toLocaleDateString(undefined, {month:'short', day:'numeric', year:'numeric'}); }catch(_){ return ''; } };
+
+function logShotHeader(ctx, games, st, title){
+  const {W, M} = LOGSHOT;
+  ctx.fillStyle = SHOT.gold;
+  ctx.font = "700 11px 'Chakra Petch', system-ui, sans-serif";
+  ctx.fillText('BATTLE RECORD', M, M + 14);
+  ctx.fillStyle = SHOT.ink;
+  ctx.font = "700 26px 'Chakra Petch', system-ui, sans-serif";
+  ctx.fillText(shotFit(ctx, title || 'Opponent Log', W - M * 2 - 260), M, M + 46);
+  ctx.fillStyle = SHOT.muted;
+  ctx.font = '500 13px system-ui, sans-serif';
+  const first = logShotDay(games[0].ts), last = logShotDay(games[games.length - 1].ts);
+  const span = first === last ? first : first + ' – ' + last;
+  ctx.fillText(span + ' · ' + games.length + ' game' + (games.length === 1 ? '' : 's'), M, M + 70);
+  /* record block, right-aligned */
+  const decided = st.w + st.l;
+  ctx.textAlign = 'right';
+  ctx.fillStyle = SHOT.ink;
+  ctx.font = "700 34px 'Chakra Petch', system-ui, sans-serif";
+  ctx.fillText(st.w + '–' + st.l, W - M, M + 44);
+  ctx.fillStyle = SHOT.muted;
+  ctx.font = '600 12.5px system-ui, sans-serif';
+  const bits = [];
+  if(decided) bits.push(Math.round(st.w / decided * 100) + '% win rate');
+  if(st.streak) bits.push('streak ' + st.streak);
+  if(st.unmarked) bits.push(st.unmarked + ' unmarked');
+  ctx.fillText(bits.join(' · '), W - M, M + 68);
+  ctx.textAlign = 'left';
+}
+
+/* form guide: one square per game, oldest → newest */
+function logShotStrip(ctx, games, y){
+  const {W, M} = LOGSHOT;
+  const n = games.length, gap = 3;
+  const size = Math.max(6, Math.min(16, Math.floor((W - M * 2 + gap) / n) - gap));
+  games.forEach((g, i) => {
+    ctx.fillStyle = g.result === 'win' ? LOGSHOT.win : g.result === 'loss' ? LOGSHOT.loss : SHOT.panel2;
+    shotRR(ctx, M + i * (size + gap), y, size, size, 3); ctx.fill();
+  });
+  return size;
+}
+
+/* one game, drawn like the app's Opponent Log row: win/loss rim + tint, green halo = brought, blue halo = led */
+const LOGSHOT_LEAD = '#5B9BF5';
+function logShotRowShell(ctx, g, y, h){
+  const {W, M} = LOGSHOT;
+  const tint = g.result === 'win' ? '92,201,122' : g.result === 'loss' ? '229,118,107' : null;
+  ctx.fillStyle = SHOT.panel; shotRR(ctx, M, y, W - M * 2, h, 10); ctx.fill();
+  if(tint){
+    const gr = ctx.createLinearGradient(M, 0, M + (W - M * 2) * 0.6, 0);
+    gr.addColorStop(0, 'rgba(' + tint + ',.10)'); gr.addColorStop(1, 'rgba(' + tint + ',0)');
+    ctx.fillStyle = gr; shotRR(ctx, M, y, W - M * 2, h, 10); ctx.fill();
+  }
+  ctx.strokeStyle = tint ? 'rgba(' + tint + ',.55)' : SHOT.line;
+  ctx.lineWidth = 1.5;
+  if(g.excluded) ctx.setLineDash([5, 4]);
+  shotRR(ctx, M + 0.5, y + 0.5, W - M * 2 - 1, h - 1, 10); ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function logShotMon(ctx, m, im, cx, top){
+  const {SPR} = LOGSHOT;
+  const halo = m.lead ? LOGSHOT_LEAD : m.brought ? LOGSHOT.win : null;
+  if(im) ctx.drawImage(im, cx - SPR / 2, top, SPR, SPR);
+  else { ctx.fillStyle = SHOT.line; shotRR(ctx, cx - SPR / 2 + 6, top + 6, SPR - 12, SPR - 12, 6); ctx.fill(); }
+  if(halo){
+    ctx.strokeStyle = halo; ctx.lineWidth = 2;
+    shotRR(ctx, cx - SPR / 2 - 3, top - 3, SPR + 6, SPR + 6, 6); ctx.stroke();
+  }
+  ctx.font = (halo ? '700 ' : '500 ') + '10.5px system-ui, sans-serif';
+  ctx.fillStyle = halo || SHOT.muted;
+  ctx.textAlign = 'center';
+  ctx.fillText(shotFit(ctx, m.species, 84), cx, top + SPR + 15);
+  ctx.textAlign = 'left';
+}
+
+/* the app's W / L toggle pair, with the recorded result lit */
+function logShotWL(ctx, result, x, mid){
+  [['W', 'win', LOGSHOT.win], ['L', 'loss', LOGSHOT.loss]].forEach(([ch, key, col], k) => {
+    const bx = x + k * 30, on = result === key;
+    ctx.fillStyle = on ? col : SHOT.panel2; shotRR(ctx, bx, mid - 12, 24, 24, 6); ctx.fill();
+    ctx.strokeStyle = on ? col : SHOT.line; ctx.lineWidth = 1; shotRR(ctx, bx + 0.5, mid - 11.5, 23, 23, 6); ctx.stroke();
+    ctx.fillStyle = on ? '#0F1522' : SHOT.muted;
+    ctx.font = "700 11px 'Chakra Petch', system-ui, sans-serif";
+    ctx.textAlign = 'center'; ctx.fillText(ch, bx + 12, mid + 4); ctx.textAlign = 'left';
+  });
+}
+
+function logShotRow(ctx, g, i, running, sprites, y){
+  const {W, M, ROW, SPR} = LOGSHOT;
+  const h = ROW - 8, mid = y + h / 2;
+  ctx.save();
+  if(g.excluded) ctx.globalAlpha = 0.5;
+  logShotRowShell(ctx, g, y, h);
+  ctx.fillStyle = SHOT.muted;
+  ctx.font = "700 13px 'Chakra Petch', system-ui, sans-serif";
+  ctx.fillText(String(i + 1).padStart(2, '0'), M + 14, mid + 5);
+  ctx.font = "600 10px 'Chakra Petch', system-ui, sans-serif";
+  ctx.fillText(shotFit(ctx, oppFmtDate(g.ts).toUpperCase(), 118), M + 48, mid + (g.excluded ? -2 : 4));
+  if(g.excluded){ ctx.font = 'italic 500 10px system-ui, sans-serif'; ctx.fillText('omitted from stats', M + 48, mid + 12); }
+  if(g.excluded && 'filter' in ctx) ctx.filter = 'grayscale(1)';
+  const sx0 = M + 180, cellW = 90, top = y + (h - SPR - 17) / 2;
+  (g.mons || []).slice(0, 6).forEach((m, k) => logShotMon(ctx, m, sprites[m.species], sx0 + k * cellW + cellW / 2, top));
+  if('filter' in ctx) ctx.filter = 'none';
+  logShotWL(ctx, g.result, W - M - 132, mid);
+  ctx.textAlign = 'right'; ctx.fillStyle = SHOT.ink;
+  ctx.font = "700 15px 'Chakra Petch', system-ui, sans-serif";
+  ctx.fillText(running, W - M - 14, mid + 5);
+  ctx.textAlign = 'left';
+  ctx.restore();
+}
+
+function logShotFooter(ctx, y){
+  const {W, M} = LOGSHOT;
+  let x = M;
+  /* square = halo on a Pokémon; wide = rim on a game row */
+  const key = (col, text, wide, dashed) => {
+    const w = wide ? 26 : 13;
+    ctx.strokeStyle = col; ctx.lineWidth = wide ? 1.5 : 2;
+    if(dashed) ctx.setLineDash([3, 2]);
+    shotRR(ctx, x, y - 10, w, 13, wide ? 4 : 3); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = SHOT.muted; ctx.font = '500 11.5px system-ui, sans-serif';
+    ctx.fillText(text, x + w + 7, y); x += w + 7 + ctx.measureText(text).width + 22;
+  };
+  key(LOGSHOT.win, 'Brought to battle');
+  key(LOGSHOT_LEAD, 'Led');
+  key(LOGSHOT.win, 'Win', true);
+  key(LOGSHOT.loss, 'Loss', true);
+  key(SHOT.muted, 'Omitted from stats', true, true);
+  ctx.textAlign = 'right'; ctx.fillStyle = SHOT.goldDim;
+  ctx.font = "700 11.5px 'Chakra Petch', system-ui, sans-serif";
+  ctx.fillText('POKE-PANION.COM', W - M, y);
+  ctx.textAlign = 'left';
+}
+
+async function makeLogShot(oppLog, title){
+  const games = [...oppLog].sort((a, b) => (a.ts || 0) - (b.ts || 0));
+  if(!games.length) return null;
+  const species = [...new Set(games.flatMap(g => (g.mons || []).map(m => m.species)))];
+  const imgs = await Promise.all(species.map(logShotSprite));
+  const sprites = {}; species.forEach((sp, i) => { sprites[sp] = imgs[i]; });
+  const st = logShotStats(games);
+  const {W, M, ROW} = LOGSHOT;
+  const headH = 92, stripY = M + headH, listY = stripY + 34;
+  const H = listY + games.length * ROW + 40;
+  const canvas = document.createElement('canvas');
+  canvas.width = W * 2; canvas.height = H * 2;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(2, 2);
+  ctx.fillStyle = SHOT.bg; ctx.fillRect(0, 0, W, H);
+  logShotHeader(ctx, games, st, title);
+  logShotStrip(ctx, games, stripY);
+  games.forEach((g, i) => logShotRow(ctx, g, i, st.running[i], sprites, listY + i * ROW));
+  logShotFooter(ctx, H - 18);
+  return await new Promise(res => canvas.toBlob(res, 'image/png'));
+}
+
 /* Lightweight session persistence — all user data lives in this browser via localStorage
    (no account needed). Falls back to defaults where storage is unavailable. */
 const lsGet = (key, fallback) => {
@@ -1125,6 +1318,15 @@ function parseSave(raw){
 
 /* ============ News ============ */
 const NEWS = [
+  {date:'2026-10-26', cat:'Teams', title:'Puebla Regional: Kyle Livinghouse wins with Mega Charizard Y + Mega Froslass',
+   body:'Kyle Livinghouse took the 2027 Puebla Regional (Oct 24\u201325, 333 players) with Mega Charizard Y sun backed by Aurora Veil Mega Froslass and Tailwind Whimsicott. Charizard Y was on six of the top eight teams. The full top eight, with stat points, is on Trending Teams.',
+   url:'https://metavgc.com/teams/featured/regional-puebla'},
+  {date:'2026-10-19', cat:'Teams', title:'Nice Regional: Louis Fontvieille wins with Mega Raichu X rain',
+   body:'Louis Fontvieille beat Eduardo Cunha in the final of the 2027 Nice Regional (Oct 17\u201318, 862 players) with Mega Raichu X, Mega Golisopod, and Swift Swim Basculegion-F under Pelipper rain. The same six also finished 4th. The full top eight is on Trending Teams.',
+   url:'https://metavgc.com/teams/featured/regional-nice'},
+  {date:'2026-10-12', cat:'Teams', title:'Louisville Regional: Joseph Ugarte wins again',
+   body:'Joseph Ugarte won the 2027 Louisville Regional (Oct 10\u201311, 1,013 players) at 15-2 over Andrew Figueras \u2014 his second regional title this season, this time with Mega Charizard Y sun, Scarf Garchomp, and Trick Room Farigiraf. The full top eight is on Trending Teams.',
+   url:'https://limitlessvgc.com/tournaments/445'},
   {date:'2026-10-08', cat:'Meta', title:'Season M-6 wrap: Rillaboom still on top, Raichu wins the most',
    body:'Season M-7 is live (Oct 7 \u2013 Nov 5, still Reg M-C). Across the first month of M-C, Rillaboom (35.2%) and Sneasler (31.8%) still lead, Golisopod climbed to #4 and Farigiraf to #8, and Mega Garchomp Z is now Garchomp\u2019s main item. Mega Raichu Y posts the best winrate in the top 20 (53.4%); Whimsicott the worst (46.2%). Usage and every top Pok\u00e9mon\u2019s intel page now run on this data, including Stat Alignment shares and common stat-point spreads.',
    url:'https://www.pokemon-zone.com/champions/ranked-seasons/doubles/'},
@@ -2542,7 +2744,7 @@ function NumStep({value, min, max, onChange, ariaLabel, small}){
   );
 }
 
-function ShotModal({shot, onClose}){
+function ShotModal({shot, onClose, title, filename, alt}){
   const [copied, setCopied] = useState(false);
   const [copyErr, setCopyErr] = useState(false);
   const doCopy = async () => {
@@ -2554,15 +2756,15 @@ function ShotModal({shot, onClose}){
   };
   const doDownload = () => {
     const a = document.createElement('a');
-    a.href = shot.url; a.download = 'pokepanion_output.png';
+    a.href = shot.url; a.download = filename || 'pokepanion_output.png';
     document.body.appendChild(a); a.click(); a.remove();
   };
   return (
     <div className="overlay" onClick={e => { if(e.target === e.currentTarget) onClose(); }}>
-      <div className="shot-box" role="dialog" aria-modal="true" aria-label="Team sheet preview">
+      <div className="shot-box" role="dialog" aria-modal="true" aria-label={(title || 'Team sheet') + ' preview'}>
         <button className="close-x" onClick={onClose} aria-label="Close">✕</button>
-        <h2 className="about-title">Team sheet</h2>
-        <img className="shot-img" src={shot.url} alt="Squad team sheet preview"/>
+        <h2 className="about-title">{title || 'Team sheet'}</h2>
+        <img className="shot-img" src={shot.url} alt={alt || 'Squad team sheet preview'}/>
         <div className="shot-actions">
           <button className="btn primary" onClick={doCopy}>{copied ? 'Copied ✓' : 'Copy image'}</button>
           <button className="btn" onClick={doDownload}>Download PNG</button>
@@ -3313,7 +3515,7 @@ function oppTeamRow(o, {onResult, onExclude, onDelete, onLoad}){
   );
 }
 
-function oppLogHeader(stats, oppLog, contrib, flipContrib, onClear){
+function oppLogHeader(stats, oppLog, contrib, flipContrib, onClear, onReport, reportBusy){
   const {totalMons, wins, losses, omitted} = stats;
   return (
     <div className="ana-head">
@@ -3329,13 +3531,31 @@ function oppLogHeader(stats, oppLog, contrib, flipContrib, onClear){
         {oppLog.length} team{oppLog.length === 1 ? '' : 's'} · {totalMons} mons faced
         {wins + losses ? ` · ${wins}W–${losses}L` : ''}{omitted ? ` · ${omitted} omitted` : ''}
       </span>}
+      {oppLog.length > 0 && <Tip text="Save your game history as an image — every logged battle in order, with results and a running record">
+        <button className="btn tsm" onClick={onReport} disabled={reportBusy}>{reportBusy ? 'Building…' : 'Record image'}</button>
+      </Tip>}
       {oppLog.length > 0 && <button className="btn tsm" style={oppLog.length ? null : {marginLeft:'auto'}} onClick={onClear}>Clear log</button>}
     </div>
   );
 }
 
-function OpponentLog({oppLog, refs, onResult, onExclude, onDelete, onClear, onLoad}){
+function OpponentLog({oppLog, refs, onResult, onExclude, onDelete, onClear, onLoad, teamName}){
   const [showAllFreq, setShowAllFreq] = useState(false);
+  const [report, setReport] = useState(null);
+  const [reportBusy, setReportBusy] = useState(false);
+  const makeReport = async () => {
+    if(reportBusy || !oppLog.length) return;
+    setReportBusy(true);
+    try{
+      const blob = await makeLogShot(oppLog, (teamName || '').trim());
+      if(blob) setReport({blob, url: URL.createObjectURL(blob)});
+    }catch(_){}
+    setReportBusy(false);
+  };
+  const closeReport = () => {
+    if(report) setTimeout(() => URL.revokeObjectURL(report.url), 1000);
+    setReport(null);
+  };
   const [contrib, setContribState] = useState(() => contribOn());
   const flipContrib = () => { setContrib(!contrib); setContribState(!contrib); };
   /* Excluded battles (forfeits, bad data) skip the Pokémon stats; their W/L still counts. */
@@ -3344,7 +3564,9 @@ function OpponentLog({oppLog, refs, onResult, onExclude, onDelete, onClear, onLo
   const bullets = oppLeadBullets(stats.counted, scoped, rows, withData);
   return (
     <React.Fragment>
-      {oppLogHeader(stats, oppLog, contrib, flipContrib, onClear)}
+      {oppLogHeader(stats, oppLog, contrib, flipContrib, onClear, makeReport, reportBusy)}
+      {report && <ShotModal shot={report} onClose={closeReport} title="Battle record"
+        filename="pokepanion_record.png" alt="Battle record report preview"/>}
       {oppLog.length === 0 ? (
         <section className="pane">
           <p className="blurb" style={{margin:0}}>No battles logged yet. Record the mons you face in the Reference slots, mark who was brought (✓) and who led (flag) on their cards, then hit "Log opponent".</p>
@@ -3688,7 +3910,7 @@ function VgcPage({squad, setSquad, refs, setRefs}){
       <TeamAnalysis squad={squad}/>
       <SpeedTiers squad={squad} setSquad={setSquad} refs={refs} setRefs={setRefs}/>
       <OpponentLog oppLog={log.oppLog} refs={refs} onResult={log.setLogResult} onExclude={log.toggleLogExcluded}
-        onDelete={log.deleteLogEntry} onClear={log.clearLog} onLoad={log.loadLogEntry}/>
+        onDelete={log.deleteLogEntry} onClear={log.clearLog} onLoad={log.loadLogEntry} teamName={lib.teamName}/>
       {vgcModals({builder, sideState, saveMon, setBuilder, cycleBuilder, shot, closeShot,
         ioFor, setIoFor, squad, refs, setSquad, setRefs, setNote})}
     </div>
@@ -3876,6 +4098,10 @@ function TopTeamRow({t, id, open, setOpen, onLoadTeam, badge, extraTag, extraAct
 /* ---- Updates / changelog ----
    Every release adds a dated entry here, newest first. */
 const CHANGELOG = [
+  {date: 'October 30, 2026', items: [
+    {tag: 'VGC', text: 'New Record image button in the Opponent Log: turns your logged games into a clean image report styled like the log itself \u2014 every battle in order with its win/loss rim, the opponent\u2019s six with green (brought) and blue (led) halos, the W/L result, and a running record, plus your overall record, win rate, current streak, and a form guide. Copy it or download it as a PNG.'},
+    {tag: 'Teams', text: 'Louisville, Nice, and Puebla Regional top eights added to Trending Teams. The early-September community tournament teams were retired now that seven regionals\u2019 worth of top cuts are available.'}
+  ]},
   {date: 'October 8, 2026', items: [
     {tag: 'Usage', text: 'Usage refreshed with a full month of Regulation M-C data: top-20 usage and winrates, plus item, move, ability, Stat Alignment, and stat-point shares for the leaders. Ten rising Pok\u00e9mon outside the top 20 (Mega Staraptor, Armarouge, Volcarona, Metagross, Excadrill, and more) also get intel pages.'},
     {tag: 'Teams', text: 'Frankfurt and Recife Regional top eights added to Trending Teams, each with full sets and stat points.'},
