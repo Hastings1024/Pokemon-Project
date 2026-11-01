@@ -1,6 +1,14 @@
 {
- "updated": "2026-10-30",
+ "updated": "2026-11-01",
  "posts": [
+  {
+   "title": "Gdańsk Regional — full team list",
+   "source": "MetaVGC",
+   "lang": "English",
+   "date": "Nov 1, 2026",
+   "blurb": "Javier Varela's Mega Tyranitar sand won Gdańsk; every top-cut team with sets and stat points.",
+   "url": "https://metavgc.com/teams/featured/regional-gdansk"
+  },
   {
    "title": "Puebla Regional — full team list",
    "source": "MetaVGC",
@@ -67,6 +75,54 @@
   }
  ],
  "teams": [
+  {
+   "name": "Gdańsk Regional — Champion · Javier Varela — Mega Tyranitar Sand + Mega Staraptor",
+   "url": "https://metavgc.com/teams/tyranitar-mega-staraptor-mega-by-javier-varela-at-2027-gdansk-pokemon-vgc-regional-championships",
+   "code": "",
+   "paste": "Gholdengo @ Life Orb\nAbility: Good as Gold\nLevel: 50\nEVs: 17 HP / 17 SpA / 32 Spe\nModest Nature\n- Make It Rain\n- Shadow Ball\n- Nasty Plot\n- Protect\n\nExcadrill @ Focus Sash\nAbility: Sand Rush\nLevel: 50\nEVs: 2 HP / 32 Atk / 32 Spe\nAdamant Nature\n- High Horsepower\n- Iron Head\n- Rock Slide\n- Protect\n\nTyranitar @ Tyranitarite\nAbility: Sand Stream\nLevel: 50\nEVs: 16 HP / 18 Atk / 32 Spe\nJolly Nature\n- Rock Slide\n- Knock Off\n- Dragon Dance\n- Protect\n\nStaraptor @ Staraptite\nAbility: Intimidate\nLevel: 50\nEVs: 29 HP / 1 Atk / 4 SpD / 32 Spe\nJolly Nature\n- Brave Bird\n- Close Combat\n- Tailwind\n- Protect\n\nSinistcha @ Rocky Helmet\nAbility: Hospitality\nLevel: 50\nEVs: 32 HP / 32 Def / 2 SpA\nBold Nature\n- Matcha Gotcha\n- Strength Sap\n- Rage Powder\n- Protect\n\nMilotic @ Sitrus Berry\nAbility: Competitive\nLevel: 50\nEVs: 32 HP / 10 Def / 17 SpA / 5 SpD / 2 Spe\nCalm Nature\n- Scald\n- Ice Beam\n- Icy Wind\n- Protect"
+  },
+  {
+   "name": "Gdańsk Regional — 2nd · Jude Gerard Lee Wei Cong — Mega Garchomp + Mega Floette",
+   "url": "https://metavgc.com/teams/garchomp-mega-floette-mega-by-jude-gerard-lee-wei-cong-at-2027-gdansk-pokemon-vgc-regional-championships",
+   "code": "",
+   "paste": "Garchomp @ Garchompite\nAbility: Rough Skin\nLevel: 50\nEVs: 15 HP / 21 Atk / 1 Def / 25 SpD / 4 Spe\nAdamant Nature\n- Stomping Tantrum\n- Scale Shot\n- Rock Slide\n- Protect\n\nSneasler @ Focus Sash\nAbility: Poison Touch\nLevel: 50\nEVs: 32 Atk / 2 SpD / 32 Spe\nJolly Nature\n- Dire Claw\n- Close Combat\n- Fake Out\n- Coaching\n\nFloette-Eternal @ Floettite\nAbility: Flower Veil\nLevel: 50\nEVs: 2 HP / 32 SpA / 32 Spe\nModest Nature\n- Dazzling Gleam\n- Draining Kiss\n- Calm Mind\n- Protect\n\nIncineroar @ Sitrus Berry\nAbility: Intimidate\nLevel: 50\nEVs: 32 HP / 13 Def / 21 SpD\nSassy Nature\n- Flare Blitz\n- Fake Out\n- Parting Shot\n- Helping Hand\n\nRillaboom @ Miracle Seed\nAbility: Grassy Surge\nLevel: 50\nEVs: 32 HP / 15 Atk / 19 SpD\nAdamant Nature\n- Wood Hammer\n- High Horsepower\n- Grassy Glide\n- Fake Out\n\nKingambit @ Life Orb\nAbility: Defiant\nLevel: 50\nEVs: 32 HP / 32 Atk / 2 SpD\nAdamant Nature\n- Kowtow Cleave\n- Sucker Punch\n- Swords Dance\n- Protect"
+  },
+  {
+   "name": "Gdańsk Regional — 3rd · Michael Kelsch — Mega Salamence + Mega Charizard Y",
+   "url": "https://metavgc.com/teams/salamence-mega-charizard-mega-y-by-michael-kelsch-at-2027-gdansk-pokemon-vgc-regional-championships",
+   "code": "",
+   "paste": "Kingambit @ Chople Berry\nAbility: Defiant\nLevel: 50\nEVs: 32 HP / 32 Atk / 2 SpD\nAdamant Nature\n- Kowtow Cleave\n- Iron Head\n- Sucker Punch\n- Low Kick\n\nSneasler @ White Herb\nAbility: Unburden\nLevel: 50\nEVs: 32 Atk / 2 SpD / 32 Spe\nAdamant Nature\n- Close Combat\n- Gunk Shot\n- Rock Slide\n- Protect\n\nSalamence @ Salamencite\nAbility: Intimidate\nLevel: 50\nEVs: 32 HP / 32 SpA / 2 Spe\nModest Nature\n- Hyper Voice\n- Draco Meteor\n- Flamethrower\n- Protect\n\nBasculegion-Male @ Life Orb\nAbility: Adaptability\nLevel: 50\nEVs: 32 Atk / 2 SpD / 32 Spe\nJolly Nature\n- Wave Crash\n- Last Respects\n- Aqua Jet\n- Protect\n\nCharizard @ Charizardite Y\nAbility: Blaze\nLevel: 50\nEVs: 15 HP / 18 Def / 1 SpA / 32 Spe\nModest Nature\n- Heat Wave\n- Weather Ball\n- Solar Beam\n- Protect\n\nWhimsicott @ Focus Sash\nAbility: Prankster\nLevel: 50\nEVs: 2 HP / 32 SpA / 32 Spe\nTimid Nature\n- Moonblast\n- Tailwind\n- Encore\n- Protect"
+  },
+  {
+   "name": "Gdańsk Regional — 4th · Ko Tsukide — Mega Charizard Y Tailwind",
+   "url": "https://metavgc.com/teams/charizard-mega-y-sneasler-by-ko-tsukide-at-2027-gdansk-pokemon-vgc-regional-championships",
+   "code": "",
+   "paste": "Charizard @ Charizardite Y\nAbility: Blaze\nLevel: 50\nEVs: 15 HP / 18 Def / 1 SpA / 32 Spe\nModest Nature\n- Heat Wave\n- Solar Beam\n- Weather Ball\n- Protect\n\nSneasler @ White Herb\nAbility: Unburden\nLevel: 50\nEVs: 32 Atk / 2 SpD / 32 Spe\nAdamant Nature\n- Close Combat\n- Dire Claw\n- Rock Tomb\n- Protect\n\nKingambit @ Chople Berry\nAbility: Defiant\nLevel: 50\nEVs: 32 HP / 32 Atk / 2 SpD\nAdamant Nature\n- Kowtow Cleave\n- Iron Head\n- Sucker Punch\n- Low Kick\n\nGarchomp @ Life Orb\nAbility: Rough Skin\nLevel: 50\nEVs: 32 Atk / 2 SpD / 32 Spe\nJolly Nature\n- Earthquake\n- Dragon Claw\n- Rock Slide\n- Protect\n\nBasculegion-Male @ Mystic Water\nAbility: Adaptability\nLevel: 50\nEVs: 15 HP / 32 Atk / 3 Def / 2 SpD / 14 Spe\nAdamant Nature\n- Wave Crash\n- Last Respects\n- Aqua Jet\n- Protect\n\nWhimsicott @ Focus Sash\nAbility: Prankster\nLevel: 50\nEVs: 2 HP / 32 SpA / 32 Spe\nTimid Nature\n- Moonblast\n- Encore\n- Tailwind\n- Protect"
+  },
+  {
+   "name": "Gdańsk Regional — 5th · Liam Chatterjee — Mega Floette + Mega Charizard Y",
+   "url": "https://metavgc.com/teams/floette-mega-charizard-mega-y-by-liam-chatterjee-at-2027-gdansk-pokemon-vgc-regional-championships",
+   "code": "",
+   "paste": "Floette-Eternal @ Floettite\nAbility: Flower Veil\nLevel: 50\nEVs: 2 HP / 32 SpA / 32 Spe\nModest Nature\n- Moonblast\n- Dazzling Gleam\n- Light of Ruin\n- Protect\n\nIndeedee-Male @ Focus Sash\nAbility: Psychic Surge\nLevel: 50\nEVs: 32 SpA / 2 SpD / 32 Spe\nTimid Nature\n- Expanding Force\n- Hyper Voice\n- Trick Room\n- Imprison\n\nCharizard @ Charizardite Y\nAbility: Blaze\nLevel: 50\nEVs: 15 HP / 18 Def / 1 SpA / 32 Spe\nModest Nature\n- Heat Wave\n- Weather Ball\n- Solar Beam\n- Protect\n\nGlimmora @ Life Orb\nAbility: Toxic Debris\nLevel: 50\nEVs: 2 HP / 16 Def / 21 SpA / 3 SpD / 24 Spe\nModest Nature\n- Sludge Bomb\n- Power Gem\n- Earth Power\n- Spiky Shield\n\nGarchomp @ Choice Scarf\nAbility: Rough Skin\nLevel: 50\nEVs: 2 HP / 32 Atk / 32 Spe\nAdamant Nature\n- Earthquake\n- Dragon Claw\n- Rock Slide\n- Stomping Tantrum\n\nWhimsicott @ Occa Berry\nAbility: Prankster\nLevel: 50\nEVs: 2 HP / 32 SpA / 32 Spe\nTimid Nature\n- Moonblast\n- Tailwind\n- Encore\n- Protect"
+  },
+  {
+   "name": "Gdańsk Regional — 6th · Nikola Zirdum — Mega Floette + Mega Salamence",
+   "url": "https://metavgc.com/teams/floette-mega-salamence-mega-by-nikola-zirdum-at-2027-gdansk-pokemon-vgc-regional-championships",
+   "code": "",
+   "paste": "Rillaboom @ Life Orb\nAbility: Grassy Surge\nLevel: 50\nEVs: 32 HP / 15 Atk / 19 SpD\nAdamant Nature\n- Wood Hammer\n- High Horsepower\n- Grassy Glide\n- Fake Out\n\nBasculegion-Male @ Colbur Berry\nAbility: Adaptability\nLevel: 50\nEVs: 15 HP / 32 Atk / 3 Def / 2 SpD / 14 Spe\nAdamant Nature\n- Wave Crash\n- Last Respects\n- Aqua Jet\n- Protect\n\nKingambit @ Chople Berry\nAbility: Defiant\nLevel: 50\nEVs: 32 HP / 32 Atk / 2 SpD\nAdamant Nature\n- Kowtow Cleave\n- Sucker Punch\n- Iron Head\n- Protect\n\nSneasler @ Focus Sash\nAbility: Poison Touch\nLevel: 50\nEVs: 32 Atk / 2 SpD / 32 Spe\nJolly Nature\n- Close Combat\n- Dire Claw\n- Fake Out\n- Protect\n\nFloette-Eternal @ Floettite\nAbility: Flower Veil\nLevel: 50\nEVs: 2 HP / 32 SpA / 32 Spe\nModest Nature\n- Dazzling Gleam\n- Moonblast\n- Calm Mind\n- Protect\n\nSalamence @ Salamencite\nAbility: Intimidate\nLevel: 50\nEVs: 32 HP / 32 SpA / 2 Spe\nModest Nature\n- Hyper Voice\n- Flamethrower\n- Tailwind\n- Protect"
+  },
+  {
+   "name": "Gdańsk Regional — 7th · Dennis Komen — Mega Charizard Y + Mega Salamence (same six as 3rd)",
+   "url": "https://metavgc.com/teams/charizard-mega-y-salamence-mega-by-dennis-komen-at-2027-gdansk-pokemon-vgc-regional-championships",
+   "code": "",
+   "paste": "Kingambit @ Chople Berry\nAbility: Defiant\nLevel: 50\nEVs: 32 HP / 32 Atk / 2 SpD\nAdamant Nature\n- Kowtow Cleave\n- Iron Head\n- Sucker Punch\n- Low Kick\n\nSneasler @ White Herb\nAbility: Unburden\nLevel: 50\nEVs: 32 Atk / 2 SpD / 32 Spe\nAdamant Nature\n- Close Combat\n- Gunk Shot\n- Rock Slide\n- Protect\n\nSalamence @ Salamencite\nAbility: Intimidate\nLevel: 50\nEVs: 32 HP / 32 SpA / 2 Spe\nModest Nature\n- Hyper Voice\n- Draco Meteor\n- Flamethrower\n- Protect\n\nBasculegion-Male @ Life Orb\nAbility: Adaptability\nLevel: 50\nEVs: 32 Atk / 2 SpD / 32 Spe\nJolly Nature\n- Wave Crash\n- Last Respects\n- Aqua Jet\n- Protect\n\nCharizard @ Charizardite Y\nAbility: Blaze\nLevel: 50\nEVs: 15 HP / 18 Def / 1 SpA / 32 Spe\nModest Nature\n- Heat Wave\n- Weather Ball\n- Solar Beam\n- Protect\n\nWhimsicott @ Focus Sash\nAbility: Prankster\nLevel: 50\nEVs: 2 HP / 32 SpA / 32 Spe\nTimid Nature\n- Moonblast\n- Tailwind\n- Encore\n- Protect"
+  },
+  {
+   "name": "Gdańsk Regional — 8th · Alex Soto — Mega Floette + Mega Delphox",
+   "url": "https://metavgc.com/teams/floette-mega-delphox-mega-by-alex-soto-at-2027-gdansk-pokemon-vgc-regional-championships",
+   "code": "",
+   "paste": "Sinistcha @ Occa Berry\nAbility: Hospitality\nLevel: 50\nEVs: 32 HP / 32 Def / 2 SpA\nBold Nature\n- Matcha Gotcha\n- Rage Powder\n- Trick Room\n- Protect\n\nFloette-Eternal @ Floettite\nAbility: Flower Veil\nLevel: 50\nEVs: 2 HP / 32 SpA / 32 Spe\nModest Nature\n- Moonblast\n- Dazzling Gleam\n- Calm Mind\n- Protect\n\nKingambit @ Life Orb\nAbility: Defiant\nLevel: 50\nEVs: 32 HP / 32 Atk / 2 SpD\nAdamant Nature\n- Kowtow Cleave\n- Sucker Punch\n- Swords Dance\n- Protect\n\nIncineroar @ Sitrus Berry\nAbility: Intimidate\nLevel: 50\nEVs: 32 HP / 2 Def / 32 SpD\nCareful Nature\n- Fake Out\n- Flare Blitz\n- Snarl\n- Parting Shot\n\nSneasler @ Focus Sash\nAbility: Poison Touch\nLevel: 50\nEVs: 32 Atk / 2 SpD / 32 Spe\nJolly Nature\n- Fake Out\n- Close Combat\n- Poison Jab\n- Quick Guard\n\nDelphox @ Delphoxite\nAbility: Blaze\nLevel: 50\nEVs: 11 HP / 4 Def / 19 SpA / 32 Spe\nTimid Nature\n- Heat Wave\n- Psyshock\n- Nasty Plot\n- Protect"
+  },
   {
    "name": "Puebla Regional — Champion · Kyle Livinghouse — Mega Charizard Y + Mega Froslass",
    "url": "https://metavgc.com/teams/charizard-mega-y-froslass-mega-by-kyle-livinghouse-at-2027-puebla-pokemon-vgc-regional-championships",
